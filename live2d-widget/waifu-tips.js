@@ -277,7 +277,6 @@ function initWidget(config, apiPath = "/") {
 		} else {
 			localStorage.removeItem("waifu-display");
 			document.getElementById("waifu").style.display = "";
-			toggle.style.display = "";
 			setTimeout(() => {
 				document.getElementById("waifu").style.bottom = 0;
 			}, 0);
