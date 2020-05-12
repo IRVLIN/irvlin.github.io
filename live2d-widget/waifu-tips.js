@@ -66,7 +66,7 @@ function loadWidget(config) {
 				window.ASTEROIDSPLAYERS.push(new Asteroids());
 			} else {
 				let script = document.createElement("script");
-				script.src = "https://cdn.jsdelivr.net/gh/GalaxyMimi/CDN/asteroids.js";
+				script.src = "https://cdn.jsdelivr.net/gh/irvlin/CDN@1.0/js/asteroids.js";
 				document.head.appendChild(script);
 			}
 		});
