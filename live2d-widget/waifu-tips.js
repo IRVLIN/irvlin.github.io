@@ -26,6 +26,10 @@ function loadWidget(config) {
 				<span class="fa fa-lg fa-times"></span>
 			</div>
 		</div>`);
+	let toggle = document.getElementById("waifu-toggle");
+	if (document.getElementById("waifu").style.display != "none") {
+		toggle.style.display = "none";
+	}
 	// https://stackoverflow.com/questions/24148403/trigger-css-transition-on-appended-element
 	setTimeout(() => {
 		document.getElementById("waifu").style.bottom = 0;
@@ -281,6 +285,7 @@ function initWidget(config, apiPath = "/") {
 				document.getElementById("waifu").style.bottom = 0;
 			}, 0);
 		}
+		toggle.style.display = "none";
 	});
 	if (localStorage.getItem("waifu-display") && Date.now() - localStorage.getItem("waifu-display") <= 86400000) {
 		toggle.setAttribute("first-time", true);
