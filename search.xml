@@ -15,7 +15,8 @@
   <entry>
     <title>排序算法</title>
     <url>/2020/05/27/%E6%8E%92%E5%BA%8F%E7%AE%97%E6%B3%95/</url>
-    <content><![CDATA[<h2 id="记录一下常规的排序算法"><a href="#记录一下常规的排序算法" class="headerlink" title="记录一下常规的排序算法"></a>记录一下常规的排序算法</h2><a id="more"></a>
+    <content><![CDATA[<p>记录一下常规的排序算法</p>
+<a id="more"></a>
 <h3 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h3><h4 id="排序算法分类"><a href="#排序算法分类" class="headerlink" title="排序算法分类"></a>排序算法分类</h4><p>常见的排序算法可分为以下两大类：</p>
 <blockquote>
 <p>比较类排序：通过比较来决定元素间的相对顺序，由于其时间复杂度不能突破<code>O(nlogn)</code>，因此也称为非线性时间比较类排序。<br>非比较类排序：不通过比较来决定元素间的相对顺序，它可以突破基于比较排序的时间下界，以线性时间运行，因此也称为线性时间非比较类排序。<br><img src="%E6%8E%92%E5%BA%8F%E7%AE%97%E6%B3%95%E5%88%86%E7%B1%BB.png" alt=""></p>
@@ -51,7 +52,8 @@
   <entry>
     <title>原码、反码、补码</title>
     <url>/2020/05/28/%E5%8E%9F%E7%A0%81%E3%80%81%E5%8F%8D%E7%A0%81%E3%80%81%E8%A1%A5%E7%A0%81/</url>
-    <content><![CDATA[<h2 id="之前不了解机器为何要使用补码进行存储，学习之后记录一下。"><a href="#之前不了解机器为何要使用补码进行存储，学习之后记录一下。" class="headerlink" title="之前不了解机器为何要使用补码进行存储，学习之后记录一下。"></a>之前不了解机器为何要使用补码进行存储，学习之后记录一下。</h2><a id="more"></a>
+    <content><![CDATA[<p> 之前不了解机器为何要使用补码进行存储，学习之后记录一下。</p>
+<a id="more"></a>
 <h3 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h3><h4 id="原码"><a href="#原码" class="headerlink" title="原码"></a>原码</h4><p>原码就是符号位加上真值的绝对值，即最高位用<code>1</code>表示负数，<code>0</code>表示正数，其余位表示数值。<br>例如8位二进制：</p>
 <blockquote>
 <p>[+1]原：00000001<br>[-1]原：10000001</p>
