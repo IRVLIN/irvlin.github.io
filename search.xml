@@ -16,7 +16,10 @@
     <title>排序算法</title>
     <url>/2020/05/27/%E6%8E%92%E5%BA%8F%E7%AE%97%E6%B3%95/</url>
     <content><![CDATA[<h2 id="记录一下常规的排序算法"><a href="#记录一下常规的排序算法" class="headerlink" title="记录一下常规的排序算法"></a>记录一下常规的排序算法</h2><a id="more"></a>
-<h3 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h3><h4 id="排序算法分类"><a href="#排序算法分类" class="headerlink" title="排序算法分类"></a>排序算法分类</h4><p>常见的排序算法可分为以下两大类：<br>1、比较类排序：通过比较来决定元素间的相对顺序，由于其时间复杂度不能突破<code>O(nlogn)</code>，因此也称为非线性时间比较类排序。<br>2、非比较类排序：不通过比较来决定元素间的相对顺序，它可以突破基于比较排序的时间下界，以线性时间运行，因此也称为线性时间非比较类排序。<br><img src="%E6%8E%92%E5%BA%8F%E7%AE%97%E6%B3%95%E5%88%86%E7%B1%BB.png" alt=""></p>
+<h3 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h3><h4 id="排序算法分类"><a href="#排序算法分类" class="headerlink" title="排序算法分类"></a>排序算法分类</h4><p>常见的排序算法可分为以下两大类：</p>
+<blockquote>
+<p>比较类排序：通过比较来决定元素间的相对顺序，由于其时间复杂度不能突破<code>O(nlogn)</code>，因此也称为非线性时间比较类排序。<br>非比较类排序：不通过比较来决定元素间的相对顺序，它可以突破基于比较排序的时间下界，以线性时间运行，因此也称为线性时间非比较类排序。<br><img src="%E6%8E%92%E5%BA%8F%E7%AE%97%E6%B3%95%E5%88%86%E7%B1%BB.png" alt=""></p>
+</blockquote>
 <h4 id="时间、空间复杂度分析"><a href="#时间、空间复杂度分析" class="headerlink" title="时间、空间复杂度分析"></a>时间、空间复杂度分析</h4><h2 id=""><a href="#" class="headerlink" title=""></a><img src="%E7%AE%97%E6%B3%95%E5%A4%8D%E6%9D%82%E5%BA%A6.png" alt=""></h2><h3 id="代码实现"><a href="#代码实现" class="headerlink" title="代码实现"></a>代码实现</h3><h4 id="冒泡排序"><a href="#冒泡排序" class="headerlink" title="冒泡排序"></a>冒泡排序</h4><h5 id="算法逻辑"><a href="#算法逻辑" class="headerlink" title="算法逻辑"></a>算法逻辑</h5><p>循环数组中的每一对元素，比较二者大小，逆序就交换位置。这样循环一轮后最大的数会在数组末尾。重复即可。</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">bubbleSort</span><span class="params">(<span class="keyword">int</span>[] arr)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> len = arr.length;</span><br><span class="line">    <span class="keyword">if</span> (len &lt; <span class="number">2</span>) <span class="keyword">return</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; len - <span class="number">1</span>; i++) &#123; <span class="comment">// 除了最后一位</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; len - i - <span class="number">1</span>; j++) &#123; <span class="comment">// 后面已经排好序无需再比</span></span><br><span class="line">            <span class="keyword">if</span> (arr[j] &gt; arr[j+<span class="number">1</span>]) &#123;</span><br><span class="line">                <span class="keyword">int</span> tmp = arr[j];</span><br><span class="line">                arr[j] = arr[j+<span class="number">1</span>];</span><br><span class="line">                arr[j+<span class="number">1</span>] = tmp;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <hr>
@@ -43,6 +46,61 @@
       <tags>
         <tag>排序</tag>
         <tag>算法</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>原码、反码、补码</title>
+    <url>/2020/05/28/%E5%8E%9F%E7%A0%81%E3%80%81%E5%8F%8D%E7%A0%81%E3%80%81%E8%A1%A5%E7%A0%81/</url>
+    <content><![CDATA[<h2 id="之前不了解机器为何要使用补码进行存储，学习之后记录一下。"><a href="#之前不了解机器为何要使用补码进行存储，学习之后记录一下。" class="headerlink" title="之前不了解机器为何要使用补码进行存储，学习之后记录一下。"></a>之前不了解机器为何要使用补码进行存储，学习之后记录一下。</h2><a id="more"></a>
+<h3 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h3><h4 id="原码"><a href="#原码" class="headerlink" title="原码"></a>原码</h4><p>原码就是符号位加上真值的绝对值，即最高位用<code>1</code>表示负数，<code>0</code>表示正数，其余位表示数值。<br>例如8位二进制：</p>
+<blockquote>
+<p>[+1]原：00000001<br>[-1]原：10000001</p>
+</blockquote>
+<p>可见8位二进制表示数字的范围为<code>[-127, 127]</code>。</p>
+<hr>
+<h4 id="反码"><a href="#反码" class="headerlink" title="反码"></a>反码</h4><p>反码的表示形式是：</p>
+<ul>
+<li>正数的反码是其本身</li>
+<li>负数的反码是在其原码的基础上，符号位不变，其余各个位取反</li>
+</ul>
+<blockquote>
+<p>[+1] = [00000001]原 = [00000001]反<br>[-1] = [10000001]原 = [11111110]反</p>
+</blockquote>
+<p>如果一个用反码表示的负数，人脑需要将其转成原码才比较好计算。</p>
+<hr>
+<h4 id="补码"><a href="#补码" class="headerlink" title="补码"></a>补码</h4><p>反码的表示形式是：</p>
+<ul>
+<li>正数的补码是其本身</li>
+<li>负数的补码是在其反码的基础上+1</li>
+</ul>
+<blockquote>
+<p>[+1] = [00000001]原 = [10000001]反 = [00000001]补<br>[-1] = [10000001]原 = [11111110]反 = [11111111]补</p>
+</blockquote>
+<p>如果一个用补码表示的负数，人脑依然很难直接看出数值。</p>
+<hr>
+<h3 id="为何要发明反码和补码"><a href="#为何要发明反码和补码" class="headerlink" title="为何要发明反码和补码"></a>为何要发明反码和补码</h3><p>首先，人脑可以很容易地根据最高位分辨出一个数是正数还是负数，但对于计算机来说，肯定要设计得尽量简单，让计算机判断符号位会使计算机的电路设计显得很复杂。于是计算机会将符号位也参与计算。比如对于<code>1-1</code>这个运算，计算机会将运算变成<code>1+(-1)</code>，这时如果用原码进行计算，就会出现问题。</p>
+<blockquote>
+<p>1 + (-1) = [00000001]原 + [10000001]原 = [10000010]原 = -2</p>
+</blockquote>
+<p>结果并不等于0。所以计算机并不使用原码表示一个数。<br>因此出现了反码。用反码进行计算。</p>
+<blockquote>
+<p>1 + (-1) = [00000001]反 + [11111110]反 = [11111111]反 = [10000000]原 = -0</p>
+</blockquote>
+<p>这时结果为-0，已经能得到正确结果。这时唯一的问题就是0。因为0带符号是没有意义的，而且原码的<code>[10000000]</code>和<code>[00000000]</code>都表示0，这显然不够完美。<br>于是补码应运而生，它完美的解决了这个问题。</p>
+<blockquote>
+<p>1 + (-1) = [00000001]补 + [11111111]补 = [00000000]补 = [00000000]原 = 0</p>
+</blockquote>
+<p>这时0只用一个编码来表示了，而-0则可以用来表示-128。</p>
+<blockquote>
+<p>(-1) + (-127) = [11111111]补 + [10000001]补 = [10000000]补</p>
+</blockquote>
+<p>所以在补码运算的结果中<code>[10000000]补</code>就是-128。但由于其实是用以前的-0的补码来表示-128，所以-128并没有反码和原码来表示。<br>这也是为什么对于8位二进制数，原码和反码表示的范围是<code>[-127, 127]</code>，而补码表示的是<code>[-128, 127]</code>。而对于常见的int32也是如此。由于机器是使用补码存储，所以int32表示的范围是<code>[-2^31, 2^31-1]</code>。</p>
+]]></content>
+      <categories>
+        <category>计算机原理</category>
+      </categories>
+      <tags>
+        <tag>计算机原理</tag>
       </tags>
   </entry>
 </search>
