@@ -108,8 +108,21 @@
       </tags>
   </entry>
   <entry>
+    <title>Leetcode面试题(2)</title>
+    <url>/2020/05/30/Leetcode%E9%9D%A2%E8%AF%95%E9%A2%98-2/</url>
+    <content><![CDATA[<p>记录Leetcode一些面试题(2)</p>
+]]></content>
+      <categories>
+        <category>算法</category>
+      </categories>
+      <tags>
+        <tag>算法</tag>
+        <tag>leetcode</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Leetcode面试题(1)</title>
-    <url>/2020/05/30/Leetcode%E9%9D%A2%E8%AF%95%E9%A2%98(1)/</url>
+    <url>/2020/05/30/Leetcode%E9%9D%A2%E8%AF%95%E9%A2%98-1/</url>
     <content><![CDATA[<p>记录Leetcode一些面试题(1)</p>
 <a id="more"></a>
 <h4 id="01-01-判定字符是否唯一"><a href="#01-01-判定字符是否唯一" class="headerlink" title="01.01 判定字符是否唯一"></a>01.01 <a href="https://leetcode-cn.com/problems/is-unique-lcci/" target="_blank" rel="noopener">判定字符是否唯一</a></h4><h5 id="描述"><a href="#描述" class="headerlink" title="描述"></a>描述</h5><p>实现一个算法，确定一个字符串 s 的所有字符是否全都不同。</p>
