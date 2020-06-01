@@ -223,28 +223,9 @@
 <h4 id="05-03-翻转数位"><a href="#05-03-翻转数位" class="headerlink" title="05.03 翻转数位"></a>05.03 <a href="https://leetcode-cn.com/problems/reverse-bits-lcci/" target="_blank" rel="noopener">翻转数位</a></h4><h5 id="描述-3"><a href="#描述-3" class="headerlink" title="描述"></a>描述</h5><p>给定一个32位整数 num，你可以将一个数位从0变为1。请编写一个程序，找出你能够获得的最长的一串1的长度。</p>
 <h5 id="思路-3"><a href="#思路-3" class="headerlink" title="思路"></a>思路</h5><p>因为只能改变一个0，所以记录先前长度，遇到0时减去即可。</p>
 <h5 id="实现-3"><a href="#实现-3" class="headerlink" title="实现"></a>实现</h5><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">reverseBits</span><span class="params">(<span class="keyword">int</span> num)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> max = <span class="number">0</span>, cur = <span class="number">0</span>, pre = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">32</span>; i++) &#123;</span><br><span class="line">            <span class="keyword">if</span> ((num &amp; (<span class="number">1</span> &lt;&lt; i)) == <span class="number">0</span>) &#123;</span><br><span class="line">            	<span class="comment">// 减去上次改动0的位置</span></span><br><span class="line">                cur -= pre;</span><br><span class="line">                <span class="comment">// pre记录的是上一次改动0的位置</span></span><br><span class="line">                pre = cur + <span class="number">1</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            cur++;</span><br><span class="line">            max = Math.max(max, cur);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> max;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-]]></content>
+<h4 id="05-07-配对交换"><a href="#05-07-配对交换" class="headerlink" title="05.07 配对交换"></a>05.07 <a href="https://leetcode-cn.com/problems/exchange-lcci/" target="_blank" rel="noopener">配对交换</a></h4><h5 id="描述-4"><a href="#描述-4" class="headerlink" title="描述"></a>描述</h5><p>配对交换。编写程序，交换某个整数的奇数位和偶数位，尽量使用较少的指令（也就是说，位0与位1交换，位2与位3交换，以此类推）。<br>num的范围在[0, 2^30 - 1]之间，不会发生整数溢出。</p>
+<h5 id="思路-4"><a href="#思路-4" class="headerlink" title="思路"></a>思路</h5><p>循环。或者使用<code>0x55555555</code>和<code>0xaaaaaaaa</code>得到奇偶位进行交换。</p>
+<h5 id="实现-4"><a href="#实现-4" class="headerlink" title="实现"></a>实现</h5><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">exchangeBits</span><span class="params">(<span class="keyword">int</span> num)</span> </span>&#123;</span><br><span class="line">    	<span class="comment">// 0xaaaaaaaa = 10101010101010101010101010101010 (偶数位为1，奇数位为0）</span></span><br><span class="line">        <span class="comment">// 0x55555555 = 01010101010101010101010101010101 (偶数位为0，奇数位为1）</span></span><br><span class="line">        <span class="comment">// 分别与num位与，可以分别得到num奇偶位的数位。因为要交换，所以分别位移后进行或运算即可。</span></span><br><span class="line">        <span class="keyword">return</span> ((num &amp; <span class="number">0x55555555</span>) &lt;&lt; <span class="number">1</span>) | ((num &amp; <span class="number">0xaaaaaaaa</span>) &gt;&gt; <span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>]]></content>
       <categories>
         <category>算法</category>
       </categories>
