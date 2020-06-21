@@ -428,4 +428,105 @@
         <tag>leetcode</tag>
       </tags>
   </entry>
+  <entry>
+    <title>Leetcode面试题(6)</title>
+    <url>/2020/06/18/Leetcode%E9%9D%A2%E8%AF%95%E9%A2%98-6/</url>
+    <content><![CDATA[<p>记录Leetcode一些面试题(6)</p>
+<a id="more"></a>
+<h4 id="16-05-阶乘尾数"><a href="#16-05-阶乘尾数" class="headerlink" title="16.05 阶乘尾数"></a>16.05 <a href="https://leetcode-cn.com/problems/factorial-zeros-lcci/" target="_blank" rel="noopener">阶乘尾数</a></h4><h5 id="描述"><a href="#描述" class="headerlink" title="描述"></a>描述</h5><p>设计一个算法，算出 n 阶乘有多少个尾随零。</p>
+<h5 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h5><p>0是由<code>*10</code>得到的，而10是由<code>2*5</code>得到的。<br>2的个数比5多，所以计算5的个数。每隔5个数就会出现一个5，隔25出现两个5，以此类推。<br>count = n / 5 + n / 5 / 5 + n / 5 / 5 / 5 + …</p>
+<h5 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h5><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">trailingZeroes</span><span class="params">(<span class="keyword">int</span> n)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> ans = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">while</span> (n &gt;= <span class="number">5</span>) &#123;</span><br><span class="line">            n /= <span class="number">5</span>;</span><br><span class="line">            ans += n;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> ans;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>]]></content>
+      <categories>
+        <category>算法</category>
+      </categories>
+      <tags>
+        <tag>算法</tag>
+        <tag>leetcode</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Java类加载机制</title>
+    <url>/2020/06/20/Java%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6/</url>
+    <content><![CDATA[<p>Java虚拟机把描述类的数据从Class文件加载到内存，并对数据进行<strong>校验、转换解析和初始化</strong>，最<br>终形成可以被虚拟机直接使用的Java类型，这个过程被称作虚拟机的类加载机制。</p>
+<a id="more"></a>
+<h3 id="类加载的时机"><a href="#类加载的时机" class="headerlink" title="类加载的时机"></a>类加载的时机</h3><p>一个类型从被加载到虚拟机内存中开始，到卸载出内存为止，它的整个生命周期将会经历加载（Loading）、验证（Verification）、准备（Preparation）、解析（Resolution）、初始化（Initialization）、使用（Using）和卸载（Unloading）七个阶段，其中验证、准备、解析三个部分统称为连接（Linking）。<br>关于在什么情况下需要开始类加载过程的第一个阶段“加载”，《Java虚拟机规范》中并没有进行强制约束，这点可以交给虚拟机的具体实现来自由把握。但是对于初始化阶段，《Java虚拟机规范》则是严格规定了有且只有六种情况必须立即对类进行“初始化”（而加载、验证、准备自然需要在此之前开始）：</p>
+<ol>
+<li>遇到new、getstatic、putstatic或invokestatic这四条字节码指令时，如果类型没有进行过初始化，则需要先触发其初始化阶段。能够生成这四条指令的典型Java代码场景有:<ul>
+<li>使用new关键字实例化对象的时候。</li>
+<li>读取或设置一个类型的静态字段（被final修饰、已在编译期把结果放入常量池的静态字段除外）的时候。</li>
+<li>调用一个类型的静态方法的时候。</li>
+</ul>
+</li>
+<li>使用java.lang.reflect包的方法对类型进行反射调用的时候，如果类型没有进行过初始化，则需要先触发其初始化。</li>
+<li>当初始化类的时候，如果发现其父类还没有进行过初始化，则需要先触发其父类的初始化。</li>
+<li>当虚拟机启动时，用户需要指定一个要执行的主类（包含main()方法的那个类），虚拟机会先初始化这个主类。</li>
+<li>当使用JDK 7新加入的动态语言支持时，如果一个java.lang.invoke.MethodHandle实例最后的解析结果为REF_getStatic、REF_putStatic、REF_invokeStatic、REF_n_newInvokeSpecial四种类型的方法句柄，并且这个方法句柄对应的类没有进行过初始化，则需要先触发其初始化。</li>
+<li>当一个接口中定义了JDK 8新加入的默认方法（被default关键字修饰的接口方法）时，如果有这个接口的实现类发生了初始化，那该接口要在其之前被初始化。</li>
+</ol>
+<p>这六种场景中的行为称为对一个类型进行主动引用。除此之外，所有引用类型的方式都不会触发初始化，称为被动引用。<br>例如以下代码</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SuperClass</span> </span>&#123;</span><br><span class="line">    <span class="keyword">static</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">"SuperClass init!"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> value = <span class="number">123</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SubClass</span> <span class="keyword">extends</span> <span class="title">SuperClass</span> </span>&#123;</span><br><span class="line">    <span class="keyword">static</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">"SubClass init!"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* 非主动使用类字段演示</span></span><br><span class="line"><span class="comment">**/</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">NotInitialization</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        System.out.println(SubClass.value);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上述代码运行后，只会输出”SuperClass init!”，而不会输出”SubClass init!”。<br>因为对于静态字段，只有直接定义这个字段的类才会被初始化。所以对于上述代码子类不会被初始化。</p>
+<p>再如，对上述<code>SuperClass</code>类，如果有以下代码</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">NotInitialization</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        SuperClass[] sca = <span class="keyword">new</span> SuperClass[<span class="number">10</span>];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>运行后依然没有输出”SuperClass init!”。说明通过数组定义来引用类，不会触发类的初始化。</p>
+<p>还有一种是调用类的常量。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ConstClass</span> </span>&#123;</span><br><span class="line">    <span class="keyword">static</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">"ConstClass init!"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> String HELLOWORLD = <span class="string">"hello world"</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* 非主动使用类字段演示</span></span><br><span class="line"><span class="comment">**/</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">NotInitialization</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        System.out.println(ConstClass.HELLOWORLD);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>常量在编译阶段会存入调用类的<strong>常量池</strong>中，本质上没有直接引用到定义常量的类，因此不会触发定义常量的类的初始化。<br>而接口的加载过程与类加载过程稍有不同。接口也有初始化过程，这点与类是一致的，上面的代码都是用静态语句块“static{}”来输出初始化信息的，而接口中不能使用“static{}”语句块，但编译器仍然会为接口生成“<clinit>()”类构造器，用于初始化接口中所定义的成员变量。<br>一个接口在初始化时，并不要求父接口都完成了初始化，只有在真正使用到父接口的时候（如引用接口中定义的常量）才会初始化。</p>
+<hr>
+<h3 id="类加载的过程"><a href="#类加载的过程" class="headerlink" title="类加载的过程"></a>类加载的过程</h3><ol>
+<li><strong>加载</strong><br>在加载阶段，Java虚拟机需要完成以下三件事情：<ul>
+<li>通过一个类的全限定名来获取定义此类的二进制字节流。</li>
+<li>将这个字节流所代表的静态存储结构转化为方法区的运行时数据结构。</li>
+<li>在内存中生成一个代表这个类的java.lang.Class对象，作为方法区这个类的各种数据的访问入口。</li>
+</ul>
+</li>
+<li><strong>验证</strong><br>验证是连接阶段的第一步，这一阶段的目的是确保Class文件的字节流中包含的信息符合《Java虚拟机规范》的全部约束要求，保证这些信息被当作代码运行后不会危害虚拟机自身的安全。<br>验证阶段大致上会完成下面四个阶段的检验动作：<strong>文件格式验证、元数据验证、字节码验证和符号引用验证。</strong><ul>
+<li>文件格式验证。主要验证字节流是否符合Class文件格式的规范。比如魔数开头、版本号、常量类型等等问题。</li>
+<li>元数据验证。对字节码描述的信息进行语义分析。比如一个类是否有父类、是不是抽象类等等。</li>
+<li>字节码验证。主要通过数据流分析和控制流分析，确定程序语义是合法的、符合逻辑的。比如保证类中的方法体在运行时不会危害虚拟机。</li>
+<li>符号引用验证。发生在虚拟机将符号引用转化为直接引用的时候，这个转化动作将在连接的第三阶段——解析阶段中发生。</li>
+</ul>
+</li>
+<li><strong>准备</strong><br>准备阶段是正式为类中定义的变量（即<strong>静态变量</strong>，被static修饰的变量）分配内存并设置类变量初始值的阶段。<br>也就是说，<strong>实例变量</strong>在这个阶段是不会被初始化的。例如：<blockquote>
+<p>public static int value = 123;<br>public int value = 123;</p>
+</blockquote>
+</li>
+</ol>
+<p>对于以上两行代码，只有第一行会执行并初始化值为0。赋值为123要等到类的初始化阶段才会执行。<br>然而也有特殊情况，比如，如果上述<code>value</code>字段被<code>final</code>修饰，那么在这一阶段将会被直接赋值为123。<br>4. <strong>解析</strong><br>解析阶段是Java虚拟机将常量池内的符号引用替换为直接引用的过程。JVM针对类或接口、字段、类方法、接口方法、方法类型、方法句柄和调用点限定符7类引用进行解析。<br>5. <strong>初始化</strong><br>到了这个阶段，Java虚拟机才真正开始执行类中编写的Java代码。在这个阶段，JVM会对类进行初始化。具体场景在前面<strong>类加载的时机</strong>已经描述。<br>6. <strong>使用</strong><br>JVM完成初始化后，便从入口方法开始执行代码。<br>7. <strong>卸载</strong><br>执行完程序代码后，JVM开始销毁创建的Class对象，最后JVM也退出内存。</p>
+<hr>
+<h3 id="举例"><a href="#举例" class="headerlink" title="举例"></a>举例</h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">GrandPa</span> </span>&#123;</span><br><span class="line">    &#123;</span><br><span class="line">        System.out.println(<span class="string">"grandpa代码块"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">static</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">"grandpa静态代码块"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">GrandPa</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"grandpa构造器"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Father</span> <span class="keyword">extends</span> <span class="title">GrandPa</span> </span>&#123;</span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">int</span> age = <span class="number">30</span>;</span><br><span class="line">    <span class="keyword">static</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">"father静态代码块"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    &#123;</span><br><span class="line">        System.out.println(<span class="string">"father代码块"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Father</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"father构造器"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Son</span> <span class="keyword">extends</span> <span class="title">Father</span> </span>&#123;</span><br><span class="line">    <span class="keyword">static</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">"son静态代码块"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Son</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"son构造器"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Test</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        System.out.println(Son.age);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>对于上述代码，输出是</p>
+<blockquote>
+<p>grandpa静态代码块<br>  father静态代码块<br>  30</p>
+</blockquote>
+<p>首先程序找到main方法，程序输出Son类的age类变量，但是由于Son类并没有直接定义这个变量，于是往父类找，触发了Father类初始化。<br>接着根据<strong>类加载的时机</strong>第3条<strong>当初始化类的时候，如果发现其父类还没有进行过初始化，则需要先触发其父类的初始化。</strong>所以又会触发GrandPa类的初始化。<br>最后再输出Father类中age的值30。</p>
+<p>再看一个例子</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Test</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        run();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> Test test = <span class="keyword">new</span> Test();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">"Test静态代码块"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    &#123;</span><br><span class="line">        System.out.println(<span class="string">"Test代码块"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Test</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"Test构造器"</span>);</span><br><span class="line">        System.out.println(<span class="string">"age: "</span> + age + <span class="string">" weight: "</span> + weight);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"Test静态方法"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> age = <span class="number">20</span>;</span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">int</span> weight = <span class="number">120</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>以上代码输出是</p>
+<blockquote>
+<p>Test代码块<br>  Test构造器<br>  age: 20 weight: 0<br>  Test静态代码块<br>  Test静态方法</p>
+</blockquote>
+<p>之前那个例子，main方法所在的类没有多余的代码，所以忽略了类的初始化。这个例子就不同了。<br>首先在准备阶段，会为类变量分配内存，初始化值。<code>test</code>实例变量被初始化为null，<code>weight</code>类变量初始化为0。<br>接着进入初始化阶段，首先初始化类构造器，也就是</p>
+<blockquote>
+<p>static Test test = new Test();<br>  static {<br>      System.out.println(“Test静态代码块”);<br>  }<br>  static int weight = 120;</p>
+</blockquote>
+<p>首先执行第一句，触发了类的实例化。于是执行对象构造器，也就是</p>
+<blockquote>
+<p>{<br>      System.out.println(“Test代码块”);<br>  }<br>  public Test() {<br>      System.out.println(“Test构造器”);<br>      System.out.println(“age: “ + age + “ weight: “ + weight);<br>  }<br>  int age = 20;</p>
+</blockquote>
+<p>对于以上代码，JVM先初始化代码块，然后初始化变量，最后是构造器。所以先打印了<code>Test代码块</code>，为<code>age</code>赋值20，然后打印<code>Test构造器</code>。<br>接着，打印<code>age: 20 weight: 0</code>，因为<code>age</code>已被赋值，但是<code>weight</code>目前只在准备阶段被赋了0。<br>执行完对象构造器，接着执行类构造器第二句，打印<code>Test静态代码块</code>，然后初始化<code>weight</code>为120。<br>此时已完成类的初始化，开始执行main方法，执行run方法输出<code>Test静态方法</code>。</p>
+<hr>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>Java中的静态变量和静态代码块在类加载的时候就会执行，执行顺序与代码书写顺序一致。然后执行对象构造器，构造函数最后执行，其余按书写顺序。如果子类继承了父类，会按以上顺序先进行父类的初始化。</p>
+<hr>
+<p>参见《深入理解 java 虚拟机》。</p>
+]]></content>
+      <categories>
+        <category>Java</category>
+        <category>JVM</category>
+      </categories>
+      <tags>
+        <tag>JVM</tag>
+        <tag>Java类加载</tag>
+      </tags>
+  </entry>
 </search>
