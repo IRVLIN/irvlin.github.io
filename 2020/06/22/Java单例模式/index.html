@@ -22,21 +22,20 @@
     var CONFIG = {"hostname":"irvlin.xyz","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"default"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="记录Leetcode一些面试题(6)">
+  <meta name="description" content="单例模式：在程序运行期间，某些类有且最多只有一个实例对象。本文记录几种不同的Java单例模式实现方案以及它们的优缺点。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Leetcode面试题(6)">
-<meta property="og:url" content="http://irvlin.xyz/2020/06/18/Leetcode%E9%9D%A2%E8%AF%95%E9%A2%98-6/index.html">
+<meta property="og:title" content="Java单例模式">
+<meta property="og:url" content="http://irvlin.xyz/2020/06/22/Java%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/index.html">
 <meta property="og:site_name" content="IRvLin的博客">
-<meta property="og:description" content="记录Leetcode一些面试题(6)">
+<meta property="og:description" content="单例模式：在程序运行期间，某些类有且最多只有一个实例对象。本文记录几种不同的Java单例模式实现方案以及它们的优缺点。">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2020-06-18T07:20:30.000Z">
-<meta property="article:modified_time" content="2020-06-18T07:37:09.204Z">
+<meta property="article:published_time" content="2020-06-22T12:36:39.000Z">
+<meta property="article:modified_time" content="2020-06-22T13:59:26.253Z">
 <meta property="article:author" content="Charispsychoma">
-<meta property="article:tag" content="算法">
-<meta property="article:tag" content="leetcode">
+<meta property="article:tag" content="Java单例模式">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="http://irvlin.xyz/2020/06/18/Leetcode%E9%9D%A2%E8%AF%95%E9%A2%98-6/">
+<link rel="canonical" href="http://irvlin.xyz/2020/06/22/Java%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/">
 
 
 <script id="page-configurations">
@@ -49,7 +48,7 @@
   };
 </script>
 
-  <title>Leetcode面试题(6) | IRvLin的博客</title>
+  <title>Java单例模式 | IRvLin的博客</title>
   
 
 
@@ -196,7 +195,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://irvlin.xyz/2020/06/18/Leetcode%E9%9D%A2%E8%AF%95%E9%A2%98-6/">
+    <link itemprop="mainEntityOfPage" href="http://irvlin.xyz/2020/06/22/Java%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.jpg">
@@ -209,7 +208,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          Leetcode面试题(6)
+          Java单例模式
         </h1>
 
         <div class="post-meta">
@@ -220,7 +219,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2020-06-18 15:20:30 / 修改时间：15:37:09" itemprop="dateCreated datePublished" datetime="2020-06-18T15:20:30+08:00">2020-06-18</time>
+              <time title="创建时间：2020-06-22 20:36:39 / 修改时间：21:59:26" itemprop="dateCreated datePublished" datetime="2020-06-22T20:36:39+08:00">2020-06-22</time>
             </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -228,7 +227,7 @@
               </span>
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/%E7%AE%97%E6%B3%95/" itemprop="url" rel="index"><span itemprop="name">算法</span></a>
+                  <a href="/categories/Java%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" itemprop="url" rel="index"><span itemprop="name">Java设计模式</span></a>
                 </span>
             </span>
 
@@ -248,8 +247,8 @@
       </span>
       <span class="post-meta-item-text">Valine：</span>
     
-    <a title="valine" href="/2020/06/18/Leetcode%E9%9D%A2%E8%AF%95%E9%A2%98-6/#valine-comments" itemprop="discussionUrl">
-      <span class="post-comments-count valine-comment-count" data-xid="/2020/06/18/Leetcode%E9%9D%A2%E8%AF%95%E9%A2%98-6/" itemprop="commentCount"></span>
+    <a title="valine" href="/2020/06/22/Java%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2020/06/22/Java%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/" itemprop="commentCount"></span>
     </a>
   </span>
   
@@ -264,11 +263,45 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>记录Leetcode一些面试题(6)</p>
+        <p>单例模式：在程序运行期间，某些类<strong>有且最多只有一个</strong>实例对象。<br>本文记录几种不同的Java单例模式实现方案以及它们的优缺点。</p>
 <a id="more"></a>
-<h4 id="16-05-阶乘尾数"><a href="#16-05-阶乘尾数" class="headerlink" title="16.05 阶乘尾数"></a>16.05 <a href="https://leetcode-cn.com/problems/factorial-zeros-lcci/" target="_blank" rel="noopener">阶乘尾数</a></h4><h5 id="描述"><a href="#描述" class="headerlink" title="描述"></a>描述</h5><p>设计一个算法，算出 n 阶乘有多少个尾随零。</p>
-<h5 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h5><p>0是由<code>*10</code>得到的，而10是由<code>2*5</code>得到的。<br>2的个数比5多，所以计算5的个数。每隔5个数就会出现一个5，隔25出现两个5，以此类推。<br>count = n / 5 + n / 5 / 5 + n / 5 / 5 / 5 + …</p>
-<h5 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h5><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">trailingZeroes</span><span class="params">(<span class="keyword">int</span> n)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> ans = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">while</span> (n &gt;= <span class="number">5</span>) &#123;</span><br><span class="line">            n /= <span class="number">5</span>;</span><br><span class="line">            ans += n;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> ans;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="饿汉模式"><a href="#饿汉模式" class="headerlink" title="饿汉模式"></a>饿汉模式</h3><p>饿汉模式，顾名思义，JVM在加载这个类的时候就会完成这个单例的创建。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Singleton</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 静态变量在类创建的时候就会初始化，设置成final类型直接创建实例</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Singleton instance = <span class="keyword">new</span> Singleton();</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">Singleton</span><span class="params">()</span> </span>&#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Singleton <span class="title">getInstance</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> instance;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>优点：线程安全，类加载只加载一次，即使是多线程也不会创建多个实例。<br>缺点：这种方法在用户调用<code>getInstance()</code>方法之前就已经完成了单例的创建。如果这个实例的创建需要依赖用户输入的参数或者配置文件，那么这种方法就不好使了。</p>
+<hr>
+<h3 id="懒汉模式"><a href="#懒汉模式" class="headerlink" title="懒汉模式"></a>懒汉模式</h3><p>为了解决上面的问题，有了懒汉模式。顾名思义就是在等用户真正需要用到这个实例的时候才创建。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Singleton</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Singleton instance;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">Singleton</span><span class="params">()</span> </span>&#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Singleton <span class="title">getInstance</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (instance == <span class="keyword">null</span>) &#123;</span><br><span class="line">            instance = <span class="keyword">new</span> Singleton();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> instance;</span><br><span class="line">    &#125;</span><br><span class="line"> &#125;</span><br><span class="line">`</span><br></pre></td></tr></table></figure>
+<p>优点：解决了懒汉模式的问题，也节省了空间，用户没调用这个类时不会创建实例。<br>缺点：线程不安全。当多个线程同时执行<code>getInstance()</code>方法时，会得到多个实例，违背了单例模式的要求。</p>
+<p>于是需要将<code>getInstance()</code>方法内部代码设置同步代码块(synchronized)。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Singleton</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">volatile</span> <span class="keyword">static</span> Singleton instance;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">Singleton</span><span class="params">()</span> </span>&#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Singleton <span class="title">getInstance</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="comment">// 2</span></span><br><span class="line">        <span class="keyword">if</span> (instance == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="comment">// 1</span></span><br><span class="line">            <span class="keyword">synchronized</span> (Singleton<span class="class">.<span class="keyword">class</span>) </span>&#123;</span><br><span class="line">                <span class="keyword">if</span> (instance == <span class="keyword">null</span>) &#123;</span><br><span class="line">                    instance = <span class="keyword">new</span> Singleton();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> instance;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol>
+<li>为什么要加双重锁呢？<br>因为多线程有可能同时执行到了<code>1</code>的位置，这时一个线程进入了同步代码块，创建完了实例，释放锁，于是又有一个线程进入了同步代码块，如果没有再次判断实例是否已经创建，此线程也会新创建一个实例，而这两个实例将不会是同一个实例。<br>只有在<code>synchronized</code>内部再次检查一次，才能保证单例。</li>
+<li>为什么实例要设置为<code>volatile</code>？<br>看起来代码已经很完美，但其实<code>instance = new Singleton();</code>这句话在执行时并非一个原子操作。它其实做了下面3件事情。<blockquote>
+<ol>
+<li>给instance分配内存</li>
+<li>调用SingleTon构造函数初始化成员变量</li>
+<li>将instance引用指向分配的内存空间</li>
+</ol>
+</blockquote>
+</li>
+</ol>
+<p>在JVM即时编译器中，存在着指令重排序的优化。也就是说，如果上述3个步骤可能的执行顺序是1-&gt;3-&gt;2。对于这种情况，如果一个线程执行到了这句话的1和3两个指令，由于<code>instance</code>已经被分配了内存，此时已不再是<code>null</code>了。这时如果有另一个线程执行到了<code>2</code>的位置，将会直接判定<code>instance</code>不为空，将其返回使用。然而这个<code>instance</code>还没有初始化呢，所以会造成错误。<br>而<code>volatile</code>可以防止指令重排序。它在变量的赋值操作后会设置一个<strong>内存屏障</strong>，读取操作只能等到上述3个指令执行完毕。也就是<strong>happens-before</strong>原则。</p>
+<p>优点：线程安全，懒汉式加载。<br>缺点：代码较复杂。</p>
+<hr>
+<h3 id="静态内部类"><a href="#静态内部类" class="headerlink" title="静态内部类"></a>静态内部类</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Singleton</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">SingletonHolder</span> </span>&#123;</span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Singleton INSTANCE = <span class="keyword">new</span> Singleton();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">Singleton</span><span class="params">()</span> </span>&#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> Singleton <span class="title">getInstance</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> SingletonHolder.INSTANCE;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当JVM在加载类的时候，是不会加载其内部类的。这点在《深入理解Java虚拟机》中有详细讲述。只有当这个类的某个静态变量被调用时才会触发类的初始化。<br>也就是执行了<code>getInstance()</code>方法时才会初始化<code>SingletonHolder</code>类。<br>由于JVM本身的机制已经保证了线程安全的问题，所以这是一个线程安全的、懒汉式加载的方法，且实现简单。</p>
+<hr>
+<h3 id="枚举"><a href="#枚举" class="headerlink" title="枚举"></a>枚举</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">enum</span> EnumSingleton &#123;</span><br><span class="line">    INSTANCE;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>用枚举实现实在太简单了，且枚举默认就是线程安全的。而且，其余几种方式其实都存在缺点：如果通过反射或者反序列化攻击，还是会生成多个实例。<br>利用枚举的特性，就可以完全规避这些问题。它是单例模式实现中的<strong>唯一</strong>一种不会被破坏的实现。</p>
+<hr>
+<h3 id="防止单例模式被破坏的方法"><a href="#防止单例模式被破坏的方法" class="headerlink" title="防止单例模式被破坏的方法"></a>防止单例模式被破坏的方法</h3><ol>
+<li>反射破坏的方式是通过强行调用私有的构造方法生成新的对象，所以只要在构造方法里面判断一下就好了。<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="title">Singleton</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (instance != <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(<span class="string">"实例已经存在，请通过getInstance()方法获取。"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li>如果单例模式实现了序列化接口，那么就可以通过反序列化进行破坏。所以可以不实现序列化接口，或者重写反序列化方法<code>readResolve()</code>，直接返回单例对象。<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> Object <span class="title">readResolve</span><span class="params">()</span> <span class="keyword">throws</span> ObjectStreamException </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> instance;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<hr>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>…</p>
+
     </div>
 
     
@@ -277,8 +310,7 @@
 
       <footer class="post-footer">
           <div class="post-tags">
-              <a href="/tags/%E7%AE%97%E6%B3%95/" rel="tag"># 算法</a>
-              <a href="/tags/leetcode/" rel="tag"># leetcode</a>
+              <a href="/tags/Java%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/" rel="tag"># Java单例模式</a>
           </div>
 
         
@@ -287,13 +319,10 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2020/06/09/Leetcode%E9%9D%A2%E8%AF%95%E9%A2%98-5/" rel="prev" title="Leetcode面试题(5)">
-      <i class="fa fa-chevron-left"></i> Leetcode面试题(5)
+    <a href="/2020/06/22/Java%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8/" rel="prev" title="Java类加载器">
+      <i class="fa fa-chevron-left"></i> Java类加载器
     </a></div>
-      <div class="post-nav-item">
-    <a href="/2020/06/20/Java%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6/" rel="next" title="Java类加载机制">
-      Java类加载机制 <i class="fa fa-chevron-right"></i>
-    </a></div>
+      <div class="post-nav-item"></div>
     </div>
       </footer>
     
@@ -353,7 +382,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#16-05-阶乘尾数"><span class="nav-number">1.</span> <span class="nav-text">16.05 阶乘尾数</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#描述"><span class="nav-number">1.1.</span> <span class="nav-text">描述</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#思路"><span class="nav-number">1.2.</span> <span class="nav-text">思路</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#实现"><span class="nav-number">1.3.</span> <span class="nav-text">实现</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#饿汉模式"><span class="nav-number">1.</span> <span class="nav-text">饿汉模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#懒汉模式"><span class="nav-number">2.</span> <span class="nav-text">懒汉模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#静态内部类"><span class="nav-number">3.</span> <span class="nav-text">静态内部类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#枚举"><span class="nav-number">4.</span> <span class="nav-text">枚举</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#防止单例模式被破坏的方法"><span class="nav-number">5.</span> <span class="nav-text">防止单例模式被破坏的方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#总结"><span class="nav-number">6.</span> <span class="nav-text">总结</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 

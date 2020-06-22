@@ -558,4 +558,53 @@
         <tag>Java类加载</tag>
       </tags>
   </entry>
+  <entry>
+    <title>Java单例模式</title>
+    <url>/2020/06/22/Java%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/</url>
+    <content><![CDATA[<p>单例模式：在程序运行期间，某些类<strong>有且最多只有一个</strong>实例对象。<br>本文记录几种不同的Java单例模式实现方案以及它们的优缺点。</p>
+<a id="more"></a>
+<h3 id="饿汉模式"><a href="#饿汉模式" class="headerlink" title="饿汉模式"></a>饿汉模式</h3><p>饿汉模式，顾名思义，JVM在加载这个类的时候就会完成这个单例的创建。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Singleton</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 静态变量在类创建的时候就会初始化，设置成final类型直接创建实例</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Singleton instance = <span class="keyword">new</span> Singleton();</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">Singleton</span><span class="params">()</span> </span>&#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Singleton <span class="title">getInstance</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> instance;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>优点：线程安全，类加载只加载一次，即使是多线程也不会创建多个实例。<br>缺点：这种方法在用户调用<code>getInstance()</code>方法之前就已经完成了单例的创建。如果这个实例的创建需要依赖用户输入的参数或者配置文件，那么这种方法就不好使了。</p>
+<hr>
+<h3 id="懒汉模式"><a href="#懒汉模式" class="headerlink" title="懒汉模式"></a>懒汉模式</h3><p>为了解决上面的问题，有了懒汉模式。顾名思义就是在等用户真正需要用到这个实例的时候才创建。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Singleton</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Singleton instance;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">Singleton</span><span class="params">()</span> </span>&#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Singleton <span class="title">getInstance</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (instance == <span class="keyword">null</span>) &#123;</span><br><span class="line">            instance = <span class="keyword">new</span> Singleton();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> instance;</span><br><span class="line">    &#125;</span><br><span class="line"> &#125;</span><br><span class="line">`</span><br></pre></td></tr></table></figure>
+<p>优点：解决了懒汉模式的问题，也节省了空间，用户没调用这个类时不会创建实例。<br>缺点：线程不安全。当多个线程同时执行<code>getInstance()</code>方法时，会得到多个实例，违背了单例模式的要求。</p>
+<p>于是需要将<code>getInstance()</code>方法内部代码设置同步代码块(synchronized)。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Singleton</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">volatile</span> <span class="keyword">static</span> Singleton instance;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">Singleton</span><span class="params">()</span> </span>&#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Singleton <span class="title">getInstance</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="comment">// 2</span></span><br><span class="line">        <span class="keyword">if</span> (instance == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="comment">// 1</span></span><br><span class="line">            <span class="keyword">synchronized</span> (Singleton<span class="class">.<span class="keyword">class</span>) </span>&#123;</span><br><span class="line">                <span class="keyword">if</span> (instance == <span class="keyword">null</span>) &#123;</span><br><span class="line">                    instance = <span class="keyword">new</span> Singleton();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> instance;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol>
+<li>为什么要加双重锁呢？<br>因为多线程有可能同时执行到了<code>1</code>的位置，这时一个线程进入了同步代码块，创建完了实例，释放锁，于是又有一个线程进入了同步代码块，如果没有再次判断实例是否已经创建，此线程也会新创建一个实例，而这两个实例将不会是同一个实例。<br>只有在<code>synchronized</code>内部再次检查一次，才能保证单例。</li>
+<li>为什么实例要设置为<code>volatile</code>？<br>看起来代码已经很完美，但其实<code>instance = new Singleton();</code>这句话在执行时并非一个原子操作。它其实做了下面3件事情。<blockquote>
+<ol>
+<li>给instance分配内存</li>
+<li>调用SingleTon构造函数初始化成员变量</li>
+<li>将instance引用指向分配的内存空间</li>
+</ol>
+</blockquote>
+</li>
+</ol>
+<p>在JVM即时编译器中，存在着指令重排序的优化。也就是说，如果上述3个步骤可能的执行顺序是1-&gt;3-&gt;2。对于这种情况，如果一个线程执行到了这句话的1和3两个指令，由于<code>instance</code>已经被分配了内存，此时已不再是<code>null</code>了。这时如果有另一个线程执行到了<code>2</code>的位置，将会直接判定<code>instance</code>不为空，将其返回使用。然而这个<code>instance</code>还没有初始化呢，所以会造成错误。<br>而<code>volatile</code>可以防止指令重排序。它在变量的赋值操作后会设置一个<strong>内存屏障</strong>，读取操作只能等到上述3个指令执行完毕。也就是<strong>happens-before</strong>原则。</p>
+<p>优点：线程安全，懒汉式加载。<br>缺点：代码较复杂。</p>
+<hr>
+<h3 id="静态内部类"><a href="#静态内部类" class="headerlink" title="静态内部类"></a>静态内部类</h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Singleton</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">SingletonHolder</span> </span>&#123;</span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Singleton INSTANCE = <span class="keyword">new</span> Singleton();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">Singleton</span><span class="params">()</span> </span>&#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> Singleton <span class="title">getInstance</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> SingletonHolder.INSTANCE;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当JVM在加载类的时候，是不会加载其内部类的。这点在《深入理解Java虚拟机》中有详细讲述。只有当这个类的某个静态变量被调用时才会触发类的初始化。<br>也就是执行了<code>getInstance()</code>方法时才会初始化<code>SingletonHolder</code>类。<br>由于JVM本身的机制已经保证了线程安全的问题，所以这是一个线程安全的、懒汉式加载的方法，且实现简单。</p>
+<hr>
+<h3 id="枚举"><a href="#枚举" class="headerlink" title="枚举"></a>枚举</h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">enum</span> EnumSingleton &#123;</span><br><span class="line">    INSTANCE;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>用枚举实现实在太简单了，且枚举默认就是线程安全的。而且，其余几种方式其实都存在缺点：如果通过反射或者反序列化攻击，还是会生成多个实例。<br>利用枚举的特性，就可以完全规避这些问题。它是单例模式实现中的<strong>唯一</strong>一种不会被破坏的实现。</p>
+<hr>
+<h3 id="防止单例模式被破坏的方法"><a href="#防止单例模式被破坏的方法" class="headerlink" title="防止单例模式被破坏的方法"></a>防止单例模式被破坏的方法</h3><ol>
+<li>反射破坏的方式是通过强行调用私有的构造方法生成新的对象，所以只要在构造方法里面判断一下就好了。<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="title">Singleton</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (instance != <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(<span class="string">"实例已经存在，请通过getInstance()方法获取。"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li>如果单例模式实现了序列化接口，那么就可以通过反序列化进行破坏。所以可以不实现序列化接口，或者重写反序列化方法<code>readResolve()</code>，直接返回单例对象。<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> Object <span class="title">readResolve</span><span class="params">()</span> <span class="keyword">throws</span> ObjectStreamException </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> instance;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<hr>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>…</p>
+]]></content>
+      <categories>
+        <category>Java设计模式</category>
+      </categories>
+      <tags>
+        <tag>Java单例模式</tag>
+      </tags>
+  </entry>
 </search>
