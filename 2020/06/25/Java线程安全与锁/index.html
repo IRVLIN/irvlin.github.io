@@ -22,23 +22,23 @@
     var CONFIG = {"hostname":"irvlin.xyz","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"default"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="Java类加载阶段中的“通过一个类的全限定名来获取描述该类的二进制字节流”这个动作放到Java虚拟机外部去实现，以便让应用程序自己决定如何去获取所需的类。实现这个动作的代码被称为“类加载器”（Class Loader）。">
+  <meta name="description" content="本文记录Java线程安全有关问题以及Java的各种锁。">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Java类加载器">
-<meta property="og:url" content="http://irvlin.xyz/2020/06/22/Java%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8/index.html">
+<meta property="og:title" content="Java线程安全与锁">
+<meta property="og:url" content="http://irvlin.xyz/2020/06/25/Java%E7%BA%BF%E7%A8%8B%E5%AE%89%E5%85%A8%E4%B8%8E%E9%94%81/index.html">
 <meta property="og:site_name" content="IRvLin的博客">
-<meta property="og:description" content="Java类加载阶段中的“通过一个类的全限定名来获取描述该类的二进制字节流”这个动作放到Java虚拟机外部去实现，以便让应用程序自己决定如何去获取所需的类。实现这个动作的代码被称为“类加载器”（Class Loader）。">
+<meta property="og:description" content="本文记录Java线程安全有关问题以及Java的各种锁。">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="http://irvlin.xyz/2020/06/22/Java%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8/%E5%8F%8C%E4%BA%B2%E5%A7%94%E6%B4%BE%E6%A8%A1%E5%9E%8B.png">
-<meta property="article:published_time" content="2020-06-22T05:20:15.000Z">
-<meta property="article:modified_time" content="2020-06-22T08:41:51.165Z">
+<meta property="og:image" content="http://irvlin.xyz/2020/06/25/Java%E7%BA%BF%E7%A8%8B%E5%AE%89%E5%85%A8%E4%B8%8E%E9%94%81/Java%E4%B8%BB%E6%B5%81%E9%94%81.png">
+<meta property="article:published_time" content="2020-06-25T14:57:37.000Z">
+<meta property="article:modified_time" content="2020-06-30T19:19:54.752Z">
 <meta property="article:author" content="Charispsychoma">
-<meta property="article:tag" content="JVM">
-<meta property="article:tag" content="Java类加载">
+<meta property="article:tag" content="多线程">
+<meta property="article:tag" content="Java锁">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://irvlin.xyz/2020/06/22/Java%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8/%E5%8F%8C%E4%BA%B2%E5%A7%94%E6%B4%BE%E6%A8%A1%E5%9E%8B.png">
+<meta name="twitter:image" content="http://irvlin.xyz/2020/06/25/Java%E7%BA%BF%E7%A8%8B%E5%AE%89%E5%85%A8%E4%B8%8E%E9%94%81/Java%E4%B8%BB%E6%B5%81%E9%94%81.png">
 
-<link rel="canonical" href="http://irvlin.xyz/2020/06/22/Java%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8/">
+<link rel="canonical" href="http://irvlin.xyz/2020/06/25/Java%E7%BA%BF%E7%A8%8B%E5%AE%89%E5%85%A8%E4%B8%8E%E9%94%81/">
 
 
 <script id="page-configurations">
@@ -51,7 +51,7 @@
   };
 </script>
 
-  <title>Java类加载器 | IRvLin的博客</title>
+  <title>Java线程安全与锁 | IRvLin的博客</title>
   
 
 
@@ -198,7 +198,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://irvlin.xyz/2020/06/22/Java%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8/">
+    <link itemprop="mainEntityOfPage" href="http://irvlin.xyz/2020/06/25/Java%E7%BA%BF%E7%A8%8B%E5%AE%89%E5%85%A8%E4%B8%8E%E9%94%81/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.jpg">
@@ -211,7 +211,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          Java类加载器
+          Java线程安全与锁
         </h1>
 
         <div class="post-meta">
@@ -220,21 +220,27 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2020-06-22 13:20:15 / 修改时间：16:41:51" itemprop="dateCreated datePublished" datetime="2020-06-22T13:20:15+08:00">2020-06-22</time>
+              <time title="创建时间：2020-06-25 22:57:37" itemprop="dateCreated datePublished" datetime="2020-06-25T22:57:37+08:00">2020-06-25</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-07-01 03:19:54" itemprop="dateModified" datetime="2020-07-01T03:19:54+08:00">2020-07-01</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
               </span>
               <span class="post-meta-item-text">分类于</span>
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                  <a href="/categories/%E5%A4%9A%E7%BA%BF%E7%A8%8B/" itemprop="url" rel="index"><span itemprop="name">多线程</span></a>
                 </span>
                   ，
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Java/JVM/" itemprop="url" rel="index"><span itemprop="name">JVM</span></a>
+                  <a href="/categories/%E5%A4%9A%E7%BA%BF%E7%A8%8B/Java%E9%94%81/" itemprop="url" rel="index"><span itemprop="name">Java锁</span></a>
                 </span>
             </span>
 
@@ -254,8 +260,8 @@
       </span>
       <span class="post-meta-item-text">Valine：</span>
     
-    <a title="valine" href="/2020/06/22/Java%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8/#valine-comments" itemprop="discussionUrl">
-      <span class="post-comments-count valine-comment-count" data-xid="/2020/06/22/Java%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8/" itemprop="commentCount"></span>
+    <a title="valine" href="/2020/06/25/Java%E7%BA%BF%E7%A8%8B%E5%AE%89%E5%85%A8%E4%B8%8E%E9%94%81/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2020/06/25/Java%E7%BA%BF%E7%A8%8B%E5%AE%89%E5%85%A8%E4%B8%8E%E9%94%81/" itemprop="commentCount"></span>
     </a>
   </span>
   
@@ -270,26 +276,41 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>Java类加载阶段中的“通过一个类的全限定名来获取描述该类的二进制字节流”这个动作放到Java虚拟机外部去实现，以便让应用程序自己决定如何去获取所需的类。实现这个动作的代码被称为“类加载器”（Class Loader）。</p>
+        <p>本文记录Java线程安全有关问题以及Java的各种锁。</p>
 <a id="more"></a>
-<h3 id="类与类加载器"><a href="#类与类加载器" class="headerlink" title="类与类加载器"></a>类与类加载器</h3><p>Java类加载器就是在类加载这个阶段通过类的全限定名获取定义此类的二进制字节流。对于任意一个类，都必须由加载它的类加载器和这个类本身一起共同确立其在Java虚拟机中的唯一性。<br>也就是说，比较两个类是否相等，只有在这两个类是由同一个类加载器加载的前提下才有意义。否则，即使这两个类来源于同一个Class文件，被同一个Java虚拟机加载，只要加载它们的类加载器不同，那这两个类就必定不相等。</p>
-<hr>
-<h3 id="双亲委派模型"><a href="#双亲委派模型" class="headerlink" title="双亲委派模型"></a>双亲委派模型</h3><p>自从JDK1.2以来，Java一直保持着<strong>三层类加载器</strong>、<strong>双亲委派的类加载结构</strong>。<br>绝大多数Java程序都会使用到以下3个系统提供的类加载器来进行加载。</p>
+<h3 id="线程安全"><a href="#线程安全" class="headerlink" title="线程安全"></a>线程安全</h3><p>Java线程安全可按照安全程度排序，主要可分为5类：不可变、绝对线程安全、相对线程安全、线程兼容和线程对立。</p>
 <ol>
-<li>启动类加载器。这个类加载器负责加载存放在<JAVA_HOME>\lib目录，或者被-Xbootclasspath参数所指定的路径中存放的，而且是Java虚拟机能够识别的（按照文件名识别，如rt.jar、tools.jar，名字不符合的类库即使放在lib目录中也不会被加载）类库加载到虚拟机的内存中。</li>
-<li>扩展类加载器。它负责加载<JAVA_HOME>\lib\ext目录中，或者被java.ext.dirs系统变量所指定的路径中所有的类库。</li>
-<li>应用程序类加载器。它负责加载用户类路径（ClassPath）上所有的类库。如果应用程序中没有自定义过自己的类加载器，一般情况下这个就是程序中默认的类加载器。</li>
-</ol>
-<p>这三层类加载器的协作关系通常如下图所示，一般被称为<strong>双亲委派模型</strong>。<br><img src="%E5%8F%8C%E4%BA%B2%E5%A7%94%E6%B4%BE%E6%A8%A1%E5%9E%8B.png" alt=""><br>双亲委派模型要求除了顶层的启动类加载器外，其余的类加载器都应有自己的父类加载器。不过这里类加载器之间的父子关系一般不是以继承（Inheritance）的关系来实现的，而是通常使用组合（Composition）关系来复用父加载器的代码。<br>其工作原理是：如果一个类加载器收到了类加载的请求，它首先不会自己去尝试加载这个类，而是把这个请求委派给父类加载器去完成，每一个层次的类加载器都是如此，因此所有的加载请求最终都应该传送到最顶层的启动类加载器中，只有当父加载器反馈自己无法完成这个加载请求（它的搜索范围中没有找到所需的类）时，子加载器才会尝试自己去完成加载。<br>这种工作机制的好处是：可以提高系统的安全性。例如Object类始终是由最上层加载器加载的，如果用户自定义了一个Object类，是不会被最顶层的启动类加载器加载运行的。这也防止了恶意代码对系统的破坏。</p>
-<hr>
-<h3 id="破坏双亲委派模型"><a href="#破坏双亲委派模型" class="headerlink" title="破坏双亲委派模型"></a>破坏双亲委派模型</h3><p>然而，双亲委派模型并不是一种具有强制约束性的模型。这意味着它是可以被”破坏”的。<br>那么为什么要破坏双亲委派模型呢？例如JDBC，原生的JDBC中Driver驱动只是一个接口，具体的实现是由不同的数据库进行实现的，比如mysql有自己的实现，oracle也有自己的实现。这时就需要Driver动态的去加载不同数据库的实现，然而由于Driver是由启动类加载器加载的，它并不能加载到用户具体的实现，所以这时就需要打破双亲委派模型，由父类加载器去请求子类加载器完成类加载。<br>此时引入了<strong>线程上下文类加载器</strong>，把原本需要由启动类加载器加载的类，委派给了应用程序类加载器进行加载。</p>
-<p>如果用户想要自定义类加载器，有两种方法。</p>
-<ol>
-<li>重写ClassLoader中的loadClass()方法，不过这将破坏双亲委派的模型。</li>
-<li>重写findClass()方法。这个方法不会破坏双亲委派模型。这也是Java预留给开发者的方法。</li>
+<li>不可变<br>JDK 5以后，不可变对象一定是线程安全的，无论是对象的方法实现还是方法的调用者，都不需要再进行任何线程安全保障措施。只要一个不可变的对象被正确地构建出来（即没有发生this引用逃逸的情况），那其外部的可见状态永远都不会改变，永远都不会看到它在多个线程之中处于不一致的状态。”不可变”带来的安全性是最直接、最纯粹的。<br>如果多线程共享的数据是一个基本数据类型，那么只要在定义时使用<code>final</code>关键字修饰它就可以保证它是不可变的。如果共享数据是一个对象，由于Java语言目前暂时还没有提供值类型的支持，那就需要对象自行保证其行为不会对其状态产生任何影响才行。例如Java的<code>Integer</code>类，其内部状态变量value就是定义为<code>final</code>来保障状态不变。</li>
+<li>绝对线程安全<br>绝对线程安全的定义其实是非常严格的，要求<strong>不管运行时环境如何，调用者都不需要任何额外的同步措施</strong>。其实在Java API中标注自己是线程安全的类，大多数都不是绝对线程安全的，依然需要额外加同步措施。</li>
+<li>相对线程安全<br>相对线程安全就是我们通常意义上所讲的线程安全，它需要保证对这个对象单次的操作是线程安全的，我们在调用的时候不需要进行额外的保障措施，但是对于一些特定顺序的连续调用，就可能需要在调用端使用额外的同步手段来保证调用的正确性。</li>
+<li>线程兼容<br>线程兼容是指对象本身并不是线程安全的，但是可以通过在调用端正确地使用同步手段来保证对象在并发环境中可以安全地使用。Java类库API中大部分的类都是线程兼容的。</li>
+<li>线程对立<br>线程对立是指不管调用端是否采取了同步措施，都无法在多线程环境中并发使用代码。由于Java语言天生就支持多线程的特性，线程对立这种排斥多线程的代码是很少出现的。</li>
 </ol>
 <hr>
-<p>参见《深入理解 java 虚拟机》。</p>
+<h3 id="线程安全的实现"><a href="#线程安全的实现" class="headerlink" title="线程安全的实现"></a>线程安全的实现</h3><h4 id="互斥同步"><a href="#互斥同步" class="headerlink" title="互斥同步"></a>互斥同步</h4><p>同步是指在多个线程并发访问共享数据时，保证共享数据在同一个时刻只被一条（或者是一些，当使用信号量的时候）线程使用。而互斥是实现同步的一种手段。因此在“互斥同步”这四个字里面，互斥是因，同步是果；互斥是方法，同步是目的。<br>Java中，最简单的互斥同步手段就是使用<code>synchronized</code>关键字。它对于一条线程来说是<strong>可重入的</strong>，且被synchronized修饰的同步块在持有锁的线程执行完毕并释放锁之前，会无条件地阻塞后面其他线程的进入。<br>但<code>synchronized</code>有局限性，它是一个重量级操作，在主流Java虚拟机实现中，Java的线程是映射到操作系统的原生内核线程之上的，如果要阻塞或唤醒一条线程，则需要操作系统来帮忙完成，这就不可避免地陷入用户态到核心态的转换中，进行这种状态转换需要耗费很多的处理器时间。</p>
+<p>所以自JDK 5起，Java类库中新提供了<code>java.util.concurrent</code>包，其中的<code>Lock</code>接口成了一种全新的互斥同步手段。<br><strong>重入锁</strong>（ReentrantLock）是<code>Lock</code>接口的一种常见实现，它也是<strong>可重入的</strong>，对比<code>synchronized</code>它增加了以下几种功能：</p>
+<ol>
+<li>等待可中断：是指当持有锁的线程长期不释放锁的时候，正在等待的线程可以选择放弃等待，改为处理其他事情。</li>
+<li>公平锁：是指多个线程在等待同一个锁时，必须按照<strong>申请锁的时间顺序</strong>来依次获得锁。不过一旦使用了公平锁，将会导致<code>ReentrantLock</code>的性能急剧下降，会明显影响吞吐量。</li>
+<li>绑定多个条件：是指一个<code>ReentrantLock</code>对象可以同时绑定多个Condition对象。在<code>synchronized</code>中，锁对象的<code>wait()</code>跟它的<code>notify()</code>或者<code>notifyAll()</code>方法配合可以实现一个隐含的条件，如果要和多于一个的条件关联的时候，就不得不额外添加一个锁；而<code>ReentrantLock</code>则无须这样做，多次调用<code>newCondition()</code>方法即可。</li>
+</ol>
+<p><code>Lock</code>需要确保在<code>finally</code>块中释放锁，否则一旦受同步保护的代码块中抛出异常，则有可能永远不会释放持有的锁。而使用<code>synchronized</code>则可以由JVM来确保即使出现异常，锁也能自动释放。<br>在JDK 5时代，<code>Lock</code>在性能上优于<code>synchronized</code>，然而由于后续Java团队的优化，现在两者在性能上基本持平，所以性能已不是选择的决定因素。</p>
+<h4 id="非阻塞同步"><a href="#非阻塞同步" class="headerlink" title="非阻塞同步"></a>非阻塞同步</h4><p>互斥同步由于线程的阻塞和唤醒带来的性能开销，被称为<strong>阻塞同步</strong>。互斥同步属于<strong>悲观</strong>的并发策略，也就是悲观地认为只要不加同步措施，就一定会出现问题，无论共享的数据是否真的会出现竞争，都进行加锁。<br>相应的，还有一种选择则是基于冲突检测的<strong>乐观</strong>并发策略。也就是说，不管风险先进行操作，如果没有其他线程争用共享数据，那操作就直接成功了；如果共享的数据的确被争用，产生了冲突，那再进行其他的补偿措施，最常用的补偿措施是不断地重试，直到出现没有竞争的共享数据为止。这种同步操作被称为<strong>非阻塞同步</strong>。<br>对于非阻塞同步，一个重要的指令就是<strong>CAS</strong>指令。它需要进行3个操作，分别是<strong>内存位置</strong>（在Java中可以简单地理解为变量的内存地址，用V表示）、<strong>旧的预期值</strong>（用A表示）和<strong>准备设置的新值</strong>（用B表示）。CAS指令执行时，当且仅当V符合A时，处理器才会用B更新V的值，否则它就不执行更新。但是，不管是否更新了V的值，都会返回V的旧值，上述的处理过程是一个原子操作，执行期间不会被其他线程中断。<br>java中有一个<code>AtomicInteger</code>类，用它代替int后，即可实现CAS操作避免阻塞同步。其中的<code>incrementAndGet()</code>方法在一个无限循环中，不断尝试将一个比当前值大一的新值赋值给自己。如果失败了，那说明在执行CAS操作的时候，旧值已经发生改变，于是再次循环进行下一次操作，直到设置成功为止。<br>CAS看起来很美好，但其实有一个逻辑漏洞：例如一个变量V初次读取的时候是A值，并且在准备赋值的时候检查到它仍然为A值，CAS会认为它没有被改变过，但其实这个变量的值有可能在过程中被改成了B，又改回为A。这个漏洞成为CAS操作的<strong>ABA问题</strong>。为了解决这个问题，有一个带有标记的原子引用类<code>AtomicStampedReference</code>，它可以通过控制变量值的版本来保证CAS的正确性。不过由于ABA问题并不会影响程序并发的正确性，所以问题不大。</p>
+<h4 id="无同步方案"><a href="#无同步方案" class="headerlink" title="无同步方案"></a>无同步方案</h4><p>如果一个方法不涉及共享数据，那自然就不需要加任何同步措施。<br>如果一段代码中所需要的数据必须与其他代码共享，那就看看这些共享数据的代码是否能保证在同一个线程中执行。如果能保证，我们就可以把共享数据的可见范围限制在同一个线程之内，这样，无须同步也能保证线程之间不出现数据争用的问题。<br>Java中，如果一个变量只要被某个线程独享，我们可通过<code>java.lang.ThreadLocal</code>类来实现线程本地存储的功能。</p>
+<blockquote>
+<p>每一个线程的Thread对象中都有一个ThreadLocalMap对象，这个对象存储了一组以ThreadLocal.threadLocalHashCode为键，以本地线程变量为值的K-V值对，ThreadLocal对象就是当前线程的ThreadLocalMap的访问入口，每一个ThreadLocal对象都包含了一个独一无二的threadLocalHashCode值，使用这个值就可以在线程K-V值对中找回对应的本地线程变量。</p>
+</blockquote>
+<hr>
+<h3 id="锁"><a href="#锁" class="headerlink" title="锁"></a>锁</h3><h4 id="自旋锁与自适应自旋锁"><a href="#自旋锁与自适应自旋锁" class="headerlink" title="自旋锁与自适应自旋锁"></a>自旋锁与自适应自旋锁</h4><p>自旋锁在JDK 1.4.2就已经引入，直到JDK 6才默认开启。它可以使线程一直处于<strong>RUNNABLE</strong>状态，循环检测锁标志位，避免了线程切换的开销。但它会一直占用CPU资源却什么也不做，如果锁被其他线程占用的时间很长，则会造成大量资源的浪费。因此可以设置自旋的次数(默认为十)，如果自旋超过了这个次数，就以传统的方式挂起线程。<br>在JDK 6中，引入了<strong>自适应自旋锁</strong>，对自旋锁进行了优化。自适应意味着自旋的时间不再固定，而是由前一次在同一个锁的自旋时间以及锁的拥有者的状态来决定的。<br>如果在同一个锁对象上，自旋等待刚刚成功获得过锁，并且持有锁的线程正在运行中，那么JVM会认为这次自旋也很有可能再次成功，就会允许自旋等待持续相对更长的时间。反之以后获取这个锁则有可能直接忽略掉自旋过程，避免浪费处理器资源。</p>
+<h4 id="独享锁、共享锁"><a href="#独享锁、共享锁" class="headerlink" title="独享锁、共享锁"></a>独享锁、共享锁</h4><p><code>ReentrantLock</code>和<code>synchronized</code>都是独享锁，<code>ReadWriteLock</code>的读锁是共享锁，写锁是独享锁。</p>
+<h4 id="分段锁"><a href="#分段锁" class="headerlink" title="分段锁"></a>分段锁</h4><p>一种锁的设计策略。对于<code>ConcurrentHashMap</code>而言并发的实现就是通过分段锁的策略实现高效并发。要put元素时并不对整个HashMap加锁，而是先通过<code>hashcode</code>确定其分段，再对那个分段进行加锁。所以多线程put元素可以实现真正的并行插入。</p>
+<h4 id="可中断锁"><a href="#可中断锁" class="headerlink" title="可中断锁"></a>可中断锁</h4><p><code>synchronized</code>是不可中断的，<code>Lock</code>是可中断的。</p>
+<h4 id="锁消除"><a href="#锁消除" class="headerlink" title="锁消除"></a>锁消除</h4><p>如果判断到一段代码中，在堆上的所有数据都不会逃逸出去被其他线程访问到，那就可以把它们当作栈上数据对待，认为它们是线程私有的，同步加锁自然就无须再进行。<br>例如<code>StringBuffer</code>类，如果在单线程进行<code>append()</code>方法，编译器会自动消除锁，转化为非线程安全的<code>StringBuilder</code>类进行操作，提高效率。</p>
+<h4 id="锁粗化"><a href="#锁粗化" class="headerlink" title="锁粗化"></a>锁粗化</h4><p>平时在写代码时，总是推荐将同步块的范围尽量缩小。但如果一系列连续的操作都是针对同一对象反复加锁和解锁，那么效率将会下降。<br>例如对<code>StringBuilder</code>类连续调用<code>append()</code>方法，加锁范围将会粗话到整个操作序列外部，这样只需要加锁一次即可。</p>
+<h4 id="偏向锁"><a href="#偏向锁" class="headerlink" title="偏向锁"></a>偏向锁</h4><p>在无竞争的情况下把整个同步消除，连CAS都不做。<br>偏向锁意思这个锁会偏向第一个获得它的线程。如果这个锁一直没有被其他锁获取，那么持有这个锁的线程将永远不需要同步。一旦另一个线程获取该锁，偏向模式解除，后续的同步操作按照轻量级锁一样去执行。</p>
+<h4 id="轻量级锁"><a href="#轻量级锁" class="headerlink" title="轻量级锁"></a>轻量级锁</h4><p>偏向锁解除偏向模式后就会升级为轻量级锁。<br>若当前只有一个等待线程，则该线程通过自旋进行等待。但是当自旋超过一定的次数，或者一个线程在持有锁，一个在自旋，又有第三个来访时，轻量级锁升级为重量级锁，等待的线程全部进入阻塞状态。</p>
+<hr>
+<p>总结：<br><img src="Java%E4%B8%BB%E6%B5%81%E9%94%81.png" alt=""><br>参见《深入理解Java虚拟机》。</p>
 
     </div>
 
@@ -299,8 +320,8 @@
 
       <footer class="post-footer">
           <div class="post-tags">
-              <a href="/tags/JVM/" rel="tag"># JVM</a>
-              <a href="/tags/Java%E7%B1%BB%E5%8A%A0%E8%BD%BD/" rel="tag"># Java类加载</a>
+              <a href="/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/" rel="tag"># 多线程</a>
+              <a href="/tags/Java%E9%94%81/" rel="tag"># Java锁</a>
           </div>
 
         
@@ -309,13 +330,10 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2020/06/20/Java%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6/" rel="prev" title="Java类加载机制">
-      <i class="fa fa-chevron-left"></i> Java类加载机制
+    <a href="/2020/06/24/Java%E5%86%85%E5%AD%98%E5%8C%BA%E5%9F%9F%E4%B8%8E%E6%A8%A1%E5%9E%8B/" rel="prev" title="Java内存区域与模型">
+      <i class="fa fa-chevron-left"></i> Java内存区域与模型
     </a></div>
-      <div class="post-nav-item">
-    <a href="/2020/06/22/Java%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/" rel="next" title="Java单例模式">
-      Java单例模式 <i class="fa fa-chevron-right"></i>
-    </a></div>
+      <div class="post-nav-item"></div>
     </div>
       </footer>
     
@@ -375,7 +393,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#类与类加载器"><span class="nav-number">1.</span> <span class="nav-text">类与类加载器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#双亲委派模型"><span class="nav-number">2.</span> <span class="nav-text">双亲委派模型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#破坏双亲委派模型"><span class="nav-number">3.</span> <span class="nav-text">破坏双亲委派模型</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#线程安全"><span class="nav-number">1.</span> <span class="nav-text">线程安全</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#线程安全的实现"><span class="nav-number">2.</span> <span class="nav-text">线程安全的实现</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#互斥同步"><span class="nav-number">2.1.</span> <span class="nav-text">互斥同步</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#非阻塞同步"><span class="nav-number">2.2.</span> <span class="nav-text">非阻塞同步</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#无同步方案"><span class="nav-number">2.3.</span> <span class="nav-text">无同步方案</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#锁"><span class="nav-number">3.</span> <span class="nav-text">锁</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#自旋锁与自适应自旋锁"><span class="nav-number">3.1.</span> <span class="nav-text">自旋锁与自适应自旋锁</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#独享锁、共享锁"><span class="nav-number">3.2.</span> <span class="nav-text">独享锁、共享锁</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#分段锁"><span class="nav-number">3.3.</span> <span class="nav-text">分段锁</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#可中断锁"><span class="nav-number">3.4.</span> <span class="nav-text">可中断锁</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#锁消除"><span class="nav-number">3.5.</span> <span class="nav-text">锁消除</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#锁粗化"><span class="nav-number">3.6.</span> <span class="nav-text">锁粗化</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#偏向锁"><span class="nav-number">3.7.</span> <span class="nav-text">偏向锁</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#轻量级锁"><span class="nav-number">3.8.</span> <span class="nav-text">轻量级锁</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
