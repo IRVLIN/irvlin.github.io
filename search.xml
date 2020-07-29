@@ -1,52 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>Java单例模式</title>
-    <url>/2020/06/22/Java%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/</url>
-    <content><![CDATA[<p>单例模式：在程序运行期间，某些类<strong>有且最多只有一个</strong>实例对象。<br>本文记录几种不同的Java单例模式实现方案以及它们的优缺点。</p>
+    <title>HashMap底层实现原理</title>
+    <url>/2020/07/28/HashMap%E5%BA%95%E5%B1%82%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86/</url>
+    <content><![CDATA[<p>记录HashMap底层实现原理。(基于JDK 1.8)</p>
 <a id="more"></a>
-<h3 id="饿汉模式"><a href="#饿汉模式" class="headerlink" title="饿汉模式"></a>饿汉模式</h3><p>饿汉模式，顾名思义，JVM在加载这个类的时候就会完成这个单例的创建。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Singleton</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 静态变量在类创建的时候就会初始化，设置成final类型直接创建实例</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Singleton instance = <span class="keyword">new</span> Singleton();</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">Singleton</span><span class="params">()</span> </span>&#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Singleton <span class="title">getInstance</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> instance;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>优点：线程安全，类加载只加载一次，即使是多线程也不会创建多个实例。<br>缺点：这种方法在用户调用<code>getInstance()</code>方法之前就已经完成了单例的创建。如果这个实例的创建需要依赖用户输入的参数或者配置文件，那么这种方法就不好使了。</p>
+<h3 id="HashMap概述"><a href="#HashMap概述" class="headerlink" title="HashMap概述"></a>HashMap概述</h3><p>HashMap是基于哈希表的Map接口的非同步实现，其键值都允许<code>null</code>值。此类并不保证映射的顺序。<br>由于HashMap的<strong>非同步性</strong>，如果多线程同时访问HashMap，外部进行修改等操作必须保证同步。</p>
 <hr>
-<h3 id="懒汉模式"><a href="#懒汉模式" class="headerlink" title="懒汉模式"></a>懒汉模式</h3><p>为了解决上面的问题，有了懒汉模式。顾名思义就是在等用户真正需要用到这个实例的时候才创建。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Singleton</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Singleton instance;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">Singleton</span><span class="params">()</span> </span>&#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Singleton <span class="title">getInstance</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (instance == <span class="keyword">null</span>) &#123;</span><br><span class="line">            instance = <span class="keyword">new</span> Singleton();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> instance;</span><br><span class="line">    &#125;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
-<p>优点：解决了懒汉模式的问题，也节省了空间，用户没调用这个类时不会创建实例。<br>缺点：线程不安全。当多个线程同时执行<code>getInstance()</code>方法时，会得到多个实例，违背了单例模式的要求。</p>
-<p>于是需要将<code>getInstance()</code>方法内部代码设置同步代码块(synchronized)。</p>
-<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Singleton</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">volatile</span> <span class="keyword">static</span> Singleton instance;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">Singleton</span><span class="params">()</span> </span>&#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Singleton <span class="title">getInstance</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="comment">// 2</span></span><br><span class="line">        <span class="keyword">if</span> (instance == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="comment">// 1</span></span><br><span class="line">            <span class="keyword">synchronized</span> (Singleton<span class="class">.<span class="keyword">class</span>) </span>&#123;</span><br><span class="line">                <span class="keyword">if</span> (instance == <span class="keyword">null</span>) &#123;</span><br><span class="line">                    instance = <span class="keyword">new</span> Singleton();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> instance;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="HashMap数据结构"><a href="#HashMap数据结构" class="headerlink" title="HashMap数据结构"></a>HashMap数据结构</h3><p>HashMap是基于<strong>数据+链表</strong>的一种数据结构。HashMap底层就是一个数据，而数据中的每一项又是一个链表。<br>当进行<code>put</code>操作时，通过内部定义的算法找到数组的下标，直接将数据放到此位置。若是遇到了<strong>Hash冲突</strong>，将会对这个数组元素的链表进行遍历，将新数据放到链表末尾。</p>
+<hr>
+<p>###存储数据的对象</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Node</span>&lt;<span class="title">K</span>,<span class="title">V</span>&gt; <span class="keyword">implements</span> <span class="title">Map</span>.<span class="title">Entry</span>&lt;<span class="title">K</span>,<span class="title">V</span>&gt; </span>&#123;</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">int</span> hash;</span><br><span class="line">    <span class="keyword">final</span> K key;</span><br><span class="line">    V value;</span><br><span class="line">    Node&lt;K,V&gt; next;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里的<code>Node</code>相当于数组中的元素，每一个元素相当于一个键值对，而它持有指向下一个元素的<code>next</code>指针，这就构成了链表。<br>hash：通过<strong>hash算法</strong>算出来的值。hash算法的源码：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> <span class="title">hash</span><span class="params">(Object key)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> h;</span><br><span class="line">    <span class="keyword">return</span> (key == <span class="keyword">null</span>) ? <span class="number">0</span> : (h = key.hashCode()) ^ (h &gt;&gt;&gt; <span class="number">16</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>其中的<code>hashCode()</code>函数是Key自带的方法，返回一个int类型的散列值。<br>而元素的下标是通过<code>h &amp; (length - 1)</code>得到的，这也解释了为什么HashMap数组的长度永远是2的整数幂。<br>首先，当长度为2的整数幂时，<code>h &amp; (length - 1)</code>相当于hash函数的值对数组的长度取模，实现均匀分布。而<code>&amp;</code>比<code>%</code>效率更高。<br>其次，长度为2的整数幂时，可以使下标的分布更加松散。举个例子，当长度为初始值16时，<code>length - 1</code>最低位为1，在与hash函数的值<code>&amp;</code>时，最低位可以是0或1。反之最低位为0，<code>&amp;</code>后最低位则一定为0。这将导致有许多位置永远不可能存放元素，浪费了空间也增加了碰撞概率。<br>但即使是这样，如果数组长度较小，<code>&amp;</code>后也只与最低几位相关，碰撞的几率仍然很大，这时hash函数就体现了作用。将hash函数值右移16位再与自己异或，增加了低位的随机性，也变相保留了高位的信息。</p>
+<hr>
+<h3 id="HashMap性能参数"><a href="#HashMap性能参数" class="headerlink" title="HashMap性能参数"></a>HashMap性能参数</h3><p>HashMap有几个重要的参量：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">int</span> threshold;</span><br><span class="line"><span class="keyword">final</span> <span class="keyword">float</span> loadFactor;</span><br><span class="line"><span class="keyword">int</span> modCount;  </span><br><span class="line"><span class="keyword">int</span> size;</span><br></pre></td></tr></table></figure>
 <ol>
-<li>为什么要加双重锁呢？<br>因为多线程有可能同时执行到了<code>1</code>的位置，这时一个线程进入了同步代码块，创建完了实例，释放锁，于是又有一个线程进入了同步代码块，如果没有再次判断实例是否已经创建，此线程也会新创建一个实例，而这两个实例将不会是同一个实例。<br>只有在<code>synchronized</code>内部再次检查一次，才能保证单例。</li>
-<li>为什么实例要设置为<code>volatile</code>？<br>看起来代码已经很完美，但其实<code>instance = new Singleton();</code>这句话在执行时并非一个原子操作。它其实做了下面3件事情。<blockquote>
-<ol>
-<li>给instance分配内存</li>
-<li>调用SingleTon构造函数初始化成员变量</li>
-<li>将instance引用指向分配的内存空间</li>
-</ol>
-</blockquote>
-</li>
-</ol>
-<p>在JVM即时编译器中，存在着指令重排序的优化。也就是说，如果上述3个步骤可能的执行顺序是1-&gt;3-&gt;2。对于这种情况，如果一个线程执行到了这句话的1和3两个指令，由于<code>instance</code>已经被分配了内存，此时已不再是<code>null</code>了。这时如果有另一个线程执行到了<code>2</code>的位置，将会直接判定<code>instance</code>不为空，将其返回使用。然而这个<code>instance</code>还没有初始化呢，所以会造成错误。<br>而<code>volatile</code>可以防止指令重排序。它在变量的赋值操作后会设置一个<strong>内存屏障</strong>，读取操作只能等到上述3个指令执行完毕。也就是<strong>happens-before</strong>原则。</p>
-<p>优点：线程安全，懒汉式加载。<br>缺点：代码较复杂。</p>
-<hr>
-<h3 id="静态内部类"><a href="#静态内部类" class="headerlink" title="静态内部类"></a>静态内部类</h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Singleton</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">SingletonHolder</span> </span>&#123;</span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Singleton INSTANCE = <span class="keyword">new</span> Singleton();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">Singleton</span><span class="params">()</span> </span>&#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> Singleton <span class="title">getInstance</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> SingletonHolder.INSTANCE;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>当JVM在加载类的时候，是不会加载其内部类的。这点在《深入理解Java虚拟机》中有详细讲述。只有当这个类的某个静态变量被调用时才会触发类的初始化。<br>也就是执行了<code>getInstance()</code>方法时才会初始化<code>SingletonHolder</code>类。<br>由于JVM本身的机制已经保证了线程安全的问题，所以这是一个线程安全的、懒汉式加载的方法，且实现简单。</p>
-<hr>
-<h3 id="枚举"><a href="#枚举" class="headerlink" title="枚举"></a>枚举</h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">enum</span> EnumSingleton &#123;</span><br><span class="line">    INSTANCE;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>用枚举实现实在太简单了，且枚举默认就是线程安全的。而且，其余几种方式其实都存在缺点：如果通过反射或者反序列化攻击，还是会生成多个实例。<br>利用枚举的特性，就可以完全规避这些问题。它是单例模式实现中的<strong>唯一</strong>一种不会被破坏的实现。</p>
-<hr>
-<h3 id="防止单例模式被破坏的方法"><a href="#防止单例模式被破坏的方法" class="headerlink" title="防止单例模式被破坏的方法"></a>防止单例模式被破坏的方法</h3><ol>
-<li>反射破坏的方式是通过强行调用私有的构造方法生成新的对象，所以只要在构造方法里面判断一下就好了。<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="title">Singleton</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (instance != <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(<span class="string">"实例已经存在，请通过getInstance()方法获取。"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
-<li>如果单例模式实现了序列化接口，那么就可以通过反序列化进行破坏。所以可以不实现序列化接口，或者重写反序列化方法<code>readResolve()</code>，直接返回单例对象。<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> Object <span class="title">readResolve</span><span class="params">()</span> <span class="keyword">throws</span> ObjectStreamException </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> instance;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
+<li>threshold: 数组允许的最大存储数量，由<code>数组长度 * loadFactor</code>得到。超过时数组会进行扩容。</li>
+<li>loadFactor: 增长因子。默认为<code>0.75</code>。太大会增加碰撞几率，太小则会浪费空间。</li>
+<li>modCount: 记录内部结构发生变化的次数。put(覆盖不算)以及其他…</li>
+<li>size: 实际存储的元素个数。</li>
 </ol>
 <hr>
-<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>…</p>
+<h3 id="put以及resize流程"><a href="#put以及resize流程" class="headerlink" title="put以及resize流程"></a>put以及resize流程</h3><h4 id="put"><a href="#put" class="headerlink" title="put"></a>put</h4><p>![](HashMap put流程.png)<br>这里有两个参数</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> TREEIFY_THRESHOLD = <span class="number">8</span>;</span><br><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> UNTREEIFY_THRESHOLD = <span class="number">6</span>;</span><br></pre></td></tr></table></figure>
+<p>JDK 1.8对HashMap进行了优化，如果碰撞的次数大于8次，数组元素上的链表会转变为红黑树，提高查询的效率。而碰撞次数减少到6次时，红黑树将会重新变为链表。</p>
+<h4 id="resize"><a href="#resize" class="headerlink" title="resize"></a>resize</h4><p>当需要存储的元素大于<code>threshold</code>时，数组会进行扩容，扩大为原来的两倍，此时数组中的元素需要重新计算下标。这里JDK 1.8进行了优化，不再需要重新计算hash值，而是，数组元素的链表中的第一个值的下标不发生变化，其它的通过<code>e.hash &amp; oldCap != 0</code>将其放到<code>[原始下标+原始数组长度]</code>的下标。<br>![](HashMap resize流程.png)</p>
+<hr>
+<h3 id="线程安全问题以及Fail-Fast机制"><a href="#线程安全问题以及Fail-Fast机制" class="headerlink" title="线程安全问题以及Fail-Fast机制"></a>线程安全问题以及Fail-Fast机制</h3><p>HashMap是非线程安全的，如果在访问元素的过程中修改了HashMap，将会抛出<code>ConcurrentModificationException</code>异常，也就是所谓的Fail-Fast机制。<br>此机制是通过<code>modCount</code>参量实现的。<code>modCount</code>在源码中声明为<code>volatile</code>，保证了线程之间的可见性。通过检测<code>modCount</code>是否与预期值相等，如果不等说明在访问的过程中修改了HashMap中的值，则会抛出异常。<br>然而此机制只能检测却不能解决线程安全问题。想要保证线程安全需要用到<code>ConcurrentHashMap</code>。</p>
 ]]></content>
       <categories>
-        <category>Java设计模式</category>
+        <category>数据结构</category>
+        <category>Java集合</category>
       </categories>
       <tags>
-        <tag>Java单例模式</tag>
+        <tag>数据结构</tag>
+        <tag>HashMap</tag>
       </tags>
   </entry>
   <entry>
@@ -101,6 +92,55 @@
       <tags>
         <tag>JVM</tag>
         <tag>Java内存</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Java单例模式</title>
+    <url>/2020/06/22/Java%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/</url>
+    <content><![CDATA[<p>单例模式：在程序运行期间，某些类<strong>有且最多只有一个</strong>实例对象。<br>本文记录几种不同的Java单例模式实现方案以及它们的优缺点。</p>
+<a id="more"></a>
+<h3 id="饿汉模式"><a href="#饿汉模式" class="headerlink" title="饿汉模式"></a>饿汉模式</h3><p>饿汉模式，顾名思义，JVM在加载这个类的时候就会完成这个单例的创建。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Singleton</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 静态变量在类创建的时候就会初始化，设置成final类型直接创建实例</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Singleton instance = <span class="keyword">new</span> Singleton();</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">Singleton</span><span class="params">()</span> </span>&#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Singleton <span class="title">getInstance</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> instance;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>优点：线程安全，类加载只加载一次，即使是多线程也不会创建多个实例。<br>缺点：这种方法在用户调用<code>getInstance()</code>方法之前就已经完成了单例的创建。如果这个实例的创建需要依赖用户输入的参数或者配置文件，那么这种方法就不好使了。</p>
+<hr>
+<h3 id="懒汉模式"><a href="#懒汉模式" class="headerlink" title="懒汉模式"></a>懒汉模式</h3><p>为了解决上面的问题，有了懒汉模式。顾名思义就是在等用户真正需要用到这个实例的时候才创建。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Singleton</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Singleton instance;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">Singleton</span><span class="params">()</span> </span>&#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Singleton <span class="title">getInstance</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (instance == <span class="keyword">null</span>) &#123;</span><br><span class="line">            instance = <span class="keyword">new</span> Singleton();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> instance;</span><br><span class="line">    &#125;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+<p>优点：解决了懒汉模式的问题，也节省了空间，用户没调用这个类时不会创建实例。<br>缺点：线程不安全。当多个线程同时执行<code>getInstance()</code>方法时，会得到多个实例，违背了单例模式的要求。</p>
+<p>于是需要将<code>getInstance()</code>方法内部代码设置同步代码块(synchronized)。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Singleton</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">volatile</span> <span class="keyword">static</span> Singleton instance;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">Singleton</span><span class="params">()</span> </span>&#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Singleton <span class="title">getInstance</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="comment">// 2</span></span><br><span class="line">        <span class="keyword">if</span> (instance == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="comment">// 1</span></span><br><span class="line">            <span class="keyword">synchronized</span> (Singleton<span class="class">.<span class="keyword">class</span>) </span>&#123;</span><br><span class="line">                <span class="keyword">if</span> (instance == <span class="keyword">null</span>) &#123;</span><br><span class="line">                    instance = <span class="keyword">new</span> Singleton();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> instance;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ol>
+<li>为什么要加双重锁呢？<br>因为多线程有可能同时执行到了<code>1</code>的位置，这时一个线程进入了同步代码块，创建完了实例，释放锁，于是又有一个线程进入了同步代码块，如果没有再次判断实例是否已经创建，此线程也会新创建一个实例，而这两个实例将不会是同一个实例。<br>只有在<code>synchronized</code>内部再次检查一次，才能保证单例。</li>
+<li>为什么实例要设置为<code>volatile</code>？<br>看起来代码已经很完美，但其实<code>instance = new Singleton();</code>这句话在执行时并非一个原子操作。它其实做了下面3件事情。<blockquote>
+<ol>
+<li>给instance分配内存</li>
+<li>调用SingleTon构造函数初始化成员变量</li>
+<li>将instance引用指向分配的内存空间</li>
+</ol>
+</blockquote>
+</li>
+</ol>
+<p>在JVM即时编译器中，存在着指令重排序的优化。也就是说，如果上述3个步骤可能的执行顺序是1-&gt;3-&gt;2。对于这种情况，如果一个线程执行到了这句话的1和3两个指令，由于<code>instance</code>已经被分配了内存，此时已不再是<code>null</code>了。这时如果有另一个线程执行到了<code>2</code>的位置，将会直接判定<code>instance</code>不为空，将其返回使用。然而这个<code>instance</code>还没有初始化呢，所以会造成错误。<br>而<code>volatile</code>可以防止指令重排序。它在变量的赋值操作后会设置一个<strong>内存屏障</strong>，读取操作只能等到上述3个指令执行完毕。也就是<strong>happens-before</strong>原则。</p>
+<p>优点：线程安全，懒汉式加载。<br>缺点：代码较复杂。</p>
+<hr>
+<h3 id="静态内部类"><a href="#静态内部类" class="headerlink" title="静态内部类"></a>静态内部类</h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Singleton</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">SingletonHolder</span> </span>&#123;</span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Singleton INSTANCE = <span class="keyword">new</span> Singleton();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">Singleton</span><span class="params">()</span> </span>&#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> Singleton <span class="title">getInstance</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> SingletonHolder.INSTANCE;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当JVM在加载类的时候，是不会加载其内部类的。这点在《深入理解Java虚拟机》中有详细讲述。只有当这个类的某个静态变量被调用时才会触发类的初始化。<br>也就是执行了<code>getInstance()</code>方法时才会初始化<code>SingletonHolder</code>类。<br>由于JVM本身的机制已经保证了线程安全的问题，所以这是一个线程安全的、懒汉式加载的方法，且实现简单。</p>
+<hr>
+<h3 id="枚举"><a href="#枚举" class="headerlink" title="枚举"></a>枚举</h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">enum</span> EnumSingleton &#123;</span><br><span class="line">    INSTANCE;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>用枚举实现实在太简单了，且枚举默认就是线程安全的。而且，其余几种方式其实都存在缺点：如果通过反射或者反序列化攻击，还是会生成多个实例。<br>利用枚举的特性，就可以完全规避这些问题。它是单例模式实现中的<strong>唯一</strong>一种不会被破坏的实现。</p>
+<hr>
+<h3 id="防止单例模式被破坏的方法"><a href="#防止单例模式被破坏的方法" class="headerlink" title="防止单例模式被破坏的方法"></a>防止单例模式被破坏的方法</h3><ol>
+<li>反射破坏的方式是通过强行调用私有的构造方法生成新的对象，所以只要在构造方法里面判断一下就好了。<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="title">Singleton</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (instance != <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(<span class="string">"实例已经存在，请通过getInstance()方法获取。"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li>如果单例模式实现了序列化接口，那么就可以通过反序列化进行破坏。所以可以不实现序列化接口，或者重写反序列化方法<code>readResolve()</code>，直接返回单例对象。<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> Object <span class="title">readResolve</span><span class="params">()</span> <span class="keyword">throws</span> ObjectStreamException </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> instance;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<hr>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>…</p>
+]]></content>
+      <categories>
+        <category>Java设计模式</category>
+      </categories>
+      <tags>
+        <tag>Java单例模式</tag>
       </tags>
   </entry>
   <entry>
@@ -168,39 +208,6 @@
       <tags>
         <tag>JVM</tag>
         <tag>垃圾回收</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Java类加载器</title>
-    <url>/2020/06/22/Java%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8/</url>
-    <content><![CDATA[<p>Java类加载阶段中的“通过一个类的全限定名来获取描述该类的二进制字节流”这个动作放到Java虚拟机外部去实现，以便让应用程序自己决定如何去获取所需的类。实现这个动作的代码被称为“类加载器”（Class Loader）。</p>
-<a id="more"></a>
-<h3 id="类与类加载器"><a href="#类与类加载器" class="headerlink" title="类与类加载器"></a>类与类加载器</h3><p>Java类加载器就是在类加载这个阶段通过类的全限定名获取定义此类的二进制字节流。对于任意一个类，都必须由加载它的类加载器和这个类本身一起共同确立其在Java虚拟机中的唯一性。<br>也就是说，比较两个类是否相等，只有在这两个类是由同一个类加载器加载的前提下才有意义。否则，即使这两个类来源于同一个Class文件，被同一个Java虚拟机加载，只要加载它们的类加载器不同，那这两个类就必定不相等。</p>
-<hr>
-<h3 id="双亲委派模型"><a href="#双亲委派模型" class="headerlink" title="双亲委派模型"></a>双亲委派模型</h3><p>自从JDK1.2以来，Java一直保持着<strong>三层类加载器</strong>、<strong>双亲委派的类加载结构</strong>。<br>绝大多数Java程序都会使用到以下3个系统提供的类加载器来进行加载。</p>
-<ol>
-<li>启动类加载器。这个类加载器负责加载存放在<JAVA_HOME>\lib目录，或者被-Xbootclasspath参数所指定的路径中存放的，而且是Java虚拟机能够识别的（按照文件名识别，如rt.jar、tools.jar，名字不符合的类库即使放在lib目录中也不会被加载）类库加载到虚拟机的内存中。</li>
-<li>扩展类加载器。它负责加载<JAVA_HOME>\lib\ext目录中，或者被java.ext.dirs系统变量所指定的路径中所有的类库。</li>
-<li>应用程序类加载器。它负责加载用户类路径（ClassPath）上所有的类库。如果应用程序中没有自定义过自己的类加载器，一般情况下这个就是程序中默认的类加载器。</li>
-</ol>
-<p>这三层类加载器的协作关系通常如下图所示，一般被称为<strong>双亲委派模型</strong>。<br><img src="%E5%8F%8C%E4%BA%B2%E5%A7%94%E6%B4%BE%E6%A8%A1%E5%9E%8B.png" alt=""><br>双亲委派模型要求除了顶层的启动类加载器外，其余的类加载器都应有自己的父类加载器。不过这里类加载器之间的父子关系一般不是以继承（Inheritance）的关系来实现的，而是通常使用组合（Composition）关系来复用父加载器的代码。<br>其工作原理是：如果一个类加载器收到了类加载的请求，它首先不会自己去尝试加载这个类，而是把这个请求委派给父类加载器去完成，每一个层次的类加载器都是如此，因此所有的加载请求最终都应该传送到最顶层的启动类加载器中，只有当父加载器反馈自己无法完成这个加载请求（它的搜索范围中没有找到所需的类）时，子加载器才会尝试自己去完成加载。<br>这种工作机制的好处是：可以提高系统的安全性。例如Object类始终是由最上层加载器加载的，如果用户自定义了一个Object类，是不会被最顶层的启动类加载器加载运行的。这也防止了恶意代码对系统的破坏。</p>
-<hr>
-<h3 id="破坏双亲委派模型"><a href="#破坏双亲委派模型" class="headerlink" title="破坏双亲委派模型"></a>破坏双亲委派模型</h3><p>然而，双亲委派模型并不是一种具有强制约束性的模型。这意味着它是可以被”破坏”的。<br>那么为什么要破坏双亲委派模型呢？例如JDBC，原生的JDBC中Driver驱动只是一个接口，具体的实现是由不同的数据库进行实现的，比如mysql有自己的实现，oracle也有自己的实现。这时就需要Driver动态的去加载不同数据库的实现，然而由于Driver是由启动类加载器加载的，它并不能加载到用户具体的实现，所以这时就需要打破双亲委派模型，由父类加载器去请求子类加载器完成类加载。<br>此时引入了<strong>线程上下文类加载器</strong>，把原本需要由启动类加载器加载的类，委派给了应用程序类加载器进行加载。</p>
-<p>如果用户想要自定义类加载器，有两种方法。</p>
-<ol>
-<li>重写ClassLoader中的loadClass()方法，不过这将破坏双亲委派的模型。</li>
-<li>重写findClass()方法。这个方法不会破坏双亲委派模型。这也是Java预留给开发者的方法。</li>
-</ol>
-<hr>
-<p>参见《深入理解 java 虚拟机》。</p>
-]]></content>
-      <categories>
-        <category>Java</category>
-        <category>JVM</category>
-      </categories>
-      <tags>
-        <tag>JVM</tag>
-        <tag>Java类加载</tag>
       </tags>
   </entry>
   <entry>
@@ -272,6 +279,39 @@
 <p>对于以上代码，JVM先初始化代码块，然后初始化变量，最后是构造器。所以先打印了<code>Test代码块</code>，为<code>age</code>赋值20，然后打印<code>Test构造器</code>。<br>接着，打印<code>age: 20 weight: 0</code>，因为<code>age</code>已被赋值，但是<code>weight</code>目前只在准备阶段被赋了0。<br>执行完对象构造器，接着执行类构造器第二句，打印<code>Test静态代码块</code>，然后初始化<code>weight</code>为120。<br>此时已完成类的初始化，开始执行main方法，执行run方法输出<code>Test静态方法</code>。</p>
 <hr>
 <h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>Java中的静态变量和静态代码块在类加载的时候就会执行，执行顺序与代码书写顺序一致。然后执行对象构造器，构造函数最后执行，其余按书写顺序。如果子类继承了父类，则会先进行父类的初始化。</p>
+<hr>
+<p>参见《深入理解 java 虚拟机》。</p>
+]]></content>
+      <categories>
+        <category>Java</category>
+        <category>JVM</category>
+      </categories>
+      <tags>
+        <tag>JVM</tag>
+        <tag>Java类加载</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Java类加载器</title>
+    <url>/2020/06/22/Java%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8/</url>
+    <content><![CDATA[<p>Java类加载阶段中的“通过一个类的全限定名来获取描述该类的二进制字节流”这个动作放到Java虚拟机外部去实现，以便让应用程序自己决定如何去获取所需的类。实现这个动作的代码被称为“类加载器”（Class Loader）。</p>
+<a id="more"></a>
+<h3 id="类与类加载器"><a href="#类与类加载器" class="headerlink" title="类与类加载器"></a>类与类加载器</h3><p>Java类加载器就是在类加载这个阶段通过类的全限定名获取定义此类的二进制字节流。对于任意一个类，都必须由加载它的类加载器和这个类本身一起共同确立其在Java虚拟机中的唯一性。<br>也就是说，比较两个类是否相等，只有在这两个类是由同一个类加载器加载的前提下才有意义。否则，即使这两个类来源于同一个Class文件，被同一个Java虚拟机加载，只要加载它们的类加载器不同，那这两个类就必定不相等。</p>
+<hr>
+<h3 id="双亲委派模型"><a href="#双亲委派模型" class="headerlink" title="双亲委派模型"></a>双亲委派模型</h3><p>自从JDK1.2以来，Java一直保持着<strong>三层类加载器</strong>、<strong>双亲委派的类加载结构</strong>。<br>绝大多数Java程序都会使用到以下3个系统提供的类加载器来进行加载。</p>
+<ol>
+<li>启动类加载器。这个类加载器负责加载存放在<JAVA_HOME>\lib目录，或者被-Xbootclasspath参数所指定的路径中存放的，而且是Java虚拟机能够识别的（按照文件名识别，如rt.jar、tools.jar，名字不符合的类库即使放在lib目录中也不会被加载）类库加载到虚拟机的内存中。</li>
+<li>扩展类加载器。它负责加载<JAVA_HOME>\lib\ext目录中，或者被java.ext.dirs系统变量所指定的路径中所有的类库。</li>
+<li>应用程序类加载器。它负责加载用户类路径（ClassPath）上所有的类库。如果应用程序中没有自定义过自己的类加载器，一般情况下这个就是程序中默认的类加载器。</li>
+</ol>
+<p>这三层类加载器的协作关系通常如下图所示，一般被称为<strong>双亲委派模型</strong>。<br><img src="%E5%8F%8C%E4%BA%B2%E5%A7%94%E6%B4%BE%E6%A8%A1%E5%9E%8B.png" alt=""><br>双亲委派模型要求除了顶层的启动类加载器外，其余的类加载器都应有自己的父类加载器。不过这里类加载器之间的父子关系一般不是以继承（Inheritance）的关系来实现的，而是通常使用组合（Composition）关系来复用父加载器的代码。<br>其工作原理是：如果一个类加载器收到了类加载的请求，它首先不会自己去尝试加载这个类，而是把这个请求委派给父类加载器去完成，每一个层次的类加载器都是如此，因此所有的加载请求最终都应该传送到最顶层的启动类加载器中，只有当父加载器反馈自己无法完成这个加载请求（它的搜索范围中没有找到所需的类）时，子加载器才会尝试自己去完成加载。<br>这种工作机制的好处是：可以提高系统的安全性。例如Object类始终是由最上层加载器加载的，如果用户自定义了一个Object类，是不会被最顶层的启动类加载器加载运行的。这也防止了恶意代码对系统的破坏。</p>
+<hr>
+<h3 id="破坏双亲委派模型"><a href="#破坏双亲委派模型" class="headerlink" title="破坏双亲委派模型"></a>破坏双亲委派模型</h3><p>然而，双亲委派模型并不是一种具有强制约束性的模型。这意味着它是可以被”破坏”的。<br>那么为什么要破坏双亲委派模型呢？例如JDBC，原生的JDBC中Driver驱动只是一个接口，具体的实现是由不同的数据库进行实现的，比如mysql有自己的实现，oracle也有自己的实现。这时就需要Driver动态的去加载不同数据库的实现，然而由于Driver是由启动类加载器加载的，它并不能加载到用户具体的实现，所以这时就需要打破双亲委派模型，由父类加载器去请求子类加载器完成类加载。<br>此时引入了<strong>线程上下文类加载器</strong>，把原本需要由启动类加载器加载的类，委派给了应用程序类加载器进行加载。</p>
+<p>如果用户想要自定义类加载器，有两种方法。</p>
+<ol>
+<li>重写ClassLoader中的loadClass()方法，不过这将破坏双亲委派的模型。</li>
+<li>重写findClass()方法。这个方法不会破坏双亲委派模型。这也是Java预留给开发者的方法。</li>
+</ol>
 <hr>
 <p>参见《深入理解 java 虚拟机》。</p>
 ]]></content>
@@ -492,6 +532,22 @@
       </tags>
   </entry>
   <entry>
+    <title>Leetcode面试题(6)</title>
+    <url>/2020/06/18/Leetcode%E9%9D%A2%E8%AF%95%E9%A2%98-6/</url>
+    <content><![CDATA[<p>记录Leetcode一些面试题(6)</p>
+<a id="more"></a>
+<h4 id="16-05-阶乘尾数"><a href="#16-05-阶乘尾数" class="headerlink" title="16.05 阶乘尾数"></a>16.05 <a href="https://leetcode-cn.com/problems/factorial-zeros-lcci/" target="_blank" rel="noopener">阶乘尾数</a></h4><h5 id="描述"><a href="#描述" class="headerlink" title="描述"></a>描述</h5><p>设计一个算法，算出 n 阶乘有多少个尾随零。</p>
+<h5 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h5><p>0是由<code>*10</code>得到的，而10是由<code>2*5</code>得到的。<br>2的个数比5多，所以计算5的个数。每隔5个数就会出现一个5，隔25出现两个5，以此类推。<br>count = n / 5 + n / 5 / 5 + n / 5 / 5 / 5 + …</p>
+<h5 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h5><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">trailingZeroes</span><span class="params">(<span class="keyword">int</span> n)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> ans = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">while</span> (n &gt;= <span class="number">5</span>) &#123;</span><br><span class="line">            n /= <span class="number">5</span>;</span><br><span class="line">            ans += n;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> ans;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>]]></content>
+      <categories>
+        <category>算法</category>
+      </categories>
+      <tags>
+        <tag>算法</tag>
+        <tag>leetcode</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>剑指offer(1)</title>
     <url>/2020/06/01/%E5%89%91%E6%8C%87offer-1/</url>
     <content><![CDATA[<p>记录Leetcode剑指0ffer面试题(1)</p>
@@ -523,22 +579,6 @@
         <tag>算法</tag>
         <tag>leetcode</tag>
         <tag>剑指offer</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Leetcode面试题(6)</title>
-    <url>/2020/06/18/Leetcode%E9%9D%A2%E8%AF%95%E9%A2%98-6/</url>
-    <content><![CDATA[<p>记录Leetcode一些面试题(6)</p>
-<a id="more"></a>
-<h4 id="16-05-阶乘尾数"><a href="#16-05-阶乘尾数" class="headerlink" title="16.05 阶乘尾数"></a>16.05 <a href="https://leetcode-cn.com/problems/factorial-zeros-lcci/" target="_blank" rel="noopener">阶乘尾数</a></h4><h5 id="描述"><a href="#描述" class="headerlink" title="描述"></a>描述</h5><p>设计一个算法，算出 n 阶乘有多少个尾随零。</p>
-<h5 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h5><p>0是由<code>*10</code>得到的，而10是由<code>2*5</code>得到的。<br>2的个数比5多，所以计算5的个数。每隔5个数就会出现一个5，隔25出现两个5，以此类推。<br>count = n / 5 + n / 5 / 5 + n / 5 / 5 / 5 + …</p>
-<h5 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h5><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">trailingZeroes</span><span class="params">(<span class="keyword">int</span> n)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> ans = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">while</span> (n &gt;= <span class="number">5</span>) &#123;</span><br><span class="line">            n /= <span class="number">5</span>;</span><br><span class="line">            ans += n;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> ans;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>]]></content>
-      <categories>
-        <category>算法</category>
-      </categories>
-      <tags>
-        <tag>算法</tag>
-        <tag>leetcode</tag>
       </tags>
   </entry>
   <entry>
@@ -610,6 +650,32 @@
       </tags>
   </entry>
   <entry>
+    <title>剑指offer(5)</title>
+    <url>/2020/06/07/%E5%89%91%E6%8C%87offer-5/</url>
+    <content><![CDATA[<p>记录Leetcode剑指0ffer面试题(5)</p>
+<a id="more"></a>
+<h4 id="59-i-滑动窗口的最大值"><a href="#59-i-滑动窗口的最大值" class="headerlink" title="59-i 滑动窗口的最大值"></a>59-i <a href="https://leetcode-cn.com/problems/hua-dong-chuang-kou-de-zui-da-zhi-lcof/" target="_blank" rel="noopener">滑动窗口的最大值</a></h4><h5 id="描述"><a href="#描述" class="headerlink" title="描述"></a>描述</h5><p>给定一个数组 nums 和滑动窗口的大小 k，请找出所有滑动窗口里的最大值。</p>
+<h5 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h5><p>维护一个队列，首元素为当前窗口的最大值。</p>
+<h5 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h5><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">int</span>[] maxSlidingWindow(<span class="keyword">int</span>[] nums, <span class="keyword">int</span> k) &#123;</span><br><span class="line">        <span class="keyword">int</span> n = nums.length;</span><br><span class="line">        <span class="keyword">if</span> (n == <span class="number">0</span>) <span class="keyword">return</span> <span class="keyword">new</span> <span class="keyword">int</span>[<span class="number">0</span>];</span><br><span class="line">        <span class="keyword">int</span>[] ans = <span class="keyword">new</span> <span class="keyword">int</span>[n - k + <span class="number">1</span>];</span><br><span class="line">        Deque&lt;Integer&gt; deque = <span class="keyword">new</span> LinkedList&lt;&gt;();</span><br><span class="line">        <span class="comment">// 初始化前k位</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; k; i++) &#123;</span><br><span class="line">        	<span class="comment">// 当前元素和队列里的元素进行比较，大的话就删除队列里的元素</span></span><br><span class="line">            <span class="keyword">while</span> (!deque.isEmpty() &amp;&amp; deque.peekLast() &lt; nums[i]) deque.pollLast();</span><br><span class="line">            deque.offer(nums[i]);</span><br><span class="line">        &#125;</span><br><span class="line">        ans[<span class="number">0</span>] = deque.peek();</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = k; i &lt; n; i++) &#123;</span><br><span class="line">        	<span class="comment">// 如果队列里的最大元素等于nums[i-k]，说明此最大值已不再当前窗口</span></span><br><span class="line">            <span class="keyword">if</span> (deque.peek() == nums[i-k]) deque.poll();</span><br><span class="line">            <span class="keyword">while</span> (!deque.isEmpty() &amp;&amp; deque.peekLast() &lt; nums[i]) deque.pollLast();</span><br><span class="line">            deque.offer(nums[i]);</span><br><span class="line">            <span class="comment">// 当前窗口的最大值为队列首元素</span></span><br><span class="line">            ans[i-k+<span class="number">1</span>] = deque.peek();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> ans;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<hr>
+<h4 id="60-n个骰子的点数"><a href="#60-n个骰子的点数" class="headerlink" title="60 n个骰子的点数"></a>60 <a href="https://leetcode-cn.com/problems/nge-tou-zi-de-dian-shu-lcof/" target="_blank" rel="noopener">n个骰子的点数</a></h4><h5 id="描述-1"><a href="#描述-1" class="headerlink" title="描述"></a>描述</h5><p>把n个骰子扔在地上，所有骰子朝上一面的点数之和为s。输入n，打印出s的所有可能的值出现的概率。<br>你需要用一个浮点数数组返回答案，其中第 i 个元素代表这 n 个骰子所能掷出的点数集合中第 i 小的那个的概率。</p>
+<h5 id="思路-1"><a href="#思路-1" class="headerlink" title="思路"></a>思路</h5><p>动态规划。</p>
+<h5 id="实现-1"><a href="#实现-1" class="headerlink" title="实现"></a>实现</h5><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">double</span>[] twoSum(<span class="keyword">int</span> n) &#123;</span><br><span class="line">    	<span class="comment">// dp[i][j]表示扔了i个骰子后和为j的排列情况总数</span></span><br><span class="line">        <span class="keyword">int</span>[][] dp = <span class="keyword">new</span> <span class="keyword">int</span>[n+<span class="number">1</span>][<span class="number">6</span>*n+<span class="number">1</span>];</span><br><span class="line">        <span class="comment">// 结果数组长度为6n-n+1</span></span><br><span class="line">        <span class="keyword">double</span>[] ans = <span class="keyword">new</span> <span class="keyword">double</span>[<span class="number">5</span>*n+<span class="number">1</span>];</span><br><span class="line">        <span class="comment">// 第一个骰子，总和只能为1～6，每种出现一次。</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i&lt;= <span class="number">6</span>; i++) &#123;</span><br><span class="line">            dp[<span class="number">1</span>][i] = <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// n个骰子，每个1～6点数，总共6^n种排列情况。</span></span><br><span class="line">        <span class="keyword">double</span> all = Math.pow(<span class="number">6</span>, n);</span><br><span class="line">        <span class="comment">// n个骰子</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= n; i++) &#123;</span><br><span class="line">        	<span class="comment">// i个骰子可能出现的点数总和</span></span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> j = i; j &lt;= <span class="number">6</span> * i; j++) &#123;</span><br><span class="line">            	<span class="comment">// 每个骰子1～6点数</span></span><br><span class="line">                <span class="keyword">for</span> (<span class="keyword">int</span> k = <span class="number">1</span>; k &lt;= <span class="number">6</span>; k++) &#123;</span><br><span class="line">                	<span class="comment">// i个骰子总和为j的情况总数等于</span></span><br><span class="line">                	<span class="comment">// i-1个骰子总和为j-k的情况总数，k为当前着个骰子扔的点数。</span></span><br><span class="line">                    dp[i][j] += j &gt;= k ? dp[i-<span class="number">1</span>][j-k] : <span class="number">0</span>;</span><br><span class="line">                    <span class="comment">// i == n，说明已经扔到了最后一个骰子，可以开始添加结果。</span></span><br><span class="line">                    <span class="keyword">if</span> (i == n) ans[j-i] = dp[i][j] / all;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> ans;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<hr>
+<h4 id="65-不用加减乘除做加法"><a href="#65-不用加减乘除做加法" class="headerlink" title="65 不用加减乘除做加法"></a>65 <a href="https://leetcode-cn.com/problems/bu-yong-jia-jian-cheng-chu-zuo-jia-fa-lcof/" target="_blank" rel="noopener">不用加减乘除做加法</a></h4><h5 id="描述-2"><a href="#描述-2" class="headerlink" title="描述"></a>描述</h5><p>写一个函数，求两个整数之和，要求在函数体内不得使用 “+”、“-”、“*”、“/” 四则运算符号。<br>a, b 均可能是负数或 0，结果不会溢出 32 位整数。</p>
+<h5 id="思路-2"><a href="#思路-2" class="headerlink" title="思路"></a>思路</h5><p>既然不能用加减乘除，那就用位运算。</p>
+<h5 id="实现-2"><a href="#实现-2" class="headerlink" title="实现"></a>实现</h5><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">add</span><span class="params">(<span class="keyword">int</span> a, <span class="keyword">int</span> b)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (a == <span class="number">0</span>) <span class="keyword">return</span> b;</span><br><span class="line">        <span class="keyword">if</span> (b == <span class="number">0</span>) <span class="keyword">return</span> a;</span><br><span class="line">        <span class="keyword">while</span> (b != <span class="number">0</span>) &#123; <span class="comment">// 进位为0退出</span></span><br><span class="line">        	<span class="comment">// 非进位和(相当于异或)</span></span><br><span class="line">            <span class="keyword">int</span> sum = a ^ b;</span><br><span class="line">            <span class="comment">// 进位和(位与再左移一位，这样当某一位上两个数都是1时就会进位)</span></span><br><span class="line">            <span class="keyword">int</span> carry = (a &amp; b) &lt;&lt; <span class="number">1</span>;</span><br><span class="line">            a = sum;</span><br><span class="line">            b = carry;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> a;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>]]></content>
+      <categories>
+        <category>算法</category>
+        <category>剑指offer</category>
+      </categories>
+      <tags>
+        <tag>算法</tag>
+        <tag>leetcode</tag>
+        <tag>剑指offer</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>剑指offer(4)</title>
     <url>/2020/06/06/%E5%89%91%E6%8C%87offer-4/</url>
     <content><![CDATA[<p>记录Leetcode剑指0ffer面试题(4)</p>
@@ -633,32 +699,6 @@
 <h4 id="56-数组中数字出现的次数-ii"><a href="#56-数组中数字出现的次数-ii" class="headerlink" title="56 数组中数字出现的次数 ii"></a>56 <a href="https://leetcode-cn.com/problems/shu-zu-zhong-shu-zi-chu-xian-de-ci-shu-ii-lcof/" target="_blank" rel="noopener">数组中数字出现的次数 ii</a></h4><h5 id="描述-4"><a href="#描述-4" class="headerlink" title="描述"></a>描述</h5><p>在一个数组 nums 中除一个数字只出现一次之外，其他数字都出现了三次。请找出那个只出现一次的数字。</p>
 <h5 id="思路-4"><a href="#思路-4" class="headerlink" title="思路"></a>思路</h5><p>如果一个数出现了三次，它的二进制表示的每一位也出现三次，即每一位的和可以被3整除。<br>将所有数字的每一位相加，最后如果某一位能被3整除，说明出现一次的数字的这一位是0，否则是1。</p>
 <h5 id="实现-4"><a href="#实现-4" class="headerlink" title="实现"></a>实现</h5><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">singleNumber</span><span class="params">(<span class="keyword">int</span>[] nums)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span>[] arr = <span class="keyword">new</span> <span class="keyword">int</span>[<span class="number">32</span>];</span><br><span class="line">        <span class="comment">// 计算每一位的和，对3取模。</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> n : nums) &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">32</span>; i++) &#123;</span><br><span class="line">                arr[i] += (n &gt;&gt; i) &amp; <span class="number">1</span>;</span><br><span class="line">                arr[i] %= <span class="number">3</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">int</span> ans = <span class="number">0</span>;</span><br><span class="line">        <span class="comment">// 得到出现一次的数</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">32</span>; i++) &#123;</span><br><span class="line">            ans += arr[i] == <span class="number">1</span> ? <span class="number">1</span> &lt;&lt; i : <span class="number">0</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> ans;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>]]></content>
-      <categories>
-        <category>算法</category>
-        <category>剑指offer</category>
-      </categories>
-      <tags>
-        <tag>算法</tag>
-        <tag>leetcode</tag>
-        <tag>剑指offer</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>剑指offer(5)</title>
-    <url>/2020/06/07/%E5%89%91%E6%8C%87offer-5/</url>
-    <content><![CDATA[<p>记录Leetcode剑指0ffer面试题(5)</p>
-<a id="more"></a>
-<h4 id="59-i-滑动窗口的最大值"><a href="#59-i-滑动窗口的最大值" class="headerlink" title="59-i 滑动窗口的最大值"></a>59-i <a href="https://leetcode-cn.com/problems/hua-dong-chuang-kou-de-zui-da-zhi-lcof/" target="_blank" rel="noopener">滑动窗口的最大值</a></h4><h5 id="描述"><a href="#描述" class="headerlink" title="描述"></a>描述</h5><p>给定一个数组 nums 和滑动窗口的大小 k，请找出所有滑动窗口里的最大值。</p>
-<h5 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h5><p>维护一个队列，首元素为当前窗口的最大值。</p>
-<h5 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h5><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">int</span>[] maxSlidingWindow(<span class="keyword">int</span>[] nums, <span class="keyword">int</span> k) &#123;</span><br><span class="line">        <span class="keyword">int</span> n = nums.length;</span><br><span class="line">        <span class="keyword">if</span> (n == <span class="number">0</span>) <span class="keyword">return</span> <span class="keyword">new</span> <span class="keyword">int</span>[<span class="number">0</span>];</span><br><span class="line">        <span class="keyword">int</span>[] ans = <span class="keyword">new</span> <span class="keyword">int</span>[n - k + <span class="number">1</span>];</span><br><span class="line">        Deque&lt;Integer&gt; deque = <span class="keyword">new</span> LinkedList&lt;&gt;();</span><br><span class="line">        <span class="comment">// 初始化前k位</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; k; i++) &#123;</span><br><span class="line">        	<span class="comment">// 当前元素和队列里的元素进行比较，大的话就删除队列里的元素</span></span><br><span class="line">            <span class="keyword">while</span> (!deque.isEmpty() &amp;&amp; deque.peekLast() &lt; nums[i]) deque.pollLast();</span><br><span class="line">            deque.offer(nums[i]);</span><br><span class="line">        &#125;</span><br><span class="line">        ans[<span class="number">0</span>] = deque.peek();</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = k; i &lt; n; i++) &#123;</span><br><span class="line">        	<span class="comment">// 如果队列里的最大元素等于nums[i-k]，说明此最大值已不再当前窗口</span></span><br><span class="line">            <span class="keyword">if</span> (deque.peek() == nums[i-k]) deque.poll();</span><br><span class="line">            <span class="keyword">while</span> (!deque.isEmpty() &amp;&amp; deque.peekLast() &lt; nums[i]) deque.pollLast();</span><br><span class="line">            deque.offer(nums[i]);</span><br><span class="line">            <span class="comment">// 当前窗口的最大值为队列首元素</span></span><br><span class="line">            ans[i-k+<span class="number">1</span>] = deque.peek();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> ans;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<hr>
-<h4 id="60-n个骰子的点数"><a href="#60-n个骰子的点数" class="headerlink" title="60 n个骰子的点数"></a>60 <a href="https://leetcode-cn.com/problems/nge-tou-zi-de-dian-shu-lcof/" target="_blank" rel="noopener">n个骰子的点数</a></h4><h5 id="描述-1"><a href="#描述-1" class="headerlink" title="描述"></a>描述</h5><p>把n个骰子扔在地上，所有骰子朝上一面的点数之和为s。输入n，打印出s的所有可能的值出现的概率。<br>你需要用一个浮点数数组返回答案，其中第 i 个元素代表这 n 个骰子所能掷出的点数集合中第 i 小的那个的概率。</p>
-<h5 id="思路-1"><a href="#思路-1" class="headerlink" title="思路"></a>思路</h5><p>动态规划。</p>
-<h5 id="实现-1"><a href="#实现-1" class="headerlink" title="实现"></a>实现</h5><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">double</span>[] twoSum(<span class="keyword">int</span> n) &#123;</span><br><span class="line">    	<span class="comment">// dp[i][j]表示扔了i个骰子后和为j的排列情况总数</span></span><br><span class="line">        <span class="keyword">int</span>[][] dp = <span class="keyword">new</span> <span class="keyword">int</span>[n+<span class="number">1</span>][<span class="number">6</span>*n+<span class="number">1</span>];</span><br><span class="line">        <span class="comment">// 结果数组长度为6n-n+1</span></span><br><span class="line">        <span class="keyword">double</span>[] ans = <span class="keyword">new</span> <span class="keyword">double</span>[<span class="number">5</span>*n+<span class="number">1</span>];</span><br><span class="line">        <span class="comment">// 第一个骰子，总和只能为1～6，每种出现一次。</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i&lt;= <span class="number">6</span>; i++) &#123;</span><br><span class="line">            dp[<span class="number">1</span>][i] = <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">// n个骰子，每个1～6点数，总共6^n种排列情况。</span></span><br><span class="line">        <span class="keyword">double</span> all = Math.pow(<span class="number">6</span>, n);</span><br><span class="line">        <span class="comment">// n个骰子</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;= n; i++) &#123;</span><br><span class="line">        	<span class="comment">// i个骰子可能出现的点数总和</span></span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> j = i; j &lt;= <span class="number">6</span> * i; j++) &#123;</span><br><span class="line">            	<span class="comment">// 每个骰子1～6点数</span></span><br><span class="line">                <span class="keyword">for</span> (<span class="keyword">int</span> k = <span class="number">1</span>; k &lt;= <span class="number">6</span>; k++) &#123;</span><br><span class="line">                	<span class="comment">// i个骰子总和为j的情况总数等于</span></span><br><span class="line">                	<span class="comment">// i-1个骰子总和为j-k的情况总数，k为当前着个骰子扔的点数。</span></span><br><span class="line">                    dp[i][j] += j &gt;= k ? dp[i-<span class="number">1</span>][j-k] : <span class="number">0</span>;</span><br><span class="line">                    <span class="comment">// i == n，说明已经扔到了最后一个骰子，可以开始添加结果。</span></span><br><span class="line">                    <span class="keyword">if</span> (i == n) ans[j-i] = dp[i][j] / all;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> ans;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<hr>
-<h4 id="65-不用加减乘除做加法"><a href="#65-不用加减乘除做加法" class="headerlink" title="65 不用加减乘除做加法"></a>65 <a href="https://leetcode-cn.com/problems/bu-yong-jia-jian-cheng-chu-zuo-jia-fa-lcof/" target="_blank" rel="noopener">不用加减乘除做加法</a></h4><h5 id="描述-2"><a href="#描述-2" class="headerlink" title="描述"></a>描述</h5><p>写一个函数，求两个整数之和，要求在函数体内不得使用 “+”、“-”、“*”、“/” 四则运算符号。<br>a, b 均可能是负数或 0，结果不会溢出 32 位整数。</p>
-<h5 id="思路-2"><a href="#思路-2" class="headerlink" title="思路"></a>思路</h5><p>既然不能用加减乘除，那就用位运算。</p>
-<h5 id="实现-2"><a href="#实现-2" class="headerlink" title="实现"></a>实现</h5><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Solution</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">add</span><span class="params">(<span class="keyword">int</span> a, <span class="keyword">int</span> b)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (a == <span class="number">0</span>) <span class="keyword">return</span> b;</span><br><span class="line">        <span class="keyword">if</span> (b == <span class="number">0</span>) <span class="keyword">return</span> a;</span><br><span class="line">        <span class="keyword">while</span> (b != <span class="number">0</span>) &#123; <span class="comment">// 进位为0退出</span></span><br><span class="line">        	<span class="comment">// 非进位和(相当于异或)</span></span><br><span class="line">            <span class="keyword">int</span> sum = a ^ b;</span><br><span class="line">            <span class="comment">// 进位和(位与再左移一位，这样当某一位上两个数都是1时就会进位)</span></span><br><span class="line">            <span class="keyword">int</span> carry = (a &amp; b) &lt;&lt; <span class="number">1</span>;</span><br><span class="line">            a = sum;</span><br><span class="line">            b = carry;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> a;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>]]></content>
       <categories>
         <category>算法</category>
         <category>剑指offer</category>
