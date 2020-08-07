@@ -895,4 +895,64 @@
         <tag>设计模式</tag>
       </tags>
   </entry>
+  <entry>
+    <title>Java基础知识点</title>
+    <url>/2020/08/06/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86%E7%82%B9/</url>
+    <content><![CDATA[<p>记录一些遇到过的Java基础知识点。（持续更新）</p>
+<a id="more"></a>
+<h3 id="Java基本数据类型图"><a href="#Java基本数据类型图" class="headerlink" title="Java基本数据类型图"></a>Java基本数据类型图</h3><p><img src="Java%E5%9F%BA%E6%9C%AC%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B.jpeg" alt=""></p>
+<hr>
+<h3 id="a-a-b-与-a-b"><a href="#a-a-b-与-a-b" class="headerlink" title="a = a + b 与 a += b"></a>a = a + b 与 a += b</h3><p>举例：<code>short a = 1; a = a + 1;</code>因为 1 为整型，<code>a + 1</code>也为整形，所以需要强制转换成<code>short</code>类型才能赋值。<br>而<code>short a = 1; a += 1;</code>则不需要强制转换，因为<code>+=</code>含有隐式的类型转换，可以自动转型为<code>short</code>。</p>
+<hr>
+<h3 id="访问修饰符"><a href="#访问修饰符" class="headerlink" title="访问修饰符"></a>访问修饰符</h3><h4 id="分类"><a href="#分类" class="headerlink" title="分类"></a>分类</h4><ol>
+<li><strong>private</strong>: 当前类可见。不能修饰类</li>
+<li><strong>default(缺省)</strong>: 同包可见。</li>
+<li><strong>protected</strong>: 同包内的类以及所有子类可见。不能修饰类。</li>
+<li><strong>public</strong>: 所有类可见。<h4 id="图"><a href="#图" class="headerlink" title="图"></a>图</h4><img src="%E8%AE%BF%E9%97%AE%E4%BF%AE%E9%A5%B0%E7%AC%A6.jpeg" alt=""></li>
+</ol>
+<hr>
+<h3 id="final修饰符"><a href="#final修饰符" class="headerlink" title="final修饰符"></a>final修饰符</h3><blockquote>
+<p>被final修饰的类不可以被继承<br>被final修饰的方法不可以被重写<br>被final修饰的变量不可以被改变。被final修饰不可变的是变量的引用，而不是引用指向的内容，引用指向的内容是可以改变的。</p>
+</blockquote>
+<hr>
+<h3 id="普通类与抽象类"><a href="#普通类与抽象类" class="headerlink" title="普通类与抽象类"></a>普通类与抽象类</h3><ol>
+<li>普通类不能包含抽象方法，抽象类可以包含抽象方法。</li>
+<li>抽象类不能直接实例化，普通类可以直接实例化。</li>
+</ol>
+<hr>
+<h3 id="重写与重载"><a href="#重写与重载" class="headerlink" title="重写与重载"></a>重写与重载</h3><p>方法的重载和重写都是实现多态的方式，区别在于前者实现的是编译时的多态性，而后者实现的是运行时的多态性。</p>
+<ol>
+<li><strong>重载</strong>：发生在同一个类中，方法名相同参数列表不同（参数类型不同、个数不同、顺序不同），<strong>与方法返回值和访问修饰符无关</strong>，即重载的方法不能根据返回类型进行区分。</li>
+<li><strong>重写</strong>：发生在父子类中，方法名、参数列表必须相同，返回值小于等于父类，抛出的异常小于等于父类，访问修饰符大于等于父类（里氏代换原则）；如果父类方法访问修饰符为private则子类中就不是重写。</li>
+</ol>
+<hr>
+<h3 id="IO流"><a href="#IO流" class="headerlink" title="IO流"></a>IO流</h3><h4 id="分类-1"><a href="#分类-1" class="headerlink" title="分类"></a>分类</h4><ol>
+<li>按照流的流向分，可以分为输入流和输出流；</li>
+<li>按照操作单元划分，可以划分为字节流和字符流；</li>
+<li>按照流的角色划分为节点流和处理流。</li>
+</ol>
+<p>总的来说，Java IO流是从以下四个抽象类中派生出来的。</p>
+<ol>
+<li>InputStream/Reader: 所有的输入流的基类，前者是字节输入流，后者是字符输入流。</li>
+<li>OutputStream/Writer: 所有输出流的基类，前者是字节输出流，后者是字符输出流。</li>
+</ol>
+<hr>
+<h3 id="BIO、NIO、AIO"><a href="#BIO、NIO、AIO" class="headerlink" title="BIO、NIO、AIO"></a>BIO、NIO、AIO</h3><ol>
+<li>BIO: 同步阻塞模式。线程发起IO请求后，一直阻塞IO，直到缓冲区数据就绪后，再进入下一步操作。当面对十万甚至百万级连接的时候，传统的BIO模型是无能为力的。</li>
+<li>NIO: 同步非阻塞的IO模型。线程发起IO请求后，立即返回（非阻塞IO）。同步指的是必须等待IO缓冲区内的数据就绪，而非阻塞指的是，用户线程不原地等待IO缓冲区，可以先做一些其他操作，但是要定时轮询检查IO缓冲区数据是否就绪。</li>
+<li>AIO: 异步非阻塞IO模型。基于事件和回调机制而实现，也就是应用操作之后会直接返回，不会堵塞在那里，当后台处理完成，操作系统会通知相应的线程进行后续的操作。</li>
+</ol>
+<hr>
+<h3 id="String-str-“i”-与-String-str-new-String-“i”"><a href="#String-str-“i”-与-String-str-new-String-“i”" class="headerlink" title="String str = “i” 与 String str = new String(“i”)"></a>String str = “i” 与 String str = new String(“i”)</h3><p>内存分配的方式不同。<code>String str = &quot;i&quot;</code>JVM会将其分配到常量池；另一种会分配到堆内存中。</p>
+<hr>
+<h3 id="Integer"><a href="#Integer" class="headerlink" title="Integer"></a>Integer</h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Integer a = <span class="keyword">new</span> Integer(<span class="number">3</span>);</span><br><span class="line">Integer b = <span class="number">3</span>;  <span class="comment">// 将3自动装箱成Integer类型</span></span><br><span class="line"><span class="keyword">int</span> c = <span class="number">3</span>;</span><br><span class="line">System.out.println(a == b); <span class="comment">// false 两个引用没有引用同一对象</span></span><br><span class="line">System.out.println(a == c); <span class="comment">// true a自动拆箱成int类型再和c比较</span></span><br><span class="line">System.out.println(b == c); <span class="comment">// true</span></span><br><span class="line"></span><br><span class="line">Integer a1 = <span class="number">128</span>;</span><br><span class="line">Integer b1 = <span class="number">128</span>;</span><br><span class="line">System.out.println(a1 == b1); <span class="comment">// false</span></span><br><span class="line"></span><br><span class="line">Integer a2 = <span class="number">127</span>;</span><br><span class="line">Integer b2 = <span class="number">127</span>;</span><br><span class="line">System.out.println(a2 == b2); <span class="comment">// true</span></span><br></pre></td></tr></table></figure>
+<p>如果整型字面量的值在<code>-128</code>到<code>127</code>之间，那么自动装箱时不会创建新的Integer对象，而是直接引用常量池中的Integer对象；超过范围时会创建新对象，因此<code>a2 == b2</code>返回<code>false</code>。</p>
+]]></content>
+      <categories>
+        <category>Java</category>
+      </categories>
+      <tags>
+        <tag>Java基础</tag>
+      </tags>
+  </entry>
 </search>
