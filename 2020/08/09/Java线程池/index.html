@@ -22,17 +22,29 @@
     var CONFIG = {"hostname":"irvlin.xyz","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"default"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="I can do all things.">
-<meta property="og:type" content="website">
-<meta property="og:title" content="IRvLin的博客">
-<meta property="og:url" content="http://irvlin.xyz/tags/HashMap/index.html">
+  <meta name="description" content="记录Java线程池相关知识。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java线程池">
+<meta property="og:url" content="http://irvlin.xyz/2020/08/09/Java%E7%BA%BF%E7%A8%8B%E6%B1%A0/index.html">
 <meta property="og:site_name" content="IRvLin的博客">
-<meta property="og:description" content="I can do all things.">
+<meta property="og:description" content="记录Java线程池相关知识。">
 <meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://irvlin.xyz/2020/08/09/Java%E7%BA%BF%E7%A8%8B%E6%B1%A0/ThreadPoolExecutor%E7%B1%BB%E5%9B%BE.png">
+<meta property="og:image" content="http://irvlin.xyz/2020/08/09/Java%E7%BA%BF%E7%A8%8B%E6%B1%A0/ThreadPoolExecutor%E8%BF%90%E8%A1%8C%E6%B5%81%E7%A8%8B.png">
+<meta property="og:image" content="http://irvlin.xyz/2020/08/09/Java%E7%BA%BF%E7%A8%8B%E6%B1%A0/ThreadPoolExecutor%E8%BF%90%E8%A1%8C%E7%8A%B6%E6%80%81.png">
+<meta property="og:image" content="http://irvlin.xyz/2020/08/09/Java%E7%BA%BF%E7%A8%8B%E6%B1%A0/%E7%BA%BF%E7%A8%8B%E6%B1%A0%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F.png">
+<meta property="og:image" content="http://irvlin.xyz/2020/08/09/Java%E7%BA%BF%E7%A8%8B%E6%B1%A0/%E4%BB%BB%E5%8A%A1%E6%89%A7%E8%A1%8C%E6%9C%BA%E5%88%B6.png">
+<meta property="og:image" content="http://irvlin.xyz/2020/08/09/Java%E7%BA%BF%E7%A8%8B%E6%B1%A0/%E9%98%BB%E5%A1%9E%E9%98%9F%E5%88%97%E6%88%90%E5%91%98.png">
+<meta property="og:image" content="http://irvlin.xyz/2020/08/09/Java%E7%BA%BF%E7%A8%8B%E6%B1%A0/%E8%8E%B7%E5%8F%96%E4%BB%BB%E5%8A%A1%E6%B5%81%E7%A8%8B.png">
+<meta property="og:image" content="http://irvlin.xyz/2020/08/09/Java%E7%BA%BF%E7%A8%8B%E6%B1%A0/%E6%8B%92%E7%BB%9D%E7%AD%96%E7%95%A5.png">
+<meta property="article:published_time" content="2020-08-09T10:15:04.000Z">
+<meta property="article:modified_time" content="2020-08-11T13:55:41.227Z">
 <meta property="article:author" content="Charispsychoma">
+<meta property="article:tag" content="线程池">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://irvlin.xyz/2020/08/09/Java%E7%BA%BF%E7%A8%8B%E6%B1%A0/ThreadPoolExecutor%E7%B1%BB%E5%9B%BE.png">
 
-<link rel="canonical" href="http://irvlin.xyz/tags/HashMap/">
+<link rel="canonical" href="http://irvlin.xyz/2020/08/09/Java%E7%BA%BF%E7%A8%8B%E6%B1%A0/">
 
 
 <script id="page-configurations">
@@ -40,12 +52,12 @@
   CONFIG.page = {
     sidebar: "",
     isHome : false,
-    isPost : false,
+    isPost : true,
     lang   : 'zh-CN'
   };
 </script>
 
-  <title>标签: HashMap | IRvLin的博客</title>
+  <title>Java线程池 | IRvLin的博客</title>
   
 
 
@@ -185,57 +197,167 @@
         <div class="content-wrap">
           
 
-          <div class="content tag">
+          <div class="content post posts-expand">
             
 
+    
   
   
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://irvlin.xyz/2020/08/09/Java%E7%BA%BF%E7%A8%8B%E6%B1%A0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Charispsychoma">
+      <meta itemprop="description" content="I can do all things.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="IRvLin的博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Java线程池
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-08-09 18:15:04" itemprop="dateCreated datePublished" datetime="2020-08-09T18:15:04+08:00">2020-08-09</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-08-11 21:55:41" itemprop="dateModified" datetime="2020-08-11T21:55:41+08:00">2020-08-11</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%A4%9A%E7%BA%BF%E7%A8%8B/" itemprop="url" rel="index"><span itemprop="name">多线程</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
   
-  <div class="post-block">
-    <div class="posts-collapse">
-      <div class="collection-title">
-        <h2 class="collection-header">HashMap
-          <small>标签</small>
-        </h2>
-      </div>
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2020/08/09/Java%E7%BA%BF%E7%A8%8B%E6%B1%A0/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2020/08/09/Java%E7%BA%BF%E7%A8%8B%E6%B1%A0/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
 
       
-    <div class="collection-year">
-      <span class="collection-header">2020</span>
+        <p>记录Java线程池相关知识。</p>
+<a id="more"></a>
+<h3 id="什么是线程池"><a href="#什么是线程池" class="headerlink" title="什么是线程池"></a>什么是线程池</h3><p>随着计算机行业的飞速发展，多核CPU逐渐成为主流。多线程成为了提升服务器性能的必备武器。<br>线程池是一种<code>池化技术</code>，用于管理多线程，经常出现在多线程服务器中，例如MySQL。</p>
+<hr>
+<h3 id="为什么需要线程池"><a href="#为什么需要线程池" class="headerlink" title="为什么需要线程池"></a>为什么需要线程池</h3><p>线程过多会带来额外的开销，包括线程的创建和调度以及销毁，导致系统性能的降低，最终有可能导致系统内存耗尽。而使用线程池则可以避免这些问题：</p>
+<ol>
+<li><strong>降低资源消耗</strong>：通过池化技术重复利用已创建的线程，降低线程创建和销毁造成的损耗。</li>
+<li><strong>提高响应速度</strong>：无需等待创建线程即可立即执行任务。</li>
+<li><strong>提高线程的可管理性</strong>：对线程进行进行统一的分配、调优和监控。</li>
+<li><strong>提供额外功能</strong>：线程池还有许多拓展的功能，例如延时定时线程池，可对任务延期执行或者定期执行。</li>
+</ol>
+<hr>
+<h3 id="线程池核心设计"><a href="#线程池核心设计" class="headerlink" title="线程池核心设计"></a>线程池核心设计</h3><p>Java线程池的核心实现类是<code>ThreadPoolExecutor</code>，其类图如下:<br><img src="ThreadPoolExecutor%E7%B1%BB%E5%9B%BE.png" alt=""><br>ThreadPoolExecutor的顶层接口是<code>Executor</code>，它提供了一种思想，将任务提交和任务执行进行解耦。将任务提交和任务执行进行解耦。用户无需关注如何创建线程，如何调度线程来执行任务，只需提供<code>Runnable</code>对象，将任务的运行逻辑提交到执行器(Executor)中，由Executor框架完成线程的调配和任务的执行部分。<br>而<code>ExecutorService</code>接口则拓展了一些功能：</p>
+<ol>
+<li>扩充执行任务的能力，补充可以为一个或一批异步任务生成Future的方法。</li>
+<li>提供了管控线程池的方法，比如停止线程池的运行。</li>
+</ol>
+<p><code>AbstractExecutorService</code>则是上层的抽象类，将执行任务的流程串联了起来，保证下层的实现只需关注一个执行任务的方法即可。<br>最下层的实现类<code>ThreadPoolExecutor</code>实现最复杂的运行部分。一方面维护自身的生命周期，另一方面管理线程和任务，使两者良好的结合从而执行并行任务。<br><code>ThreadPoolExecutor</code>运行流程如下：<br><img src="ThreadPoolExecutor%E8%BF%90%E8%A1%8C%E6%B5%81%E7%A8%8B.png" alt=""><br>线程池内部构建了一个生产者消费者模型，将线程与任务解耦，并不直接关联，从而良好的缓冲任务，复用线程。<br>任务管理充当生产者，任务提交后，线程池会进行后续的判断：是直接申请线程执行任务，还是将其加入到阻塞队列进行等待，亦或是直接拒绝该任务。<br>线程管理则充当消费者，根据任务的请求进行线程的分配，执行完任务又会继续获取新的任务，直到任务全部获取完成，对线程进行回收。</p>
+<hr>
+<h3 id="线程池生命周期"><a href="#线程池生命周期" class="headerlink" title="线程池生命周期"></a>线程池生命周期</h3><p><code>ThreadPoolExecutor</code>的运行状态有5种：<br><img src="ThreadPoolExecutor%E8%BF%90%E8%A1%8C%E7%8A%B6%E6%80%81.png" alt=""><br>生命周期转换图如下：<br><img src="%E7%BA%BF%E7%A8%8B%E6%B1%A0%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F.png" alt=""></p>
+<hr>
+<h3 id="任务执行机制"><a href="#任务执行机制" class="headerlink" title="任务执行机制"></a>任务执行机制</h3><p>前面提到了任务提交后线程会进行判断如何处理任务，其主要执行机制如下：</p>
+<ol>
+<li>首先检测线程池运行状态，如果不是<code>RUNNING</code>，则直接拒绝，线程池要保证在<code>RUNNING</code>的状态下执行任务。</li>
+<li>如果<code>workerCount &lt; corePoolSize</code>，则创建并启动一个线程来执行新提交的任务。</li>
+<li>如果<code>workerCount &gt;= corePoolSize</code>，且线程池内的阻塞队列未满，则将任务添加到该阻塞队列中，该任务会等到线程空闲时执行。</li>
+<li>如果<code>workerCount &gt;= corePoolSize &amp;&amp; workerCount &lt; maximumPoolSize</code>，且线程池内的阻塞队列已满，则创建并启动一个线程来执行新提交的任务。</li>
+<li>如果<code>workerCount &gt;= maximumPoolSize</code>，并且线程池内的阻塞队列已满, 则根据<strong>拒绝策略</strong>来处理该任务, 默认的处理方式是直接抛异常。</li>
+</ol>
+<p>流程图如下：<br><img src="%E4%BB%BB%E5%8A%A1%E6%89%A7%E8%A1%8C%E6%9C%BA%E5%88%B6.png" alt=""></p>
+<hr>
+<h3 id="任务缓冲"><a href="#任务缓冲" class="headerlink" title="任务缓冲"></a>任务缓冲</h3><p>任务缓冲模块是线程池管理任务的核心部分。线程池的作用是将任务与线程解耦，再对任务进行分配。线程池是通过<strong>阻塞队列</strong>来实现的。阻塞队列对任务进行缓存，线程则从阻塞队列取出任务执行。<br>阻塞队列是一个双端队列，生产者往队列添加元素，消费者从队列取出元素。使用不同的队列可以实现不同的任务存取策略：<br><img src="%E9%98%BB%E5%A1%9E%E9%98%9F%E5%88%97%E6%88%90%E5%91%98.png" alt=""></p>
+<hr>
+<h3 id="任务申请"><a href="#任务申请" class="headerlink" title="任务申请"></a>任务申请</h3><p>任务进行提交后，执行的情况有两种：一种是线程池直接创建一个线程执行该任务，另一个是从阻塞队列中获取任务并执行，该线程执行完任务会继续从阻塞队列中获取任务执行。前者这种情况仅出现在线程初始创建的时候，后者是大多数情况。<br>这部分策略由<code>getTask</code>方法实现，其执行流程如下图：<br><img src="%E8%8E%B7%E5%8F%96%E4%BB%BB%E5%8A%A1%E6%B5%81%E7%A8%8B.png" alt=""></p>
+<hr>
+<h3 id="任务拒绝"><a href="#任务拒绝" class="headerlink" title="任务拒绝"></a>任务拒绝</h3><p>任务拒绝模块是线程池的保护策略，当阻塞队列已满，且线程池中的线程数目已达到<code>maximumPoolSize</code>时，线程池就会根据拒绝策略处理新的任务。<br>用户可以自定义拒绝策略，也可以选择JDK提供的4中拒绝策略：<br><img src="%E6%8B%92%E7%BB%9D%E7%AD%96%E7%95%A5.png" alt=""></p>
+<hr>
+<h3 id="worker线程"><a href="#worker线程" class="headerlink" title="worker线程"></a>worker线程</h3><p>…</p>
+<hr>
+<h3 id="线程池几个重要的方法"><a href="#线程池几个重要的方法" class="headerlink" title="线程池几个重要的方法"></a>线程池几个重要的方法</h3><blockquote>
+<p>execute()<br>submit()<br>shutdown()<br>shutdownNow()</p>
+</blockquote>
+<h4 id="execute-和-submit-区别"><a href="#execute-和-submit-区别" class="headerlink" title="execute() 和 submit() 区别"></a>execute() 和 submit() 区别</h4><p><code>submit()</code>有返回值，<code>execute()</code>无返回值。</p>
+<h4 id="shutdown-和-shutdownNow-区别"><a href="#shutdown-和-shutdownNow-区别" class="headerlink" title="shutdown() 和 shutdownNow() 区别"></a>shutdown() 和 shutdownNow() 区别</h4><p><code>shutdown()</code>和<code>shutdownNow()</code>是用来关闭线程池的。<br><code>shutdown()</code>: 此方法执行后不得向线程池再提交任务，如果有空闲线程则销毁空闲线程，等待所有正在执行的任务及位于阻塞队列中的任务执行结束，然后销毁所有线程。<br><code>shutdownNow()</code>: 此方法执行后不得向线程池再提交任务，如果有空闲线程则销毁空闲线程，取消所有位于阻塞队列中的任务，并将其放入List容器，作为返回值。取消正在执行的线程(设置正在执行线程的中断标志位,调用线程的<code>interrupt</code>方法来中断线程)。</p>
+<hr>
+
     </div>
 
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
+    
+    
+    
 
-      <div class="post-meta">
-        <time itemprop="dateCreated"
-              datetime="2020-07-28T22:32:57+08:00"
-              content="2020-07-28">
-          07-28
-        </time>
-      </div>
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E7%BA%BF%E7%A8%8B%E6%B1%A0/" rel="tag"># 线程池</a>
+          </div>
 
-      <div class="post-title">
-          <a class="post-title-link" href="/2020/07/28/HashMap%E5%BA%95%E5%B1%82%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86/" itemprop="url">
-            <span itemprop="name">HashMap底层实现原理</span>
-          </a>
-      </div>
+        
 
-    </header>
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/08/06/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86%E7%82%B9/" rel="prev" title="Java基础知识点">
+      <i class="fa fa-chevron-left"></i> Java基础知识点
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
   </article>
-
-    </div>
-  </div>
   
   
-  
-
   
 
 
 
           </div>
           
+    <div class="comments" id="valine-comments"></div>
 
 <script>
   window.addEventListener('tabs:register', () => {
@@ -282,6 +404,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#什么是线程池"><span class="nav-number">1.</span> <span class="nav-text">什么是线程池</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#为什么需要线程池"><span class="nav-number">2.</span> <span class="nav-text">为什么需要线程池</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#线程池核心设计"><span class="nav-number">3.</span> <span class="nav-text">线程池核心设计</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#线程池生命周期"><span class="nav-number">4.</span> <span class="nav-text">线程池生命周期</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#任务执行机制"><span class="nav-number">5.</span> <span class="nav-text">任务执行机制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#任务缓冲"><span class="nav-number">6.</span> <span class="nav-text">任务缓冲</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#任务申请"><span class="nav-number">7.</span> <span class="nav-text">任务申请</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#任务拒绝"><span class="nav-number">8.</span> <span class="nav-text">任务拒绝</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#worker线程"><span class="nav-number">9.</span> <span class="nav-text">worker线程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#线程池几个重要的方法"><span class="nav-number">10.</span> <span class="nav-text">线程池几个重要的方法</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#execute-和-submit-区别"><span class="nav-number">10.1.</span> <span class="nav-text">execute() 和 submit() 区别</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#shutdown-和-shutdownNow-区别"><span class="nav-number">10.2.</span> <span class="nav-text">shutdown() 和 shutdownNow() 区别</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
