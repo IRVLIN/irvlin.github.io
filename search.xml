@@ -181,13 +181,14 @@
 </ol>
 <hr>
 <h3 id="垃圾回收算法"><a href="#垃圾回收算法" class="headerlink" title="垃圾回收算法"></a>垃圾回收算法</h3><h4 id="分代收集理论"><a href="#分代收集理论" class="headerlink" title="分代收集理论"></a>分代收集理论</h4><p>分代收集理论建立在两个分代假说之上：</p>
-<blockquote>
-<p>弱分代假说：绝大多数对象都是朝生夕灭的。<br>强分代假说：熬过越多次垃圾收集过程的对象就越难以消亡。</p>
-</blockquote>
+<ol>
+<li>弱分代假说：绝大多数对象都是朝生夕灭的。</li>
+<li>强分代假说：熬过越多次垃圾收集过程的对象就越难以消亡。</li>
+</ol>
 <p>显而易见，如果一个区域中大多数对象都是朝生夕灭，难以熬过垃圾收集过程的话，那么把它们集中放在一起，每次回收时只关注如何保留少量存活而不是去标记那些大量将要被回收的对象，就能以较低代价回收到大量的空间；如果剩下的都是难以消亡的对象，那把它们集中放在一块，虚拟机便可以使用较低的频率来回收这个区域，这就同时兼顾了垃圾收集的时间开销和内存的空间有效利用。<br>因而Java堆会被分为<strong>新生代</strong>和<strong>老年代</strong>两个区域。顾名思义，在新生代中，每次垃圾收集时都发现有大批对象死去，而每次回收后存活的少量对象，将会逐步晋升到老年代中存放。<br>然而这种分代收集存在一个明显的困难：对象不是孤立的，<strong>对象之间会存在跨代引用</strong>。<br>比如现在进行一次局限于新生代区域内的收集。但其中的对象完全有可能被老年代所引用，这时就不得不再遍历老年代中所有对象来确保其可达性，反过来也一样。虽然这样可行，但会带来很大的性能负担。因此分代收集理论需要第三条法则：</p>
-<blockquote>
-<p>跨代引用假说：跨代引用相对于同代引用来说只占极少数。</p>
-</blockquote>
+<ul>
+<li>跨代引用假说：跨代引用相对于同代引用来说只占极少数。</li>
+</ul>
 <p>存在互相引用关系的两个对象，应该倾向于同时生存或同时消亡的。比如，某个新生代对象存在跨代引用，由于老年代对象难以消亡，该引用会使得新生代对象在收集时同样得以存活，进而在年龄增长之后晋升到老年代中，这时跨代引用也随即被消除了。<br>因此我们不再为了少量的跨代引用扫描整个老年代，而是在新生代上建立一个<strong>记忆集</strong>，把老年代分为若干小块，标识出老年代哪块存在跨代引用。此后发生新生代收集时，只有包含了跨代引用的小块内存里的对象才会被加入到GC Roots进行扫描。</p>
 <h4 id="标记-清除算法"><a href="#标记-清除算法" class="headerlink" title="标记-清除算法"></a>标记-清除算法</h4><p>此算法首先标记出所有需要回收的对象，完成后统一回收掉所有被标记的对象。<br>这个算法有两个缺点：一是<strong>执行效率不稳定</strong>，如果堆中有大量需要回收的对象，那就需要进行大量的标记和清除的动作，执行效率会降低；二是内存空间的碎片化，<strong>标记清除后会产生大量不连续的内存碎片</strong>，这可能导致以后分配较大对象时找不到足够的连续内存而不得不触发另一次垃圾收集动作。<br><img src="%E6%A0%87%E8%AE%B0-%E6%B8%85%E9%99%A4%E7%AE%97%E6%B3%95.png" alt=""></p>
 <h4 id="标记-复制算法"><a href="#标记-复制算法" class="headerlink" title="标记-复制算法"></a>标记-复制算法</h4><p>这种算法将可用内存分为容量相等的两块，每次只使用一块，当这一块的内存用完了，就将还存活着的对象复制到另外一块上面，然后再把已使用过的内存空间一次清理掉。<br>如果内存中多数对象都是存活的，这种算法将会产生大量的内存间复制的开销，但对于多数对象都是可回收的情况，算法需要复制的就是占少数的存活对象，而且每次都是针对整个半区进行内存回收，分配内存时也就不用考虑有空间碎片的复杂情况，只要移动堆顶指针，按顺序分配即可。<br>现在的商用Java虚拟机大多优先采用这种算法回收新生代。由于新生代中约98%的对象熬不过第一轮收集，因此不需要按照1:1的比例来划分空间。<br>常见的做法是分为<code>8:1:1</code>这样一块较大的Eden空间和两块较小的Survivor空间。工作原理如下：</p>
@@ -226,9 +227,11 @@
 <li><strong>public</strong>: 所有类可见。<h4 id="图"><a href="#图" class="headerlink" title="图"></a>图</h4><img src="%E8%AE%BF%E9%97%AE%E4%BF%AE%E9%A5%B0%E7%AC%A6.jpeg" alt=""></li>
 </ol>
 <hr>
-<h3 id="final修饰符"><a href="#final修饰符" class="headerlink" title="final修饰符"></a>final修饰符</h3><blockquote>
-<p>被final修饰的类不可以被继承<br>被final修饰的方法不可以被重写<br>被final修饰的变量不可以被改变。被final修饰不可变的是变量的引用，而不是引用指向的内容，引用指向的内容是可以改变的。</p>
-</blockquote>
+<h3 id="final修饰符"><a href="#final修饰符" class="headerlink" title="final修饰符"></a>final修饰符</h3><ol>
+<li>被final修饰的类不可以被继承</li>
+<li>被final修饰的方法不可以被重写</li>
+<li>被final修饰的变量不可以被改变。被final修饰不可变的是变量的引用，而不是引用指向的内容，引用指向的内容是可以改变的。</li>
+</ol>
 <hr>
 <h3 id="普通类与抽象类"><a href="#普通类与抽象类" class="headerlink" title="普通类与抽象类"></a>普通类与抽象类</h3><ol>
 <li>普通类不能包含抽象方法，抽象类可以包含抽象方法。</li>
@@ -335,38 +338,45 @@
 <p>常量在编译阶段会存入调用类的<strong>常量池</strong>中，本质上没有直接引用到定义常量的类，因此不会触发定义常量的类的初始化。<br>而接口的加载过程与类加载过程稍有不同。接口也有初始化过程，这点与类是一致的，上面的代码都是用静态语句块“static{}”来输出初始化信息的，而接口中不能使用“static{}”语句块，但编译器仍然会为接口生成“<clinit>()”类构造器，用于初始化接口中所定义的成员变量。<br>一个接口在初始化时，并不要求父接口都完成了初始化，只有在真正使用到父接口的时候（如引用接口中定义的常量）才会初始化。</p>
 <hr>
 <h3 id="类加载的过程"><a href="#类加载的过程" class="headerlink" title="类加载的过程"></a>类加载的过程</h3><ol>
-<li><strong>加载</strong><br>在加载阶段，Java虚拟机需要完成以下三件事情：<ul>
+<li><p><strong>加载</strong><br>在加载阶段，Java虚拟机需要完成以下三件事情：</p>
+<ul>
 <li>通过一个类的全限定名来获取定义此类的二进制字节流。</li>
 <li>将这个字节流所代表的静态存储结构转化为方法区的运行时数据结构。</li>
 <li>在内存中生成一个代表这个类的java.lang.Class对象，作为方法区这个类的各种数据的访问入口。</li>
 </ul>
 </li>
-<li><strong>验证</strong><br>验证是连接阶段的第一步，这一阶段的目的是确保Class文件的字节流中包含的信息符合《Java虚拟机规范》的全部约束要求，保证这些信息被当作代码运行后不会危害虚拟机自身的安全。<br>验证阶段大致上会完成下面四个阶段的检验动作：<strong>文件格式验证、元数据验证、字节码验证和符号引用验证。</strong><ul>
+<li><p><strong>验证</strong><br>验证是连接阶段的第一步，这一阶段的目的是确保Class文件的字节流中包含的信息符合《Java虚拟机规范》的全部约束要求，保证这些信息被当作代码运行后不会危害虚拟机自身的安全。<br>验证阶段大致上会完成下面四个阶段的检验动作：<strong>文件格式验证、元数据验证、字节码验证和符号引用验证。</strong></p>
+<ul>
 <li>文件格式验证。主要验证字节流是否符合Class文件格式的规范。比如魔数开头、版本号、常量类型等等问题。</li>
 <li>元数据验证。对字节码描述的信息进行语义分析。比如一个类是否有父类、是不是抽象类等等。</li>
 <li>字节码验证。主要通过数据流分析和控制流分析，确定程序语义是合法的、符合逻辑的。比如保证类中的方法体在运行时不会危害虚拟机。</li>
 <li>符号引用验证。发生在虚拟机将符号引用转化为直接引用的时候，这个转化动作将在连接的第三阶段——解析阶段中发生。</li>
 </ul>
 </li>
-<li><strong>准备</strong><br>准备阶段是正式为类中定义的变量（即<strong>静态变量</strong>，被static修饰的变量）分配内存并设置类变量初始值的阶段。<br>也就是说，<strong>实例变量</strong>在这个阶段是不会被初始化的。例如：<blockquote>
-<p>public static int value = 123;<br>public int value = 123;</p>
-</blockquote>
+<li><p><strong>准备</strong><br>准备阶段是正式为类中定义的变量（即<strong>静态变量</strong>，被static修饰的变量）分配内存并设置类变量初始值的阶段。<br>也就是说，<strong>实例变量</strong>在这个阶段是不会被初始化的。例如：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> value = <span class="number">123</span>;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">int</span> value = <span class="number">123</span>;</span><br></pre></td></tr></table></figure>
+<p>对于以上两行代码，只有第一行会执行并初始化值为0。赋值为123要等到类的初始化阶段才会执行。<br>然而也有特殊情况，比如，如果上述<code>value</code>字段被<code>final</code>修饰，那么在这一阶段将会被直接赋值为123。</p>
+</li>
+<li><p><strong>解析</strong><br>解析阶段是Java虚拟机将常量池内的符号引用替换为直接引用的过程。JVM针对类或接口、字段、类方法、接口方法、方法类型、方法句柄和调用点限定符7类引用进行解析。</p>
+</li>
+<li><p><strong>初始化</strong><br>到了这个阶段，Java虚拟机才真正开始执行类中编写的Java代码。在这个阶段，JVM会对类进行初始化。具体场景在前面<strong>类加载的时机</strong>已经描述。</p>
+</li>
+<li><p><strong>使用</strong><br>JVM完成初始化后，便从入口方法开始执行代码。</p>
+</li>
+<li><p><strong>卸载</strong><br>执行完程序代码后，JVM开始销毁创建的Class对象，最后JVM也退出内存。</p>
 </li>
 </ol>
-<p>对于以上两行代码，只有第一行会执行并初始化值为0。赋值为123要等到类的初始化阶段才会执行。<br>然而也有特殊情况，比如，如果上述<code>value</code>字段被<code>final</code>修饰，那么在这一阶段将会被直接赋值为123。<br>4. <strong>解析</strong><br>解析阶段是Java虚拟机将常量池内的符号引用替换为直接引用的过程。JVM针对类或接口、字段、类方法、接口方法、方法类型、方法句柄和调用点限定符7类引用进行解析。<br>5. <strong>初始化</strong><br>到了这个阶段，Java虚拟机才真正开始执行类中编写的Java代码。在这个阶段，JVM会对类进行初始化。具体场景在前面<strong>类加载的时机</strong>已经描述。<br>6. <strong>使用</strong><br>JVM完成初始化后，便从入口方法开始执行代码。<br>7. <strong>卸载</strong><br>执行完程序代码后，JVM开始销毁创建的Class对象，最后JVM也退出内存。</p>
 <hr>
 <h3 id="举例"><a href="#举例" class="headerlink" title="举例"></a>举例</h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">GrandPa</span> </span>&#123;</span><br><span class="line">    &#123;</span><br><span class="line">        System.out.println(<span class="string">"grandpa代码块"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">static</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">"grandpa静态代码块"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">GrandPa</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"grandpa构造器"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Father</span> <span class="keyword">extends</span> <span class="title">GrandPa</span> </span>&#123;</span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">int</span> age = <span class="number">30</span>;</span><br><span class="line">    <span class="keyword">static</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">"father静态代码块"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    &#123;</span><br><span class="line">        System.out.println(<span class="string">"father代码块"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Father</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"father构造器"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Son</span> <span class="keyword">extends</span> <span class="title">Father</span> </span>&#123;</span><br><span class="line">    <span class="keyword">static</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">"son静态代码块"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Son</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"son构造器"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Test</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        System.out.println(Son.age);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>对于上述代码，输出是</p>
-<blockquote>
-<p>grandpa静态代码块<br>  father静态代码块<br>  30</p>
-</blockquote>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">grandpa静态代码块</span><br><span class="line">father静态代码块</span><br><span class="line"><span class="number">30</span></span><br></pre></td></tr></table></figure>
+
 <p>首先程序找到main方法，程序输出Son类的age类变量，但是由于Son类并没有直接定义这个变量，于是往父类找，触发了Father类初始化。<br>接着根据<strong>类加载的时机</strong>第3条<strong>当初始化类的时候，如果发现其父类还没有进行过初始化，则需要先触发其父类的初始化。</strong>所以又会触发GrandPa类的初始化。<br>最后再输出Father类中age的值30。</p>
 <p>再看一个例子</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Test</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        run();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> Test test = <span class="keyword">new</span> Test();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">"Test静态代码块"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    &#123;</span><br><span class="line">        System.out.println(<span class="string">"Test代码块"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Test</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"Test构造器"</span>);</span><br><span class="line">        System.out.println(<span class="string">"age: "</span> + age + <span class="string">" weight: "</span> + weight);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"Test静态方法"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> age = <span class="number">20</span>;</span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">int</span> weight = <span class="number">120</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>以上代码输出是</p>
-<blockquote>
-<p>Test代码块<br>  Test构造器<br>  age: 20 weight: 0<br>  Test静态代码块<br>  Test静态方法</p>
-</blockquote>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Test代码块</span><br><span class="line">Test构造器</span><br><span class="line">age: <span class="number">20</span> weight: <span class="number">0</span></span><br><span class="line">Test静态代码块</span><br><span class="line">Test静态方法</span><br></pre></td></tr></table></figure>
+
 <p>之前那个例子，main方法所在的类没有多余的代码，所以忽略了类的初始化。这个例子就不同了。<br>首先在准备阶段，会为类变量分配内存，初始化值。<code>test</code>实例变量被初始化为null，<code>weight</code>类变量初始化为0。<br>接着进入初始化阶段，首先初始化类构造器，也就是</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">static</span> Test test = <span class="keyword">new</span> Test();</span><br><span class="line"><span class="keyword">static</span> &#123;</span><br><span class="line">    System.out.println(<span class="string">"Test静态代码块"</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">static</span> <span class="keyword">int</span> weight = <span class="number">120</span>;</span><br></pre></td></tr></table></figure>
 <p>首先执行第一句，触发了类的实例化。于是执行对象构造器，也就是</p>
@@ -410,9 +420,9 @@
 <p><code>Lock</code>需要确保在<code>finally</code>块中释放锁，否则一旦受同步保护的代码块中抛出异常，则有可能永远不会释放持有的锁。而使用<code>synchronized</code>则可以由JVM来确保即使出现异常，锁也能自动释放。<br>在JDK 5时代，<code>Lock</code>在性能上优于<code>synchronized</code>，然而由于后续Java团队的优化，现在两者在性能上基本持平，所以性能已不是选择的决定因素。</p>
 <h4 id="非阻塞同步"><a href="#非阻塞同步" class="headerlink" title="非阻塞同步"></a>非阻塞同步</h4><p>互斥同步由于线程的阻塞和唤醒带来的性能开销，被称为<strong>阻塞同步</strong>。互斥同步属于<strong>悲观</strong>的并发策略，也就是悲观地认为只要不加同步措施，就一定会出现问题，无论共享的数据是否真的会出现竞争，都进行加锁。<br>相应的，还有一种选择则是基于冲突检测的<strong>乐观</strong>并发策略。也就是说，不管风险先进行操作，如果没有其他线程争用共享数据，那操作就直接成功了；如果共享的数据的确被争用，产生了冲突，那再进行其他的补偿措施，最常用的补偿措施是不断地重试，直到出现没有竞争的共享数据为止。这种同步操作被称为<strong>非阻塞同步</strong>。<br>对于非阻塞同步，一个重要的指令就是<strong>CAS</strong>指令。它需要进行3个操作，分别是<strong>内存位置</strong>（在Java中可以简单地理解为变量的内存地址，用V表示）、<strong>旧的预期值</strong>（用A表示）和<strong>准备设置的新值</strong>（用B表示）。CAS指令执行时，当且仅当V符合A时，处理器才会用B更新V的值，否则它就不执行更新。但是，不管是否更新了V的值，都会返回V的旧值，上述的处理过程是一个原子操作，执行期间不会被其他线程中断。<br>java中有一个<code>AtomicInteger</code>类，用它代替int后，即可实现CAS操作避免阻塞同步。其中的<code>incrementAndGet()</code>方法在一个无限循环中，不断尝试将一个比当前值大一的新值赋值给自己。如果失败了，那说明在执行CAS操作的时候，旧值已经发生改变，于是再次循环进行下一次操作，直到设置成功为止。<br>CAS看起来很美好，但其实有一个逻辑漏洞：例如一个变量V初次读取的时候是A值，并且在准备赋值的时候检查到它仍然为A值，CAS会认为它没有被改变过，但其实这个变量的值有可能在过程中被改成了B，又改回为A。这个漏洞成为CAS操作的<strong>ABA问题</strong>。为了解决这个问题，有一个带有标记的原子引用类<code>AtomicStampedReference</code>，它可以通过控制变量值的版本来保证CAS的正确性。不过由于ABA问题并不会影响程序并发的正确性，所以问题不大。</p>
 <h4 id="无同步方案"><a href="#无同步方案" class="headerlink" title="无同步方案"></a>无同步方案</h4><p>如果一个方法不涉及共享数据，那自然就不需要加任何同步措施。<br>如果一段代码中所需要的数据必须与其他代码共享，那就看看这些共享数据的代码是否能保证在同一个线程中执行。如果能保证，我们就可以把共享数据的可见范围限制在同一个线程之内，这样，无须同步也能保证线程之间不出现数据争用的问题。<br>Java中，如果一个变量只要被某个线程独享，我们可通过<code>java.lang.ThreadLocal</code>类来实现线程本地存储的功能。</p>
-<blockquote>
-<p>每一个线程的Thread对象中都有一个ThreadLocalMap对象，这个对象存储了一组以ThreadLocal.threadLocalHashCode为键，以本地线程变量为值的K-V值对，ThreadLocal对象就是当前线程的ThreadLocalMap的访问入口，每一个ThreadLocal对象都包含了一个独一无二的threadLocalHashCode值，使用这个值就可以在线程K-V值对中找回对应的本地线程变量。</p>
-</blockquote>
+<ul>
+<li>每一个线程的Thread对象中都有一个ThreadLocalMap对象，这个对象存储了一组以ThreadLocal.threadLocalHashCode为键，以本地线程变量为值的K-V值对，ThreadLocal对象就是当前线程的ThreadLocalMap的访问入口，每一个ThreadLocal对象都包含了一个独一无二的threadLocalHashCode值，使用这个值就可以在线程K-V值对中找回对应的本地线程变量。</li>
+</ul>
 <hr>
 <h3 id="锁"><a href="#锁" class="headerlink" title="锁"></a>锁</h3><h4 id="自旋锁与自适应自旋锁"><a href="#自旋锁与自适应自旋锁" class="headerlink" title="自旋锁与自适应自旋锁"></a>自旋锁与自适应自旋锁</h4><p>自旋锁在JDK 1.4.2就已经引入，直到JDK 6才默认开启。它可以使线程一直处于<strong>RUNNABLE</strong>状态，循环检测锁标志位，避免了线程切换的开销。但它会一直占用CPU资源却什么也不做，如果锁被其他线程占用的时间很长，则会造成大量资源的浪费。因此可以设置自旋的次数(默认为十)，如果自旋超过了这个次数，就以传统的方式挂起线程。<br>在JDK 6中，引入了<strong>自适应自旋锁</strong>，对自旋锁进行了优化。自适应意味着自旋的时间不再固定，而是由前一次在同一个锁的自旋时间以及锁的拥有者的状态来决定的。<br>如果在同一个锁对象上，自旋等待刚刚成功获得过锁，并且持有锁的线程正在运行中，那么JVM会认为这次自旋也很有可能再次成功，就会允许自旋等待持续相对更长的时间。反之以后获取这个锁则有可能直接忽略掉自旋过程，避免浪费处理器资源。</p>
 <h4 id="独享锁、共享锁"><a href="#独享锁、共享锁" class="headerlink" title="独享锁、共享锁"></a>独享锁、共享锁</h4><p><code>ReentrantLock</code>和<code>synchronized</code>都是独享锁，<code>ReadWriteLock</code>的读锁是共享锁，写锁是独享锁。</p>
@@ -1001,11 +1011,12 @@
 <hr>
 <h3 id="worker线程"><a href="#worker线程" class="headerlink" title="worker线程"></a>worker线程</h3><p>…</p>
 <hr>
-<h3 id="线程池几个重要的方法"><a href="#线程池几个重要的方法" class="headerlink" title="线程池几个重要的方法"></a>线程池几个重要的方法</h3><blockquote>
-<p>execute()<br>submit()<br>shutdown()<br>shutdownNow()</p>
-</blockquote>
-<h4 id="execute-和-submit-区别"><a href="#execute-和-submit-区别" class="headerlink" title="execute() 和 submit() 区别"></a>execute() 和 submit() 区别</h4><p><code>submit()</code>有返回值，<code>execute()</code>无返回值。</p>
-<h4 id="shutdown-和-shutdownNow-区别"><a href="#shutdown-和-shutdownNow-区别" class="headerlink" title="shutdown() 和 shutdownNow() 区别"></a>shutdown() 和 shutdownNow() 区别</h4><p><code>shutdown()</code>和<code>shutdownNow()</code>是用来关闭线程池的。<br><code>shutdown()</code>: 此方法执行后不得向线程池再提交任务，如果有空闲线程则销毁空闲线程，等待所有正在执行的任务及位于阻塞队列中的任务执行结束，然后销毁所有线程。<br><code>shutdownNow()</code>: 此方法执行后不得向线程池再提交任务，如果有空闲线程则销毁空闲线程，取消所有位于阻塞队列中的任务，并将其放入List容器，作为返回值。取消正在执行的线程(设置正在执行线程的中断标志位,调用线程的<code>interrupt</code>方法来中断线程)。</p>
+<h3 id="线程池几个重要的方法"><a href="#线程池几个重要的方法" class="headerlink" title="线程池几个重要的方法"></a>线程池几个重要的方法</h3><ul>
+<li>execute()</li>
+<li>submit()</li>
+<li>shutdown()</li>
+<li>shutdownNow()<h4 id="execute-和-submit-区别"><a href="#execute-和-submit-区别" class="headerlink" title="execute() 和 submit() 区别"></a>execute() 和 submit() 区别</h4><code>submit()</code>有返回值，<code>execute()</code>无返回值。<h4 id="shutdown-和-shutdownNow-区别"><a href="#shutdown-和-shutdownNow-区别" class="headerlink" title="shutdown() 和 shutdownNow() 区别"></a>shutdown() 和 shutdownNow() 区别</h4><code>shutdown()</code>和<code>shutdownNow()</code>是用来关闭线程池的。<br><code>shutdown()</code>: 此方法执行后不得向线程池再提交任务，如果有空闲线程则销毁空闲线程，等待所有正在执行的任务及位于阻塞队列中的任务执行结束，然后销毁所有线程。<br><code>shutdownNow()</code>: 此方法执行后不得向线程池再提交任务，如果有空闲线程则销毁空闲线程，取消所有位于阻塞队列中的任务，并将其放入List容器，作为返回值。取消正在执行的线程(设置正在执行线程的中断标志位,调用线程的<code>interrupt</code>方法来中断线程)。</li>
+</ul>
 ]]></content>
       <categories>
         <category>多线程</category>
@@ -1115,6 +1126,128 @@
       </categories>
       <tags>
         <tag>设计模式</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>多线程(1)</title>
+    <url>/2020/12/05/%E5%A4%9A%E7%BA%BF%E7%A8%8B-1/</url>
+    <content><![CDATA[<p>记录多线程相关知识(1) –&gt; synchronized</p>
+<a id="more"></a>
+
+<h3 id="synchronized作用"><a href="#synchronized作用" class="headerlink" title="synchronized作用"></a>synchronized作用</h3><p>保证同一时刻最多只有一个线程执行该段代码，以达到保证并发安全的效果。</p>
+<p>如果不使用<code>synchronized</code>，在多线程情况下，代码的执行可能会出现问题。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Test</span> <span class="keyword">implements</span> <span class="title">Runnable</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">int</span> i = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</span><br><span class="line">        Thread t1 = <span class="keyword">new</span> Thread(<span class="keyword">new</span> Test());</span><br><span class="line">        Thread t2 = <span class="keyword">new</span> Thread(<span class="keyword">new</span> Test());</span><br><span class="line">        t1.start();</span><br><span class="line">        t2.start();</span><br><span class="line">        <span class="comment">// 等待两个线程执行完毕</span></span><br><span class="line">        t1.join();</span><br><span class="line">        t2.join();</span><br><span class="line">        System.out.println(i);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; <span class="number">10000</span>; j++) &#123;</span><br><span class="line">            i++;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>执行这段代码，可以发现<code>i</code>的值几乎每次都不一样，但基本上都小于我们想要的值<code>20000</code>。这是由于<code>i++</code>并不是一个原子操作，它包含了以下三个步骤：</p>
+<ol>
+<li>读取<code>i</code></li>
+<li>将<code>i</code>加一</li>
+<li>将<code>i</code>的值写到内存中</li>
+</ol>
+<p>此时如果某一个线程执行到了步骤1或2，还未来得及将新数据写会到内存中，又有一个新线程执行到了步骤1，那么新线程读取到的值将不是最新的值。这也导致了最后的结果会比<code>20000</code>小。</p>
+<hr>
+<h3 id="synchronized用法"><a href="#synchronized用法" class="headerlink" title="synchronized用法"></a>synchronized用法</h3><p>synchronized分为两大类：</p>
+<ol>
+<li><p><strong>对象锁</strong>：包括<strong>方法锁</strong>(默认锁对象为<code>this</code>当前实例对象)和<strong>同步代码块锁</strong>(自己指定锁对象)。</p>
+</li>
+<li><p><strong>类锁</strong>：指<code>synchronized</code>修饰<strong>静态</strong>的方法或指定锁为<strong>Class对象</strong>。</p>
+</li>
+</ol>
+<h4 id="对象锁"><a href="#对象锁" class="headerlink" title="对象锁"></a>对象锁</h4><ol>
+<li>代码块形式</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Test</span> <span class="keyword">implements</span> <span class="title">Runnable</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">final</span> Object lock = <span class="keyword">new</span> Object();</span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">int</span> i = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</span><br><span class="line">        Thread t1 = <span class="keyword">new</span> Thread(<span class="keyword">new</span> Test());</span><br><span class="line">        Thread t2 = <span class="keyword">new</span> Thread(<span class="keyword">new</span> Test());</span><br><span class="line">        t1.start();</span><br><span class="line">        t2.start();</span><br><span class="line">        t1.join();</span><br><span class="line">        t2.join();</span><br><span class="line">        System.out.println(i);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; <span class="number">10000</span>; ++j) &#123;</span><br><span class="line">            <span class="keyword">synchronized</span> (lock) &#123;</span><br><span class="line">                i++;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这时，无论运行多少次，结果都为<code>20000</code>。我们利用对象锁保证了同一时刻只有一个线程进入被锁住的代码块中，这样每个线程每次读取到的<code>i</code>值都是最新的了。</p>
+<ol start="2">
+<li><p>方法修饰符形式</p>
+<p>与对象锁类似，只不过<code>synchronized</code>作用的范围改为了方法，粒度变粗了。</p>
+</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Test</span> <span class="keyword">implements</span> <span class="title">Runnable</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> Test instance = <span class="keyword">new</span> Test();</span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">int</span> i = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</span><br><span class="line">        <span class="comment">// 传入的Runnable对象必须是同一个，否则两个线程仍有可能同时进入addTask()方法中</span></span><br><span class="line">        Thread t1 = <span class="keyword">new</span> Thread(instance);</span><br><span class="line">        Thread t2 = <span class="keyword">new</span> Thread(instance);</span><br><span class="line">        t1.start();</span><br><span class="line">        t2.start();</span><br><span class="line">        t1.join();</span><br><span class="line">        t2.join();</span><br><span class="line">        System.out.println(i);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        addTask();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">addTask</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; <span class="number">10000</span>; ++j) &#123;</span><br><span class="line">            i++;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们一样可以得到<code>20000</code>的正确值。</p>
+<h4 id="类锁"><a href="#类锁" class="headerlink" title="类锁"></a>类锁</h4><p>类锁同样有两种形式：</p>
+<ol>
+<li>作用于<code>static</code>方法</li>
+</ol>
+<p>由于对象锁的方法锁默认锁的是当前的实例对象，所以我们必须传入同一个实例。如果我们想传入不同的实例同时使方法锁生效，就需要将方法声明为<code>static</code>类型。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Test</span> <span class="keyword">implements</span> <span class="title">Runnable</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">int</span> i = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</span><br><span class="line">        <span class="comment">// 无需传入同一个实例对象</span></span><br><span class="line">        Thread t1 = <span class="keyword">new</span> Thread(<span class="keyword">new</span> Test());</span><br><span class="line">        Thread t2 = <span class="keyword">new</span> Thread(<span class="keyword">new</span> Test());</span><br><span class="line">        t1.start();</span><br><span class="line">        t2.start();</span><br><span class="line">        t1.join();</span><br><span class="line">        t2.join();</span><br><span class="line">        System.out.println(i);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        addTask();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">addTask</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; <span class="number">10000</span>; ++j) &#123;</span><br><span class="line">            i++;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>此时依然可以得到正确答案。</p>
+<ol start="2">
+<li><code>synchronized(*.class)</code>作用于代码块</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Test</span> <span class="keyword">implements</span> <span class="title">Runnable</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">int</span> i = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</span><br><span class="line">        Thread t1 = <span class="keyword">new</span> Thread(<span class="keyword">new</span> Test());</span><br><span class="line">        Thread t2 = <span class="keyword">new</span> Thread(<span class="keyword">new</span> Test());</span><br><span class="line">        t1.start();</span><br><span class="line">        t2.start();</span><br><span class="line">        t1.join();</span><br><span class="line">        t2.join();</span><br><span class="line">        System.out.println(i);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="comment">// 类的Class对象</span></span><br><span class="line">        <span class="keyword">synchronized</span> (Test<span class="class">.<span class="keyword">class</span>) </span>&#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; <span class="number">10000</span>; ++j) &#123;</span><br><span class="line">                i++;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>由于两个线程传入的实例都为<code>Test</code>类的对象，所以使用<code>Test.class</code>亦可达到效果。</p>
+<hr>
+<h3 id="synchronized性质"><a href="#synchronized性质" class="headerlink" title="synchronized性质"></a>synchronized性质</h3><h4 id="可重入性质"><a href="#可重入性质" class="headerlink" title="可重入性质"></a>可重入性质</h4><h5 id="性质"><a href="#性质" class="headerlink" title="性质"></a>性质</h5><p>可重入指的是同一线程的外层函数获得锁后，内层函数可以直接再次获取该锁。</p>
+<h5 id="好处"><a href="#好处" class="headerlink" title="好处"></a>好处</h5><p>可重入性质可以避免死锁，提升封装性。</p>
+<h5 id="粒度"><a href="#粒度" class="headerlink" title="粒度"></a>粒度</h5><ol>
+<li>同一方法是可重入的</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Test</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">int</span> cnt = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        Test test = <span class="keyword">new</span> Test();</span><br><span class="line">        test.method();</span><br><span class="line">        System.out.println(cnt);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">method</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (cnt++ == <span class="number">0</span>) method();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>以上代码打印的结果是<code>2</code>，证明了<code>synchronized</code>可重入性质是适用于同一方法的。</p>
+<ol start="2">
+<li>同一个类中的不同方法是可重入的</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Test</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">int</span> cnt = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        Test test = <span class="keyword">new</span> Test();</span><br><span class="line">        test.method1();</span><br><span class="line">        System.out.println(cnt);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">method1</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        cnt++;</span><br><span class="line">        method2();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">method2</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        cnt++;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>打印的结果依然是<code>2</code>，证明了同一个类中的不同方法也是可重入的。</p>
+<ol start="3">
+<li>不同类中的方法是可重入的</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Test</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        SubTest subTest = <span class="keyword">new</span> SubTest();</span><br><span class="line">        subTest.method();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">method</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"我是父类方法"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">SubTest</span> <span class="keyword">extends</span> <span class="title">Test</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">method</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"我是子类方法"</span>);</span><br><span class="line">        <span class="keyword">super</span>.method();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>结果打印的是</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">我是子类方法</span><br><span class="line">我是父类方法</span><br></pre></td></tr></table></figure>
+
+<p>证明了即使不是同类的方法依然可以重入。</p>
+<h4 id="不可中断性质"><a href="#不可中断性质" class="headerlink" title="不可中断性质"></a>不可中断性质</h4><p>一旦锁被别的线程获得了，如果本线程还想获得，就得一直等待下去，直到别的线程释放了锁。</p>
+<hr>
+<h3 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h3><h4 id="获取锁和释放锁的时机"><a href="#获取锁和释放锁的时机" class="headerlink" title="获取锁和释放锁的时机"></a>获取锁和释放锁的时机</h4><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Test</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Lock lock = <span class="keyword">new</span> ReentrantLock();</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        Test test = <span class="keyword">new</span> Test();</span><br><span class="line">        test.m1();</span><br><span class="line">        test.m2();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">m1</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"我是synchronized形式的锁"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">m2</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        lock.lock();</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            System.out.println(<span class="string">"我是lock形式的锁"</span>);</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            lock.unlock();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>以上代码中，<code>m1</code>和<code>m2</code>方法是等价的。也就是说，线程进入<code>m1</code>方法后，会获取一把内置锁，当方法结束或抛出异常时都会释放锁，相当于<code>m2</code>中<code>finally</code>块内执行的<code>unlock</code>方法。</p>
+<h4 id="加锁和释放锁的原理"><a href="#加锁和释放锁的原理" class="headerlink" title="加锁和释放锁的原理"></a>加锁和释放锁的原理</h4><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Test</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Object object = <span class="keyword">new</span> Object();</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">synchronized</span> (object) &#123;</span><br><span class="line">            <span class="keyword">synchronized</span> (object) &#123;&#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>简单写一个对象锁，然后利用<code>javac</code>命令对以上代码进行编译，得到<code>Test.class</code>字节码文件。</p>
+<p>接下来，我们利用<code>javap -verbose Test.class</code>命令对字节码文件进行反汇编，我们在控制台关注以下几条输出信息：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">Code:</span><br><span class="line">      stack&#x3D;2, locals&#x3D;5, args_size&#x3D;1</span><br><span class="line">         0: getstatic     #2                  &#x2F;&#x2F; Field object:Ljava&#x2F;lang&#x2F;Object;</span><br><span class="line">         3: dup</span><br><span class="line">         4: astore_1</span><br><span class="line">         5: monitorenter</span><br><span class="line">         6: getstatic     #2                  &#x2F;&#x2F; Field object:Ljava&#x2F;lang&#x2F;Object;</span><br><span class="line">         9: dup</span><br><span class="line">        10: astore_2</span><br><span class="line">        11: monitorenter</span><br><span class="line">        12: aload_2</span><br><span class="line">        13: monitorexit</span><br><span class="line">        14: goto          22</span><br><span class="line">        17: astore_3</span><br><span class="line">        18: aload_2</span><br><span class="line">        19: monitorexit</span><br><span class="line">        20: aload_3</span><br><span class="line">        21: athrow</span><br><span class="line">        22: aload_1</span><br><span class="line">        23: monitorexit</span><br><span class="line">        24: goto          34</span><br><span class="line">        27: astore        4</span><br><span class="line">        29: aload_1</span><br><span class="line">        30: monitorexit</span><br><span class="line">        31: aload         4</span><br><span class="line">        33: athrow</span><br><span class="line">        34: return</span><br></pre></td></tr></table></figure>
+
+<p>可以看到，线程在第5和11步获取到了两把<code>moniterenter</code>锁，这是由于<code>synchronized</code>锁的可重入性质。而后在第13或19步、23或30步获取了<code>monitorexit</code>锁，这是由于线程有可能在代码执行完毕或者抛出异常这两种情况释放锁，只有当当前线程释放了所有获得到的锁，才算真正释放了锁。</p>
+<h4 id="可重入原理"><a href="#可重入原理" class="headerlink" title="可重入原理"></a>可重入原理</h4><p>可重入性质利用了<strong>加锁次数计数器</strong>。JVM负责跟踪对象被加锁的次数，每当相同的线程获取了锁，计数器就加一，释放了锁就减一。当计数器为0时，就可以认定锁已经被完全释放了。</p>
+<h4 id="可见性原理"><a href="#可见性原理" class="headerlink" title="可见性原理"></a>可见性原理</h4><p>可见性原理涉及到了<strong>Java内存模型</strong>。详情可见<a href="http://irvlin.xyz/2020/06/24/Java%E5%86%85%E5%AD%98%E5%8C%BA%E5%9F%9F%E4%B8%8E%E6%A8%A1%E5%9E%8B/#more">Java内存模型</a>。</p>
+<p>线程在进入<code>synchronized</code>修饰的代码中，将会从主存中获取最新的值，并且在释放锁之前，会强行将最新的值刷回主存，以保证<strong>可见性</strong>。</p>
+<hr>
+<h3 id="synchronized缺陷"><a href="#synchronized缺陷" class="headerlink" title="synchronized缺陷"></a>synchronized缺陷</h3><ol>
+<li><p>效率低</p>
+<p><code>synchronized</code>锁释放的情况少、获得锁时不能设定超时时间、也不能中断一个正在试图获得锁的线程。而<code>lock</code>锁就可以弥补这些缺陷。</p>
+</li>
+<li><p>不灵活</p>
+<p><code>synchronized</code>锁加解锁的时机单一，每个锁只有单一的条件。而<strong>读写锁</strong>就可以在写的时候加锁，读的时候不加锁。</p>
+</li>
+<li><p>无法知道是否成功获得了锁</p>
+<p><code>synchronized</code>锁无法像其他锁一样获取锁的状态。</p>
+</li>
+</ol>
+<hr>
+<h3 id="常见面试问题"><a href="#常见面试问题" class="headerlink" title="常见面试问题"></a>常见面试问题</h3><ol>
+<li><p>使用注意点</p>
+<p>锁对象不能为空、作用域不得过大、避免死锁。</p>
+</li>
+<li><p>如何选择锁</p>
+<p>优先使用<code>J.U.C</code>包下的类，尽量避免自己写，减少出错的可能。能用<code>synchronized</code>就尽量用，因为代码量较小、使用较简单，出错的几率也就小了。</p>
+</li>
+</ol>
+]]></content>
+      <categories>
+        <category>多线程</category>
+        <category>synchronized</category>
+      </categories>
+      <tags>
+        <tag>synchronized</tag>
       </tags>
   </entry>
 </search>
