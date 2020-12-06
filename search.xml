@@ -1312,16 +1312,46 @@
 <hr>
 <h4 id="sleep自动清除中断信号"><a href="#sleep自动清除中断信号" class="headerlink" title="sleep自动清除中断信号"></a>sleep自动清除中断信号</h4><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Test</span> <span class="keyword">implements</span> <span class="title">Runnable</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</span><br><span class="line">        Thread thread = <span class="keyword">new</span> Thread(<span class="keyword">new</span> Test());</span><br><span class="line">        thread.start();</span><br><span class="line">        Thread.sleep(<span class="number">5000</span>);</span><br><span class="line">        thread.interrupt();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> num = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">while</span> (num &lt;= <span class="number">10000</span> &amp;&amp; !Thread.currentThread().isInterrupted()) &#123;</span><br><span class="line">            <span class="keyword">if</span> (num % <span class="number">100</span> == <span class="number">0</span>) &#123;</span><br><span class="line">                System.out.println(num + <span class="string">"是100的倍数"</span>);</span><br><span class="line">            &#125;</span><br><span class="line">            num += <span class="number">10</span>;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                Thread.sleep(<span class="number">100</span>);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                e.printStackTrace();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<p>主线程在休眠5秒后打断了<code>thread</code>，但是通过打印的结果显示，<code>thread</code>在响应了中断后并没有停止，而是继续打印出100的倍数。这是因为<code>sleep</code>在响应了中断后，会将中断信号清除，此时<code>!Thread.currentThread().isInterrupted()</code>将会一直判定为<code>true</code>。</p>
+<p>主线程在休眠5秒后打断了<code>thread</code>，但是通过打印的结果显示，<code>thread</code>在响应了中断后并没有停止，而是继续打印出100的倍数。这是因为<code>sleep</code>在响应了中断后，会<strong>将中断信号清除</strong>，此时<code>!Thread.currentThread().isInterrupted()</code>将会一直判定为<code>true</code>。</p>
+<p>因此，如果想要响应中断并停止程序，需要在响应中断后再次去打断，恢复中断信号。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> num = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">while</span> (num &lt;= <span class="number">10000</span> &amp;&amp; !Thread.currentThread().isInterrupted()) &#123;</span><br><span class="line">        <span class="keyword">if</span> (num % <span class="number">100</span> == <span class="number">0</span>) &#123;</span><br><span class="line">            System.out.println(num + <span class="string">"是100的倍数"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        num += <span class="number">10</span>;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            Thread.sleep(<span class="number">100</span>);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">            <span class="comment">// 恢复中断信号</span></span><br><span class="line">            Thread.currentThread().interrupt();</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 <hr>
+<h4 id="错误停止线程的方法"><a href="#错误停止线程的方法" class="headerlink" title="错误停止线程的方法"></a>错误停止线程的方法</h4><ol>
+<li><code>Thread</code>的<code>stop</code>方法，会解锁已锁定的所有监视器，是不安全的。</li>
+<li><code>Thread</code>的<code>suspend</code>方法，将会挂起当前线程并不释放锁，如果它没有被及时唤醒，或者其他线程需要获取当前锁，就很容易造成死锁。</li>
+<li><code>volatile</code>设置<code>boolean</code>标记位。线程陷入阻塞状态时将无法被中断。</li>
+</ol>
+<hr>
+<h4 id="interrupt原理"><a href="#interrupt原理" class="headerlink" title="interrupt原理"></a>interrupt原理</h4><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">interrupt</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">this</span> != Thread.currentThread())</span><br><span class="line">        checkAccess();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">synchronized</span> (blockerLock) &#123;</span><br><span class="line">        Interruptible b = blocker;</span><br><span class="line">        <span class="keyword">if</span> (b != <span class="keyword">null</span>) &#123;</span><br><span class="line">            interrupt0();           <span class="comment">// Just to set the interrupt flag</span></span><br><span class="line">            b.interrupt(<span class="keyword">this</span>);</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    interrupt0();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>interrupt0</code>为本地方法。</p>
+<hr>
+<h4 id="interrupted、isInterrupted"><a href="#interrupted、isInterrupted" class="headerlink" title="interrupted、isInterrupted"></a>interrupted、isInterrupted</h4><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Test</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</span><br><span class="line">        Thread thread = <span class="keyword">new</span> Thread(() -&gt; &#123;</span><br><span class="line">            <span class="keyword">for</span> (;;) &#123;&#125;</span><br><span class="line">        &#125;);</span><br><span class="line">        thread.start();</span><br><span class="line">        thread.interrupt();</span><br><span class="line">        System.out.println(<span class="string">"isInterrupted: "</span> + thread.isInterrupted());</span><br><span class="line">        System.out.println(<span class="string">"interrupted: "</span> + thread.interrupted());</span><br><span class="line">        System.out.println(<span class="string">"isInterrupted: "</span> + Thread.interrupted());</span><br><span class="line">        System.out.println(<span class="string">"isInterrupted: "</span> + thread.isInterrupted());</span><br><span class="line">        thread.join();</span><br><span class="line">        System.out.println(<span class="string">"Main thread is over"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>打印结果为</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">isInterrupted: true</span><br><span class="line">interrupted: false</span><br><span class="line">isInterrupted: false</span><br><span class="line">isInterrupted: true</span><br></pre></td></tr></table></figure>
+
+<p>这说明，<code>isInterrupted</code>方法用于获取中断标志，而<code>interrupted</code>方法用于获取中断标志并重置状态，且只与当前线程有关，与调用其的对象无关。</p>
+<p>程序在第8行中断了<code>thread</code>线程，第9行获取<code>thread</code>线程状态为被打断状态；第10行获取中断标志并重置状态，但由于调用该方法的是主线程，所以打印<code>false</code>；11行与第10行一样；由于<code>isInterrupted</code>不会重置状态，所以12行获取的也是<code>true</code>。</p>
+<hr>
+<h4 id="线程六种状态"><a href="#线程六种状态" class="headerlink" title="线程六种状态"></a>线程六种状态</h4><ol>
+<li>New</li>
+<li>Runnable</li>
+<li>Blocked</li>
+<li>Waiting</li>
+<li>Timed Waiting</li>
+<li>Terminated</li>
+</ol>
+<p><img src="%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81.jpeg" alt=""></p>
 ]]></content>
       <categories>
-        <category>数据结构</category>
-        <category>Java集合</category>
+        <category>多线程</category>
+        <category>Java并发</category>
       </categories>
       <tags>
-        <tag>数据结构</tag>
-        <tag>HashMap</tag>
+        <tag>多线程</tag>
+        <tag>Java并发</tag>
       </tags>
   </entry>
 </search>
