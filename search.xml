@@ -1515,4 +1515,66 @@
         <tag>Java异常</tag>
       </tags>
   </entry>
+  <entry>
+    <title>Java并发工具</title>
+    <url>/2020/12/07/Java%E5%B9%B6%E5%8F%91%E5%B7%A5%E5%85%B7/</url>
+    <content><![CDATA[<p>玩转Java并发工具笔记</p>
+<a id="more"></a>
+
+<h4 id="ThreadLocal"><a href="#ThreadLocal" class="headerlink" title="ThreadLocal"></a>ThreadLocal</h4><h5 id="使用场景"><a href="#使用场景" class="headerlink" title="使用场景"></a>使用场景</h5><ol>
+<li><p>每个线程需要一个独享的对象。</p>
+<p>假设有一段程序想要在多线程中打印日期。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Test</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> ExecutorService threadPool = Executors.newFixedThreadPool(<span class="number">10</span>);</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> SimpleDateFormat format = <span class="keyword">new</span> SimpleDateFormat(<span class="string">"yyyy-MM-dd hh:mm:ss"</span>);</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">1000</span>; i++) &#123;</span><br><span class="line">            <span class="keyword">long</span> finalI = i;</span><br><span class="line">            threadPool.submit(() -&gt; &#123;</span><br><span class="line">                String date = <span class="keyword">new</span> Test().date(finalI);</span><br><span class="line">                System.out.println(date);</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125;</span><br><span class="line">        threadPool.shutdown();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> String <span class="title">date</span><span class="params">(<span class="keyword">long</span> seconds)</span> </span>&#123;</span><br><span class="line">        Date date = <span class="keyword">new</span> Date(<span class="number">1000</span> * seconds);</span><br><span class="line">        <span class="keyword">return</span> format.format(date);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>由于<code>SimpleDateFormat</code>不是线程安全的，将其设置为<code>static</code>将会发生线程安全问题。所以，更好的解决方案是利用<code>ThreadLocal</code>类。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Test</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> ExecutorService threadPool = Executors.newFixedThreadPool(<span class="number">10</span>);</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">1000</span>; i++) &#123;</span><br><span class="line">            <span class="keyword">long</span> finalI = i;</span><br><span class="line">            threadPool.submit(() -&gt; &#123;</span><br><span class="line">                String date = <span class="keyword">new</span> Test().date(finalI);</span><br><span class="line">                System.out.println(date);</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125;</span><br><span class="line">        threadPool.shutdown();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> String <span class="title">date</span><span class="params">(<span class="keyword">long</span> seconds)</span> </span>&#123;</span><br><span class="line">        Date date = <span class="keyword">new</span> Date(<span class="number">1000</span> * seconds);</span><br><span class="line">        SimpleDateFormat format = ThreadSafeFormatter.sdf.get();</span><br><span class="line">        <span class="keyword">return</span> format.format(date);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ThreadSafeFormatter</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> ThreadLocal&lt;SimpleDateFormat&gt; sdf = ThreadLocal.withInitial(() -&gt; <span class="keyword">new</span> SimpleDateFormat(<span class="string">"yyyy-MM-dd hh:mm:ss"</span>));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这样，每个线程都有自己独享的<code>SimpleDateFormat</code>对象，就不存在线程安全问题了。</p>
+</li>
+<li><p>每个线程内需要保存全局变量</p>
+<p>假设每个线程都要保存对应的用户信息时，就可以使用<code>ThreadLocal</code>类，例如<code>Spring Security</code>中的<code>SecurityContextHolder</code>组件，就是利用了<code>ThreadLocal</code>来保存每个使用者的上下文，这样就避免了在各个方法之间都以参数的形式传递用户上下文的麻烦。</p>
+</li>
+</ol>
+<h5 id="好处"><a href="#好处" class="headerlink" title="好处"></a>好处</h5><ol>
+<li>线程安全</li>
+<li>无需加锁，提高执行效率</li>
+<li>免去传参的繁琐</li>
+</ol>
+<h5 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h5><p>每个线程都有自己的<code>ThreadLocalMap</code>去保存每个<code>ThreadLocal</code>。</p>
+<h5 id="重要方法"><a href="#重要方法" class="headerlink" title="重要方法"></a>重要方法</h5><ol>
+<li><p>initialValue()</p>
+<p>该方法返回当前线程对应的初始值。这是一个<strong>延迟加载</strong>的方法，只有在调用了<code>get</code>方法时，才会触发。</p>
+</li>
+<li><p>get</p>
+</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> T <span class="title">get</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    Thread t = Thread.currentThread();</span><br><span class="line">    ThreadLocalMap map = getMap(t);</span><br><span class="line">    <span class="comment">// 如果线程之前已经调用了set方法，map就不为空，直接返回值</span></span><br><span class="line">    <span class="keyword">if</span> (map != <span class="keyword">null</span>) &#123;</span><br><span class="line">        ThreadLocalMap.Entry e = map.getEntry(<span class="keyword">this</span>);</span><br><span class="line">        <span class="keyword">if</span> (e != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="meta">@SuppressWarnings</span>(<span class="string">"unchecked"</span>)</span><br><span class="line">            T result = (T)e.value;</span><br><span class="line">            <span class="keyword">return</span> result;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// 否则才调用setInitialValue方法</span></span><br><span class="line">    <span class="keyword">return</span> setInitialValue();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> T <span class="title">setInitialValue</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    T value = initialValue();</span><br><span class="line">    Thread t = Thread.currentThread();</span><br><span class="line">    ThreadLocalMap map = getMap(t);</span><br><span class="line">    <span class="keyword">if</span> (map != <span class="keyword">null</span>)</span><br><span class="line">        map.set(<span class="keyword">this</span>, value);</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        createMap(t, value);</span><br><span class="line">    <span class="keyword">return</span> value;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>set</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">set</span><span class="params">(T value)</span> </span>&#123;</span><br><span class="line">    Thread t = Thread.currentThread();</span><br><span class="line">    ThreadLocalMap map = getMap(t);</span><br><span class="line">    <span class="keyword">if</span> (map != <span class="keyword">null</span>)</span><br><span class="line">        map.set(<span class="keyword">this</span>, value);</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        createMap(t, value);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol start="4">
+<li>remove</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">remove</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    ThreadLocalMap m = getMap(Thread.currentThread());</span><br><span class="line">    <span class="keyword">if</span> (m != <span class="keyword">null</span>)</span><br><span class="line">        m.remove(<span class="keyword">this</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">remove</span><span class="params">(ThreadLocal&lt;?&gt; key)</span> </span>&#123;</span><br><span class="line">    Entry[] tab = table;</span><br><span class="line">    <span class="keyword">int</span> len = tab.length;</span><br><span class="line">    <span class="keyword">int</span> i = key.threadLocalHashCode &amp; (len-<span class="number">1</span>);</span><br><span class="line">    <span class="keyword">for</span> (Entry e = tab[i];</span><br><span class="line">         e != <span class="keyword">null</span>;</span><br><span class="line">         e = tab[i = nextIndex(i, len)]) &#123;</span><br><span class="line">        <span class="keyword">if</span> (e.get() == key) &#123;</span><br><span class="line">            e.clear();</span><br><span class="line">            expungeStaleEntry(i);</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>通过<code>remove</code>方法可以看到，<code>ThreadLocalMap</code>底层数据结构是一个键值对数组，通过传入key并哈希得到下标，最终在返回相应的值。</p>
+<p><code>ThreadLocalMap</code>处理哈希冲突的办法与<code>HashMap</code>有所不同，当发生哈希冲突时，它会往后找到第一个空位置并将值填入而不是使用拉链法。</p>
+<h5 id="内存泄漏"><a href="#内存泄漏" class="headerlink" title="内存泄漏"></a>内存泄漏</h5><p>定义：某个对象不再有用，但是却占有的内存不能被回收。</p>
+<p><code>ThreadLocalMap</code>中的<code>Entry</code>数组：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Entry</span> <span class="keyword">extends</span> <span class="title">WeakReference</span>&lt;<span class="title">ThreadLocal</span>&lt;?&gt;&gt; </span>&#123;</span><br><span class="line">    <span class="comment">/** The value associated with this ThreadLocal. */</span></span><br><span class="line">    Object value;</span><br><span class="line"></span><br><span class="line">    Entry(ThreadLocal&lt;?&gt; k, Object v) &#123;</span><br><span class="line">        <span class="keyword">super</span>(k);</span><br><span class="line">        value = v;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到，<code>Entry</code>数组的key是一个<strong>弱引用</strong>。弱引用的特点是，如果这个对象只被弱引用关联，那么这个对象就可以被回收。而<code>Entry</code>数组的value是一个强引用，JVM直到内存溢出都不会回收强引用对象。这将有可能导致key已经被回收，value却还存在的情况。然而JDK已经考虑到了这个问题，在<code>set</code>、<code>remove</code>、<code>rehash</code>等方法中会扫描key为<code>null</code>的<code>Entry</code>，并将对应的value也设置为<code>null</code>，这样value也可以被回收了。所以我们在用完<code>ThreadLocal</code>对象后应该主动调用<code>remove</code>方法以避免内存泄漏的发生。</p>
+]]></content>
+      <categories>
+        <category>多线程</category>
+        <category>Java并发</category>
+      </categories>
+      <tags>
+        <tag>多线程</tag>
+        <tag>Java并发</tag>
+      </tags>
+  </entry>
 </search>
