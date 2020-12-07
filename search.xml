@@ -1404,7 +1404,40 @@
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Test</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">new</span> Thread(<span class="keyword">new</span> Exception()).start();</span><br><span class="line">            <span class="keyword">new</span> Thread(<span class="keyword">new</span> Exception()).start();</span><br><span class="line">            <span class="keyword">new</span> Thread(<span class="keyword">new</span> Exception()).start();</span><br><span class="line">            <span class="keyword">new</span> Thread(<span class="keyword">new</span> Exception()).start();</span><br><span class="line">        &#125; <span class="keyword">catch</span> (RuntimeException e) &#123;</span><br><span class="line">            System.out.println(<span class="string">"caught exception"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Exception</span> <span class="keyword">implements</span> <span class="title">Runnable</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>以上代码并没有按我们的预期输出<code>caught exception</code>，而是在每一个线程都输出了异常信息。这说明<code>try-catch</code>无法捕获其他线程的异常。</p>
-<p>基于以上情况，我们需要一个全局异常处理器以捕获不同线程中的异常。</p>
+<p>基于以上情况，我们需要一个异常处理器以捕获不同线程中的异常。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Test</span> <span class="keyword">implements</span> <span class="title">Runnable</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// 设置异常处理器</span></span><br><span class="line">        Thread.setDefaultUncaughtExceptionHandler((t, e) -&gt; System.out.println(<span class="string">"线程"</span> + t.getName() + <span class="string">"异常: "</span> + e));</span><br><span class="line">        <span class="keyword">new</span> Thread(<span class="keyword">new</span> Test()).start();</span><br><span class="line">        <span class="keyword">new</span> Thread(<span class="keyword">new</span> Test()).start();</span><br><span class="line">        <span class="keyword">new</span> Thread(<span class="keyword">new</span> Test()).start();</span><br><span class="line">        <span class="keyword">new</span> Thread(<span class="keyword">new</span> Test()).start();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这样，对于四个子线程，程序都可以捕获到异常并输出在控制台中。</p>
+<hr>
+<h4 id="线程安全"><a href="#线程安全" class="headerlink" title="线程安全"></a>线程安全</h4><p>定义：当多个线程访问一个对象时，如果不用考虑这些线程在运行时环境下的调度和交替执行，也不需要进行额外的同步，或者在调用方进行任何其他的协调操作，调用这个对象的行为都可以获得正确的结果，那这个对象是线程安全的。</p>
+<h5 id="必然死锁"><a href="#必然死锁" class="headerlink" title="必然死锁"></a>必然死锁</h5><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Test</span> <span class="keyword">implements</span> <span class="title">Runnable</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Object o1 = <span class="keyword">new</span> Object();</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> Object o2 = <span class="keyword">new</span> Object();</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">int</span> flag = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</span><br><span class="line">        <span class="keyword">new</span> Thread(<span class="keyword">new</span> Test()).start();</span><br><span class="line">        Thread.sleep(<span class="number">100</span>);</span><br><span class="line">        flag++;</span><br><span class="line">        <span class="keyword">new</span> Thread(<span class="keyword">new</span> Test()).start();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (flag == <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">synchronized</span> (o1) &#123;</span><br><span class="line">                System.out.println(Thread.currentThread().getName() + <span class="string">"拿到了o1"</span>);</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    Thread.sleep(<span class="number">500</span>);</span><br><span class="line">                &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                    e.printStackTrace();</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">synchronized</span> (o2) &#123;</span><br><span class="line">                    System.out.println(Thread.currentThread().getName() + <span class="string">"拿到了o2"</span>);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">synchronized</span> (o2) &#123;</span><br><span class="line">                System.out.println(Thread.currentThread().getName() + <span class="string">"拿到了o2"</span>);</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    Thread.sleep(<span class="number">500</span>);</span><br><span class="line">                &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                    e.printStackTrace();</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">synchronized</span> (o1) &#123;</span><br><span class="line">                    System.out.println(Thread.currentThread().getName() + <span class="string">"拿到了o1"</span>);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>以上代码将引发死锁，两个线程永远处于阻塞状态。</p>
+<h5 id="a-问题"><a href="#a-问题" class="headerlink" title="a++问题"></a>a++问题</h5><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Test</span> <span class="keyword">implements</span> <span class="title">Runnable</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> AtomicInteger i = <span class="keyword">new</span> AtomicInteger();</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</span><br><span class="line">        Thread t1 = <span class="keyword">new</span> Thread(<span class="keyword">new</span> Test());</span><br><span class="line">        Thread t2 = <span class="keyword">new</span> Thread(<span class="keyword">new</span> Test());</span><br><span class="line">        t1.start();</span><br><span class="line">        t2.start();</span><br><span class="line">        t1.join();</span><br><span class="line">        t2.join();</span><br><span class="line">        System.out.println(i);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; <span class="number">1000</span>; j++) &#123;</span><br><span class="line">            i.incrementAndGet();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>使用原子类<code>AtomicInteger</code>即可解决问题。</p>
+<h5 id="逸出"><a href="#逸出" class="headerlink" title="逸出"></a>逸出</h5><ol>
+<li>返回一个<code>private</code>对象</li>
+<li>还未完成初始化就把对象提供给外界</li>
+<li>构造函数中未初始化完毕就<code>this</code>赋值</li>
+<li>隐式逸出：注册监听事件</li>
+<li>构造函数中运行新线程</li>
+</ol>
+<hr>
+<h4 id="多线程带来的性能问题"><a href="#多线程带来的性能问题" class="headerlink" title="多线程带来的性能问题"></a>多线程带来的性能问题</h4><ol>
+<li><p>上下文切换</p>
+<p>上下文切换可以认为是内核在CPU上对于进程进行以下的活动：</p>
+<ol>
+<li>挂起一个进程，将这个进程在CPU中的状态存储于内存中的某处。</li>
+<li>在内存中检索下一个进程的上下文并将其在寄存器中恢复。</li>
+<li>跳转到程序计数器所指向的位置，以恢复该进程。</li>
+</ol>
+</li>
+<li><p>内存同步</p>
+<p>为了数据的正确性，同步手段会使用禁止编译器优化，使CPU内的缓存失效。</p>
+</li>
+</ol>
+<hr>
 ]]></content>
       <categories>
         <category>多线程</category>
@@ -1413,6 +1446,30 @@
       <tags>
         <tag>多线程</tag>
         <tag>Java并发</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Java异常体系</title>
+    <url>/2020/12/07/Java%E5%BC%82%E5%B8%B8%E4%BD%93%E7%B3%BB/</url>
+    <content><![CDATA[<p>Java异常体系</p>
+<a id="more"></a>
+
+<p><img src="Java%E5%BC%82%E5%B8%B8%E4%BD%93%E7%B3%BB.png" alt=""></p>
+<p><code>Throwable</code>为所有异常的父类。子类<code>Error</code>表示错误、<code>Exception</code>表示异常。</p>
+<ol>
+<li><p>Error</p>
+<p><code>Error</code>是程序无法处理的错误，由<code>JVM</code>产生并抛出。发生这些异常时，<code>JVM</code>一般会终止线程。</p>
+</li>
+<li><p>Exception</p>
+<p><code>Exception</code>是程序可以处理的异常，又分为<code>Unchecked Exception</code>和<code>Checked Exception</code>。<code>Unchecked Exception</code>为运行时异常，这类异常可以通过编译，在程序运行时抛出异常。一般是由于程序逻辑的错误引起，比如<code>NullPointerException</code>、<code>IndexOutOfBoundException</code>等。<code>Checked Exception</code>为非运行时异常，在编写代码是就要处理这类异常，比如<code>IOException</code>、<code>SQLException</code>等。</p>
+</li>
+</ol>
+]]></content>
+      <categories>
+        <category>Java异常</category>
+      </categories>
+      <tags>
+        <tag>Java异常</tag>
       </tags>
   </entry>
 </search>
