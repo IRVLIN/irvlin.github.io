@@ -225,57 +225,58 @@
     <url>/2020/08/06/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86%E7%82%B9/</url>
     <content><![CDATA[<p>记录一些遇到过的Java基础知识点。（持续更新）</p>
 <a id="more"></a>
-<h3 id="Java基本数据类型图"><a href="#Java基本数据类型图" class="headerlink" title="Java基本数据类型图"></a>Java基本数据类型图</h3><p><img src="Java%E5%9F%BA%E6%9C%AC%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B.jpeg" alt=""></p>
+<h4 id="Java基本数据类型图"><a href="#Java基本数据类型图" class="headerlink" title="Java基本数据类型图"></a>Java基本数据类型图</h4><p><img src="Java%E5%9F%BA%E6%9C%AC%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B.jpeg" alt=""></p>
 <hr>
-<h3 id="a-a-b-与-a-b"><a href="#a-a-b-与-a-b" class="headerlink" title="a = a + b 与 a += b"></a>a = a + b 与 a += b</h3><p>举例：<code>short a = 1; a = a + 1;</code>因为 1 为整型，<code>a + 1</code>也为整形，所以需要强制转换成<code>short</code>类型才能赋值。<br>而<code>short a = 1; a += 1;</code>则不需要强制转换，因为<code>+=</code>含有隐式的类型转换，可以自动转型为<code>short</code>。</p>
+<h4 id="a-a-b-与-a-b"><a href="#a-a-b-与-a-b" class="headerlink" title="a = a + b 与 a += b"></a>a = a + b 与 a += b</h4><p>举例：<code>short a = 1; a = a + 1;</code>因为 1 为整型，<code>a + 1</code>也为整形，所以需要强制转换成<code>short</code>类型才能赋值。<br>而<code>short a = 1; a += 1;</code>则不需要强制转换，因为<code>+=</code>含有隐式的类型转换，可以自动转型为<code>short</code>。</p>
 <hr>
-<h3 id="访问修饰符"><a href="#访问修饰符" class="headerlink" title="访问修饰符"></a>访问修饰符</h3><h4 id="分类"><a href="#分类" class="headerlink" title="分类"></a>分类</h4><ol>
-<li><strong>private</strong>: 当前类可见。不能修饰类</li>
-<li><strong>default(缺省)</strong>: 同包可见。</li>
-<li><strong>protected</strong>: 同包内的类以及所有子类可见。不能修饰类。</li>
-<li><strong>public</strong>: 所有类可见。<h4 id="图"><a href="#图" class="headerlink" title="图"></a>图</h4><img src="%E8%AE%BF%E9%97%AE%E4%BF%AE%E9%A5%B0%E7%AC%A6.jpeg" alt=""></li>
+<h4 id="访问修饰符"><a href="#访问修饰符" class="headerlink" title="访问修饰符"></a>访问修饰符</h4><h5 id="分类"><a href="#分类" class="headerlink" title="分类"></a>分类</h5><ol>
+<li><code>private</code>: 当前类可见。不能修饰类</li>
+<li><code>default(缺省)</code>: 同包可见。</li>
+<li><code>protected</code>: 同包内的类以及所有子类可见。不能修饰类。</li>
+<li><code>public</code>: 所有类可见。<h5 id="图"><a href="#图" class="headerlink" title="图"></a>图</h5><img src="%E8%AE%BF%E9%97%AE%E4%BF%AE%E9%A5%B0%E7%AC%A6.jpeg" alt=""></li>
 </ol>
 <hr>
-<h3 id="final修饰符"><a href="#final修饰符" class="headerlink" title="final修饰符"></a>final修饰符</h3><ol>
-<li>被final修饰的类不可以被继承</li>
-<li>被final修饰的方法不可以被重写</li>
-<li>被final修饰的变量不可以被改变。被final修饰不可变的是变量的引用，而不是引用指向的内容，引用指向的内容是可以改变的。</li>
+<h4 id="final修饰符"><a href="#final修饰符" class="headerlink" title="final修饰符"></a>final修饰符</h4><ol>
+<li>被<code>final</code>修饰的类不可以被继承</li>
+<li>被<code>final</code>修饰的方法不可以被重写</li>
+<li>被<code>final</code>修饰的变量不可以被改变。被<code>final</code>修饰不可变的是变量的引用，而不是引用指向的内容，引用指向的内容是可以改变的。</li>
 </ol>
 <hr>
-<h3 id="普通类与抽象类"><a href="#普通类与抽象类" class="headerlink" title="普通类与抽象类"></a>普通类与抽象类</h3><ol>
+<h4 id="普通类与抽象类"><a href="#普通类与抽象类" class="headerlink" title="普通类与抽象类"></a>普通类与抽象类</h4><ol>
 <li>普通类不能包含抽象方法，抽象类可以包含抽象方法。</li>
 <li>抽象类不能直接实例化，普通类可以直接实例化。</li>
 </ol>
 <hr>
-<h3 id="重写与重载"><a href="#重写与重载" class="headerlink" title="重写与重载"></a>重写与重载</h3><p>方法的重载和重写都是实现多态的方式，区别在于前者实现的是编译时的多态性，而后者实现的是运行时的多态性。</p>
+<h4 id="重写与重载"><a href="#重写与重载" class="headerlink" title="重写与重载"></a>重写与重载</h4><p>方法的重载和重写都是实现多态的方式，区别在于前者实现的是编译时的多态性，而后者实现的是运行时的多态性。</p>
 <ol>
 <li><strong>重载</strong>：发生在同一个类中，方法名相同参数列表不同（参数类型不同、个数不同、顺序不同），<strong>与方法返回值和访问修饰符无关</strong>，即重载的方法不能根据返回类型进行区分。</li>
 <li><strong>重写</strong>：发生在父子类中，方法名、参数列表必须相同，返回值小于等于父类，抛出的异常小于等于父类，访问修饰符大于等于父类（里氏代换原则）；如果父类方法访问修饰符为private则子类中就不是重写。</li>
 </ol>
 <hr>
-<h3 id="IO流"><a href="#IO流" class="headerlink" title="IO流"></a>IO流</h3><h4 id="分类-1"><a href="#分类-1" class="headerlink" title="分类"></a>分类</h4><ol>
+<h4 id="IO流"><a href="#IO流" class="headerlink" title="IO流"></a>IO流</h4><h5 id="分类-1"><a href="#分类-1" class="headerlink" title="分类"></a>分类</h5><ol>
 <li>按照流的流向分，可以分为输入流和输出流；</li>
 <li>按照操作单元划分，可以划分为字节流和字符流；</li>
 <li>按照流的角色划分为节点流和处理流。</li>
 </ol>
 <p>总的来说，Java IO流是从以下四个抽象类中派生出来的。</p>
 <ol>
-<li>InputStream/Reader: 所有的输入流的基类，前者是字节输入流，后者是字符输入流。</li>
-<li>OutputStream/Writer: 所有输出流的基类，前者是字节输出流，后者是字符输出流。</li>
+<li><code>InputStream/Reader</code>: 所有的输入流的基类，前者是字节输入流，后者是字符输入流。</li>
+<li><code>OutputStream/Writer</code>: 所有输出流的基类，前者是字节输出流，后者是字符输出流。</li>
 </ol>
 <hr>
-<h3 id="BIO、NIO、AIO"><a href="#BIO、NIO、AIO" class="headerlink" title="BIO、NIO、AIO"></a>BIO、NIO、AIO</h3><ol>
-<li>BIO: 同步阻塞模式。线程发起IO请求后，一直阻塞IO，直到缓冲区数据就绪后，再进入下一步操作。当面对十万甚至百万级连接的时候，传统的BIO模型是无能为力的。</li>
-<li>NIO: 同步非阻塞的IO模型。线程发起IO请求后，立即返回（非阻塞IO）。同步指的是必须等待IO缓冲区内的数据就绪，而非阻塞指的是，用户线程不原地等待IO缓冲区，可以先做一些其他操作，但是要定时轮询检查IO缓冲区数据是否就绪。</li>
-<li>AIO: 异步非阻塞IO模型。基于事件和回调机制而实现，也就是应用操作之后会直接返回，不会堵塞在那里，当后台处理完成，操作系统会通知相应的线程进行后续的操作。</li>
+<h4 id="BIO、NIO、AIO"><a href="#BIO、NIO、AIO" class="headerlink" title="BIO、NIO、AIO"></a>BIO、NIO、AIO</h4><ol>
+<li><code>BIO</code>: 同步阻塞模式。线程发起IO请求后，一直阻塞IO，直到缓冲区数据就绪后，再进入下一步操作。当面对十万甚至百万级连接的时候，传统的BIO模型是无能为力的。</li>
+<li><code>NIO</code>: 同步非阻塞的IO模型。线程发起IO请求后，立即返回（非阻塞IO）。同步指的是必须等待IO缓冲区内的数据就绪，而非阻塞指的是，用户线程不原地等待IO缓冲区，可以先做一些其他操作，但是要定时<strong>轮询</strong>检查IO缓冲区数据是否就绪。</li>
+<li><code>AIO</code>: 异步非阻塞IO模型。基于事件和回调机制而实现，也就是应用操作之后会直接返回，不会堵塞在那里，当后台处理完成，操作系统会通知相应的线程进行后续的操作。</li>
 </ol>
 <hr>
-<h3 id="String-str-“i”-与-String-str-new-String-“i”"><a href="#String-str-“i”-与-String-str-new-String-“i”" class="headerlink" title="String str = “i” 与 String str = new String(“i”)"></a>String str = “i” 与 String str = new String(“i”)</h3><p>内存分配的方式不同。<code>String str = &quot;i&quot;</code>JVM会将其分配到常量池；另一种会分配到堆内存中。</p>
+<h4 id="String-str-“i”-与-String-str-new-String-“i”"><a href="#String-str-“i”-与-String-str-new-String-“i”" class="headerlink" title="String str = “i” 与 String str = new String(“i”)"></a>String str = “i” 与 String str = new String(“i”)</h4><p>内存分配的方式不同。<code>String str = &quot;i&quot;</code>JVM会将其分配到常量池；另一种会分配到堆内存中。</p>
 <hr>
-<h3 id="Integer"><a href="#Integer" class="headerlink" title="Integer"></a>Integer</h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Integer a = <span class="keyword">new</span> Integer(<span class="number">3</span>);</span><br><span class="line">Integer b = <span class="number">3</span>;  <span class="comment">// 将3自动装箱成Integer类型</span></span><br><span class="line"><span class="keyword">int</span> c = <span class="number">3</span>;</span><br><span class="line">System.out.println(a == b); <span class="comment">// false 两个引用没有引用同一对象</span></span><br><span class="line">System.out.println(a == c); <span class="comment">// true a自动拆箱成int类型再和c比较</span></span><br><span class="line">System.out.println(b == c); <span class="comment">// true</span></span><br><span class="line"></span><br><span class="line">Integer a1 = <span class="number">128</span>;</span><br><span class="line">Integer b1 = <span class="number">128</span>;</span><br><span class="line">System.out.println(a1 == b1); <span class="comment">// false</span></span><br><span class="line"></span><br><span class="line">Integer a2 = <span class="number">127</span>;</span><br><span class="line">Integer b2 = <span class="number">127</span>;</span><br><span class="line">System.out.println(a2 == b2); <span class="comment">// true</span></span><br></pre></td></tr></table></figure>
-<p>如果整型字面量的值在<code>-128</code>到<code>127</code>之间，那么自动装箱时不会创建新的Integer对象，而是直接引用常量池中的Integer对象；超过范围时会创建新对象，因此<code>a2 == b2</code>返回<code>false</code>。</p>
+<h4 id="Integer"><a href="#Integer" class="headerlink" title="Integer"></a>Integer</h4><figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Integer a = <span class="keyword">new</span> Integer(<span class="number">3</span>);</span><br><span class="line">Integer b = <span class="number">3</span>;  <span class="comment">// 将3自动装箱成Integer类型</span></span><br><span class="line"><span class="keyword">int</span> c = <span class="number">3</span>;</span><br><span class="line">System.out.println(a == b); <span class="comment">// false 两个引用没有引用同一对象</span></span><br><span class="line">System.out.println(a == c); <span class="comment">// true a自动拆箱成int类型再和c比较</span></span><br><span class="line">System.out.println(b == c); <span class="comment">// true</span></span><br><span class="line"></span><br><span class="line">Integer a1 = <span class="number">128</span>;</span><br><span class="line">Integer b1 = <span class="number">128</span>;</span><br><span class="line">System.out.println(a1 == b1); <span class="comment">// false</span></span><br><span class="line"></span><br><span class="line">Integer a2 = <span class="number">127</span>;</span><br><span class="line">Integer b2 = <span class="number">127</span>;</span><br><span class="line">System.out.println(a2 == b2); <span class="comment">// true</span></span><br></pre></td></tr></table></figure>
+<p>如果整型字面量的值在<code>-128</code>到<code>127</code>之间，那么自动装箱时不会创建新的<code>Integer</code>对象，而是直接引用常量池中的Integer对象；超过范围时会创建新对象，因此<code>a2 == b2</code>返回<code>false</code>。</p>
 <hr>
-<h3 id="strictfp关键字"><a href="#strictfp关键字" class="headerlink" title="strictfp关键字"></a>strictfp关键字</h3><p><code>strictfp</code>可以用来修饰类、接口和方法。在所声明的范围内，所有浮点数的计算都是精确的。当一个类被<code>strictfp</code>修饰时，所有方法默认也被<code>strictfp</code>修饰。</p>
+<h4 id="strictfp关键字"><a href="#strictfp关键字" class="headerlink" title="strictfp关键字"></a>strictfp关键字</h4><p><code>strictfp</code>可以用来修饰类、接口和方法。在所声明的范围内，所有浮点数的计算都是精确的。当一个类被<code>strictfp</code>修饰时，所有方法默认也被<code>strictfp</code>修饰。</p>
+<h4 id="单精度、双精度"><a href="#单精度、双精度" class="headerlink" title="单精度、双精度"></a>单精度、双精度</h4><p><img src="%E5%8D%95%E7%B2%BE%E5%BA%A6%E3%80%81%E5%8F%8C%E7%B2%BE%E5%BA%A6.png" alt=""></p>
 ]]></content>
       <categories>
         <category>Java</category>
@@ -1701,7 +1702,255 @@
     <content><![CDATA[<p>mysql学习笔记</p>
 <a id="more"></a>
 
-]]></content>
+<h4 id="SQL"><a href="#SQL" class="headerlink" title="SQL"></a>SQL</h4><p><strong>结构化查询语言</strong>(Structured Query Language)简称<code>SQL</code>，是一种数据库查询语言。主要分为以下几类：</p>
+<ul>
+<li><strong>数据定义语言(DDL)</strong>：<code>CREATE</code>、<code>DROP</code>、<code>ALTER</code></li>
+<li><strong>数据查询语言(DQL)</strong>：<code>SELECT</code></li>
+<li><strong>数据操纵语言(DML)</strong>：<code>INSERT</code>、<code>UPDATE</code>、<code>DELETE</code></li>
+<li><strong>数据控制语言(DCL)</strong>：<code>GRANT</code>、<code>REVOKE</code>、<code>COMMIT</code>、<code>ROLLBACK</code></li>
+</ul>
+<hr>
+<h4 id="MySQL"><a href="#MySQL" class="headerlink" title="MySQL"></a>MySQL</h4><p><code>MySQL</code>是一个<strong>关系型数据库管理系统</strong>，属于<code>Oracle</code>旗下产品。</p>
+<hr>
+<h4 id="MySQL的binlog"><a href="#MySQL的binlog" class="headerlink" title="MySQL的binlog"></a>MySQL的binlog</h4><p>有三种格式：<code>statement</code>、<code>row</code>和<code>mixed</code>。</p>
+<ul>
+<li><code>statement</code>模式，每一条会修改数据的<code>sql</code>都会保存到<code>binlog</code>中。无需记录每一行的变化，减少了<code>binlog</code>日志量，节约了<code>IO</code>，提高性能。在保存时会保存<code>sql</code>的上下文。</li>
+<li><code>row</code>模式，不记录<code>sql</code>的上下文，仅保存哪条记录被修改。记录单元为每一行的改动。</li>
+<li><code>mixed</code>模式，普通操作使用<code>statement</code>模式，<code>statement</code>无法完成主从复制的操作，则使用<code>row</code>格式保存<code>binlog</code>。</li>
+</ul>
+<hr>
+<h4 id="数据类型"><a href="#数据类型" class="headerlink" title="数据类型"></a>数据类型</h4><ol>
+<li><p>整数类型</p>
+<p><code>tinyint(1 byte)</code>、<code>smallint(2 bytes)</code>、<code>mediumint(3 bytes)</code>、<code>int(4 bytes)</code>、<code>bigint(8 bytes)</code></p>
+<p>整数类型可以被指定长度，不影响值的合法范围，只影响字符的显示个数。</p>
+</li>
+<li><p>小数类型</p>
+<p><code>float(32 bits)</code>、<code>double(64 bits)</code>、<code>decimal</code></p>
+<p><code>decimal</code>可用于存储比<code>bigint</code>还大的整数，能存储精确的小数，计算时效率较低。</p>
+</li>
+<li><p>字符串类型</p>
+<p><code>varchar</code>、<code>char</code>、<code>text</code>、<code>blob</code></p>
+<p><code>varchar</code>存储可变长度字符串，使用额外1或2个字节存储长度。长度小于255字节时使用1字节表示，否则使用2字节。其存储的内容超过设置的长度时，内容会被截断。</p>
+<p>使用策略：</p>
+<ol>
+<li>对于经常变更的数据来说，<code>char</code>更好，因为它不容易产生碎片。</li>
+<li>对于很短的数据，<code>char</code>在存储空间上更有效率。</li>
+<li>应尽量避免使用<code>text/blob</code>类型，查询时会使用临时表，消耗性能。</li>
+</ol>
+</li>
+<li><p>枚举类型<code>(enum)</code></p>
+<p>把不重复的数据存储为一个预定义的集合。其存储非常紧凑，会把列表值压缩到1或2个字节，存储的其实是整数，所以排序也是按照存储的整数。应尽量避免使用数字导致混乱。</p>
+</li>
+<li><p>日期和时间类型</p>
+<p><code>year(1901-2155)</code>、<code>time(-838:59:59~838:59:59)</code>、<code>date(1000-01-01~9999-12-3)</code>、<code>datetime(1000-01-01 00:00:00~ 9999-12-31 23:59:59)</code>、<code>timestamp(1970-01-01 00:00:01 UTC~2038-01-19 03:14:07UTC)</code></p>
+<p><code>timestamp</code>空间效率高于<code>datetime</code>。</p>
+</li>
+</ol>
+<hr>
+<h4 id="引擎"><a href="#引擎" class="headerlink" title="引擎"></a>引擎</h4><p><code>MyISAM</code>和<code>InnoDB</code>区别</p>
+<ol>
+<li><code>MyISAM</code>每张表被存放在三个文件：frm-表格定义、MYD(MYData)-数据文件、MYI(MYIndex)-索引文件；<code>InnoDB</code>所有表存在同一个文件内（也可能是多个文件，或者是独立的表空间文件），表的大小受限于操作系统文件的大小，一般为2GB。</li>
+<li><code>MyISAM</code>可被压缩，存储空间小；<code>InnoDB</code>需要更多的内存和存储，会在主内存中建立专用的缓冲池用于高速缓冲数据和索引。</li>
+<li><code>MyISAM</code>的数据和索引是分开存储的，数据为<code>.MYD</code>，索引为<code>.MYI</code>；<code>InnoDB</code>的数据和索引是集中存储的，为<code>.IBD</code>。</li>
+<li><code>MyISAM</code>按记录插入的顺序存储记录；<code>InnoDB</code>按主键大小有序插入。</li>
+<li><code>MyISAM</code>不支持外键；<code>InnoDB</code>支持。</li>
+<li><code>MyISAM</code>不支持事务；<code>InnoDB</code>支持。</li>
+<li><code>MyISAM</code>表锁；<code>InnoDB</code>支持表锁、行锁，默认行锁。</li>
+<li><code>MyISAM</code>索引是B+树索引，使用的是<strong>堆组织表(HOT)</strong>，显示的是随机顺序；<code>InnoDB</code>也是B+树索引，使用的是<strong>索引组织表(IOT)</strong>，主键按顺序存储。</li>
+<li><code>MyISAM</code>索引是非聚簇索引；<code>InnoDB</code>索引是聚簇索引。</li>
+</ol>
+<hr>
+<h4 id="索引"><a href="#索引" class="headerlink" title="索引"></a>索引</h4><p>索引是一种特殊的文件（<code>InnoDB</code>数据表上的索引是表空间的一个组成部分），会占据物理空间，包含对数据表里所有记录的引用指针。</p>
+<p>索引可以大大加快数据的检索速度，但同时创建索引和维护索引要耗费时间。对表中的数据进行增删改时，索引也需要动态维护，所以会降低数据增删改的效率。</p>
+<h5 id="使用场景"><a href="#使用场景" class="headerlink" title="使用场景"></a>使用场景</h5><ol>
+<li><code>where</code>后的字段。</li>
+<li><code>order by</code>的字段。由于索引本身是有序的，可以直接从索引表内的索引对应的数据，大大降低了将数据从磁盘读取到内存再排序所消耗的性能。</li>
+<li><code>join</code>语句<code>on</code>之后涉及的字段。</li>
+</ol>
+<h5 id="索引覆盖"><a href="#索引覆盖" class="headerlink" title="索引覆盖"></a>索引覆盖</h5><p>如果要查询的字段都建立了索引，那么引擎会直接在索引表中查询而不访问原始数据资源，这叫做索引覆盖。因此写<code>select</code>语句应该尽量只写必要的字段，增加索引覆盖的几率。</p>
+<h5 id="索引类型"><a href="#索引类型" class="headerlink" title="索引类型"></a>索引类型</h5><ol>
+<li><strong>主键索引</strong>：数据列无重复，不允许为<code>NULL</code>，一个表只有一个主键。</li>
+<li><strong>唯一索引</strong>：数据列无重复，允许为<code>NULL</code>，一个表可以有多个列创建唯一索引。<code>ALTER TABLE table_name ADD UNIQUE(column1, ...)</code>创建。</li>
+<li><strong>普通索引</strong>：没有唯一性的限制，也允许为<code>NULL</code>。<code>ALTER TABLE table_name ADD INDEX index_name(column1, ...)</code>创建。</li>
+<li><strong>全文索引</strong>：<code>ALTER TABLE table_name ADD FULLTEXT(column)</code>创建。</li>
+</ol>
+<h5 id="索引的数据结构"><a href="#索引的数据结构" class="headerlink" title="索引的数据结构"></a>索引的数据结构</h5><p><code>MySQL</code>使用较多的索引有<strong>Hash索引</strong>、<strong>B+树索引</strong>。<code>InnoDB</code>默认使用的索引实现为B+树索引。</p>
+<ol>
+<li><p>Hash索引</p>
+<p>底层为哈希表，用Hash算法将数据库字段转换为定长的Hash值，与这条数据的行指针一并存入Hash表对应的位置。如果发生了Hash碰撞，则利用链表存储。</p>
+</li>
+<li><p>B树索引</p>
+<p>底层为B+树，其性质为：</p>
+<ol>
+<li>非叶子结点的子树指针与关键字个数相同。</li>
+<li>非叶子结点的子树指针<code>p[i]</code>,指向关键字值属于<code>[k[i], k[i+1]]</code>的子树。</li>
+<li>所有叶子结点拥有一个链指针。</li>
+<li>所有关键字只出现在叶子结点。</li>
+<li>非叶子结点相当于叶子结点的索引，叶子结点存储数据。</li>
+<li>B+树适用于文件系统的存储。</li>
+</ol>
+</li>
+</ol>
+<p>B+树比B树更适合数据库索引，主要有以下几个原因：</p>
+<ol>
+<li><strong>B+树的磁盘读写代价更低</strong>。B+树内部结点没有指向关键字具体信息的指针，因此内部结点相对于B树更小，因此同一盘块所能容纳的关键字就越多，一次性能够读入内存的关键字也越多，IO读写次数也就降低了。</li>
+<li><strong>B+树的查询效率更加稳定</strong>。任何关键字的查找必须走从根结点到叶子结点的路，所以每个数据查询的效率是相当的。</li>
+<li>B+树的数据都存储在叶子结点中，而B树的非叶子结点也存有数据，我们要找到具体的数据需要中序遍历，所以B+树的效率更高，更适合区间查询，适用于数据库索引。</li>
+<li>增删文件时，由于B+树的叶子结点包含所有关键字，且以有序的链表存储，所以其增删效率更高。</li>
+</ol>
+<p><img src="B+%E6%A0%91%E3%80%81B%E6%A0%91.jpeg" alt=""></p>
+<h5 id="索引的基本原理"><a href="#索引的基本原理" class="headerlink" title="索引的基本原理"></a>索引的基本原理</h5><p>索引用来快速寻找具有特定值的记录。如果没有索引，查询时需要遍历整张表。</p>
+<p>索引的原理就是把无序的数据变为有序的查询。</p>
+<ol>
+<li>将创建了索引的列排序</li>
+<li>对排序结果生成倒排表</li>
+<li>在倒排表内容上加上数据地址链</li>
+<li>查询时，先获取倒排表，取出数据地址链，从而获取具体的数据。</li>
+</ol>
+<h5 id="索引设计原则"><a href="#索引设计原则" class="headerlink" title="索引设计原则"></a>索引设计原则</h5><ol>
+<li>最左前缀匹配原则。<code>MySQL</code>执行查询语句会一直向右匹配直到遇到范围查询。例如<code>a = 1 AND b &gt; 2 AND c = 3</code>，如果a、b、c都建立了索引，这时c是用不到索引的。改成<code>a = 1 AND c = 3 AND b &gt; 2</code>即可。</li>
+<li>只为频繁作为查询条件的字段建立索引。</li>
+<li>频繁更新的字段不宜建立索引。</li>
+<li>不能有效区分数据的列不建立索引。</li>
+<li>定义有外键的数据列建立索引，可以加快表之间的连接。</li>
+<li>定义为<code>text/image/bit</code>类型的列不建立索引，因为这些数据类型的列的数据量要么很大，要么很小，不利于使用索引。</li>
+</ol>
+<h5 id="百万级别以上的数据如何删除"><a href="#百万级别以上的数据如何删除" class="headerlink" title="百万级别以上的数据如何删除"></a>百万级别以上的数据如何删除</h5><p>当我们对数据进行增删改的时候，都会产生对索引文件的操作，额外消耗IO，影响增删改的效率。所以当删除的数据量大时：</p>
+<ol>
+<li>应该先删除索引。</li>
+<li>然后删除数据。</li>
+<li>删除完重新建立索引。</li>
+</ol>
+<p>这样比直接删除内容快很多。</p>
+<h5 id="前缀索引"><a href="#前缀索引" class="headerlink" title="前缀索引"></a>前缀索引</h5><p><code>INDEX(FIELD(10))</code>，表示使用字段前10个字符建立索引。</p>
+<h5 id="联合索引"><a href="#联合索引" class="headerlink" title="联合索引"></a>联合索引</h5><p><code>MySQL</code>可以使用多个字段同时建立一个索引，称为联合索引。如果想要命中索引，需要按照建立索引时的字段顺序查找，否则无法命中索引。</p>
+<hr>
+<h4 id="事务"><a href="#事务" class="headerlink" title="事务"></a>事务</h4><p>事务是一个不可分割的数据库操作序列，也是数据库并发控制的基本单位。其执行的结果必须使数据库从一种一致性状态变为另一种一致性状态。事务是逻辑上的一组操作，要么都执行，要么都不执行。</p>
+<h5 id="ACID特性"><a href="#ACID特性" class="headerlink" title="ACID特性"></a>ACID特性</h5><p>关系型数据库必须遵循ACID规则：</p>
+<ol>
+<li><strong>原子性</strong>：事务是最小的执行单位，不允许分割。事务的原子性保证了事务要么都执行，要么都不执行。</li>
+<li><strong>一致性</strong>：实行事务前后，数据应保持一致，多个事务对同一个数据读取的结果是相同的。</li>
+<li><strong>隔离性</strong>：并发访问数据库时，一个用户的事务不被其他事务所干扰，各个并发事务之间数据库是独立的。</li>
+<li><strong>持久性</strong>：一个事务被提交之后，它对数据库数据的改变是永久的，即使数据库发生故障也不会对其有影响。</li>
+</ol>
+<h5 id="幻读、脏读、不可重复读"><a href="#幻读、脏读、不可重复读" class="headerlink" title="幻读、脏读、不可重复读"></a>幻读、脏读、不可重复读</h5><ul>
+<li>幻读：事务A查询了某数据的总量，此时事务B对数据执行了插入或删除的操作，事务A再次执行查询发现数据总量已经发生了变化。</li>
+<li>脏读：事务A访问到了事务B未提交的数据，此时事务B进行了回滚，事务A读到的就是脏数据。</li>
+<li>不可重复读：事务A查询到某数据，此时事务B对这部分数据进行了更新，事务A再次查询发现数据已经变了。</li>
+</ul>
+<h5 id="事务隔离级别"><a href="#事务隔离级别" class="headerlink" title="事务隔离级别"></a>事务隔离级别</h5><table>
+<thead>
+<tr>
+<th align="center">隔离级别</th>
+<th align="center">脏读</th>
+<th align="center">不可重复读</th>
+<th align="center">幻读</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">READ-UNCOMMITTED</td>
+<td align="center">√</td>
+<td align="center">√</td>
+<td align="center">√</td>
+</tr>
+<tr>
+<td align="center">READ_COMMITTED</td>
+<td align="center">×</td>
+<td align="center">√</td>
+<td align="center">√</td>
+</tr>
+<tr>
+<td align="center">REPEATABLE_READ</td>
+<td align="center">×</td>
+<td align="center">×</td>
+<td align="center">√</td>
+</tr>
+<tr>
+<td align="center">SERIALIZABLE</td>
+<td align="center">×</td>
+<td align="center">×</td>
+<td align="center">×</td>
+</tr>
+</tbody></table>
+<p><code>MySQL</code>默认采用<strong>REPEATABLE_READ</strong>。</p>
+<hr>
+<h4 id="锁"><a href="#锁" class="headerlink" title="锁"></a>锁</h4><h5 id="隔离级别与锁的关系"><a href="#隔离级别与锁的关系" class="headerlink" title="隔离级别与锁的关系"></a>隔离级别与锁的关系</h5><ul>
+<li>READ_UNCOMMITTED：读取数据无需加共享锁。</li>
+<li>READ_COMMITTED：读操作加共享锁，执行完语句释放共享锁。</li>
+<li>REPEATABLE_READ：读操作加共享锁，在事务提交之前不释放锁。</li>
+<li>SERIALIZABLE：该级别锁定整个范围的键，一直持有锁知道事务完完成。</li>
+</ul>
+<h5 id="行锁实现"><a href="#行锁实现" class="headerlink" title="行锁实现"></a>行锁实现</h5><p><code>InnoDB</code>是基于索引实现的行锁。</p>
+<p><code>SELECT * FROM tab_with_index WHERE id = 1 FOR UPDATE;</code>。<code>FOR UPDATE</code>可以根据条件完成行锁，且<code>id</code>是有索引键的列，如果<code>id</code>不是索引键<code>InnoDB</code>将完成表锁。</p>
+<hr>
+<h4 id="视图"><a href="#视图" class="headerlink" title="视图"></a>视图</h4><p>为了提高复杂SQL语句的复用性和表操作的安全性，<code>MySQL</code>提供了视图。视图是一种虚拟表。</p>
+<h5 id="使用场景-1"><a href="#使用场景-1" class="headerlink" title="使用场景"></a>使用场景</h5><ul>
+<li>重用SQL语句</li>
+<li>简化复杂的SQL操作</li>
+<li>保护数据。可以给用户授予表的特定部分的访问权限而不是整个表。</li>
+</ul>
+<p>使用视图会影响性能。</p>
+<p>基本使用：</p>
+<ul>
+<li>创建视图：<code>CREATE VIEW &#39;view_name&#39; AS SELECT 查询语句</code>。</li>
+<li>修改视图：<code>ALTER VIEW view_name AS SELECT 查询语句</code>。</li>
+<li>删除视图：<code>DROP VIEW view_name</code>。</li>
+</ul>
+<hr>
+<h4 id="SQL约束"><a href="#SQL约束" class="headerlink" title="SQL约束"></a>SQL约束</h4><ul>
+<li><strong>NOT NULL</strong>：控制字段内容不能为空。</li>
+<li><strong>UNIQUE</strong>：控制字段内容不能重复，一个表可以有多个<code>UNIQUE</code>约束。</li>
+<li><strong>PRIMARY KEY</strong>：控制字段不能重复，一个表只能出现一次。</li>
+<li><strong>FOREIGN KEY</strong>：预防破坏表之间连接的动作，防止非法数据插入外键列。</li>
+<li><strong>CHECK</strong>：控制字段的值的范围。</li>
+</ul>
+<hr>
+<h4 id="关联查询"><a href="#关联查询" class="headerlink" title="关联查询"></a>关联查询</h4><ul>
+<li>交叉查询(CROSS JOIN)：返回<strong>笛卡尔乘积</strong>，没有关联条件。</li>
+<li>内连接(INNER JOIN)</li>
+<li>外连接(LEFT JOIN、RIGHT JOIN)</li>
+<li>联合查询(UNION、UNION ALL)：联合查询的列数要相等，<code>UNION</code>会合并相同记录行，<code>UNION ALL</code>不合并。</li>
+<li>全连接(FULL JOIN)：<code>MySQL</code>不支持。</li>
+</ul>
+<hr>
+<h4 id="子查询"><a href="#子查询" class="headerlink" title="子查询"></a>子查询</h4><p>一条SQL语句的查询结果作为另一条查询语句的条件或查询结果。</p>
+<hr>
+<h4 id="drop、delete、truncate"><a href="#drop、delete、truncate" class="headerlink" title="drop、delete、truncate"></a>drop、delete、truncate</h4><table>
+<thead>
+<tr>
+<th align="center"></th>
+<th align="center">delete</th>
+<th align="center">truncate</th>
+<th align="center">drop</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">类型</td>
+<td align="center">DML</td>
+<td align="center">DDL</td>
+<td align="center">DDL</td>
+</tr>
+<tr>
+<td align="center">回滚</td>
+<td align="center">支持</td>
+<td align="center">不支持</td>
+<td align="center">不支持</td>
+</tr>
+<tr>
+<td align="center">删除内容</td>
+<td align="center">不删除表结构，删除表的全部或部分数据</td>
+<td align="center">不删除表结构，删除表的所有数据</td>
+<td align="center">删除表的全部，包括数据、索引、权限</td>
+</tr>
+<tr>
+<td align="center">删除速度</td>
+<td align="center">慢，需要逐行删除</td>
+<td align="center">快</td>
+<td align="center">最快</td>
+</tr>
+</tbody></table>
+<hr>
+<h4 id="SQL优化"><a href="#SQL优化" class="headerlink" title="SQL优化"></a>SQL优化</h4>]]></content>
       <categories>
         <category>mysql</category>
       </categories>
