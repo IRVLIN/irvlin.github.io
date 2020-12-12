@@ -31,7 +31,7 @@
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://irvlin.xyz/2020/12/09/Mysql%E7%AC%94%E8%AE%B0/B+%E6%A0%91%E3%80%81B%E6%A0%91.jpeg">
 <meta property="article:published_time" content="2020-12-08T16:54:40.000Z">
-<meta property="article:modified_time" content="2020-12-12T03:16:07.433Z">
+<meta property="article:modified_time" content="2020-12-12T08:50:27.183Z">
 <meta property="article:author" content="Charispsychoma">
 <meta property="article:tag" content="mysql">
 <meta name="twitter:card" content="summary">
@@ -227,7 +227,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-12-12 11:16:07" itemprop="dateModified" datetime="2020-12-12T11:16:07+08:00">2020-12-12</time>
+                <time title="修改时间：2020-12-12 16:50:27" itemprop="dateModified" datetime="2020-12-12T16:50:27+08:00">2020-12-12</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -330,6 +330,7 @@
 <li><code>MyISAM</code>表锁；<code>InnoDB</code>支持表锁、行锁，默认行锁。</li>
 <li><code>MyISAM</code>索引是B+树索引，使用的是<strong>堆组织表(HOT)</strong>，显示的是随机顺序；<code>InnoDB</code>也是B+树索引，使用的是<strong>索引组织表(IOT)</strong>，主键按顺序存储。</li>
 <li><code>MyISAM</code>索引是非聚簇索引；<code>InnoDB</code>索引是聚簇索引。</li>
+<li><code>MyISAM</code>允许表没有主键；<code>InnoDB</code>不允许。如果没有设置主键，<code>InnoDB</code>会自动生成一个6字节的主键。</li>
 </ol>
 <hr>
 <h4 id="索引"><a href="#索引" class="headerlink" title="索引"></a>索引</h4><p>索引是一种特殊的文件（<code>InnoDB</code>数据表上的索引是表空间的一个组成部分），会占据物理空间，包含对数据表里所有记录的引用指针。</p>
@@ -522,7 +523,82 @@
 </tr>
 </tbody></table>
 <hr>
-<h4 id="SQL优化"><a href="#SQL优化" class="headerlink" title="SQL优化"></a>SQL优化</h4>
+<h4 id="SQL优化"><a href="#SQL优化" class="headerlink" title="SQL优化"></a>SQL优化</h4><p>对于低性能SQL语句的定位，可使用<strong>执行计划</strong>。执行计划用于显示数据库引擎对于SQL语句执行的详细情况，包含了是否使用索引、使用什么索引等等。</p>
+<p>执行计划包含的信息id由一组数字组成，表示一个查询中各个子查询的执行效率：</p>
+<ul>
+<li>id相同执行顺序由上至下</li>
+<li>id不同，则id越大优先级越高，越先执行</li>
+<li>id为<code>NULL</code>，说明不需要使用它查询</li>
+</ul>
+<p><code>select_type</code>表示每个子查询的查询类型：</p>
+<table>
+<thead>
+<tr>
+<th align="center">id</th>
+<th align="center">select_type</th>
+<th align="center">description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">1</td>
+<td align="center">SIMPLE</td>
+<td align="center">不包含任何子查询或<code>union</code>等查询</td>
+</tr>
+<tr>
+<td align="center">2</td>
+<td align="center">PRIMARY</td>
+<td align="center">包含子查询最外层查询就显示为<code>PRIMARY</code></td>
+</tr>
+<tr>
+<td align="center">3</td>
+<td align="center">SUBQUERY</td>
+<td align="center">在<code>select</code>或<code>where</code>字句中包含的查询</td>
+</tr>
+<tr>
+<td align="center">4</td>
+<td align="center">DERIVED</td>
+<td align="center"><code>from</code>字句中包含的查询</td>
+</tr>
+<tr>
+<td align="center">5</td>
+<td align="center">UNION</td>
+<td align="center">出现在<code>union</code>后的查询语句中</td>
+</tr>
+<tr>
+<td align="center">6</td>
+<td align="center">UNION RESULT</td>
+<td align="center">从<code>UNION</code>中获取结果集</td>
+</tr>
+</tbody></table>
+<p><code>table</code>表示查询的数据表。</p>
+<p><code>type</code>表示访问的类型：</p>
+<ul>
+<li>ALL 扫描全表</li>
+<li>index 遍历索引</li>
+<li>range 索引范围查找</li>
+<li>index_subquery 在子查询中使用<code>ref</code></li>
+<li>unique_subquery 在子查询中使用<code>eq_ref</code></li>
+<li>ref_or_null 对<code>null</code>进行索引优化的<code>ref</code></li>
+<li>fulltext 使用全文索引</li>
+<li>ref 使用非唯一索引查询数据</li>
+<li>eq_ref 在<code>join</code>查询中使用<code>PRIMARY KEY</code>或者<code>UNIQUE NOT NULL</code>索引关联</li>
+</ul>
+<p><code>possible_keys</code>表示可能使用的索引</p>
+<p><code>keys</code>表示<code>MySQL</code>在查询中实际使用到的索引</p>
+<p><code>key_length</code>表示索引长度</p>
+<p><code>ref</code>表示连接匹配条件</p>
+<p><code>rows</code>表示估算的结果集数量</p>
+<p><code>extra</code>表示额外的信息</p>
+<hr>
+<h4 id="SQL生命周期"><a href="#SQL生命周期" class="headerlink" title="SQL生命周期"></a>SQL生命周期</h4><ol>
+<li>应用服务器与数据库服务器建立连接</li>
+<li>数据库进程获取SQL</li>
+<li>解析生成执行计划，执行</li>
+<li>读取数据到内存进行逻辑处理</li>
+<li>通过1建立的连接将结果返回给客户端</li>
+<li>关闭连接，释放资源</li>
+</ol>
+
     </div>
 
     
@@ -603,7 +679,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#SQL"><span class="nav-number">1.</span> <span class="nav-text">SQL</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#MySQL"><span class="nav-number">2.</span> <span class="nav-text">MySQL</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#MySQL的binlog"><span class="nav-number">3.</span> <span class="nav-text">MySQL的binlog</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#数据类型"><span class="nav-number">4.</span> <span class="nav-text">数据类型</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#引擎"><span class="nav-number">5.</span> <span class="nav-text">引擎</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#索引"><span class="nav-number">6.</span> <span class="nav-text">索引</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#使用场景"><span class="nav-number">6.1.</span> <span class="nav-text">使用场景</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#索引覆盖"><span class="nav-number">6.2.</span> <span class="nav-text">索引覆盖</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#索引类型"><span class="nav-number">6.3.</span> <span class="nav-text">索引类型</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#索引的数据结构"><span class="nav-number">6.4.</span> <span class="nav-text">索引的数据结构</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#索引的基本原理"><span class="nav-number">6.5.</span> <span class="nav-text">索引的基本原理</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#索引设计原则"><span class="nav-number">6.6.</span> <span class="nav-text">索引设计原则</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#百万级别以上的数据如何删除"><span class="nav-number">6.7.</span> <span class="nav-text">百万级别以上的数据如何删除</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#前缀索引"><span class="nav-number">6.8.</span> <span class="nav-text">前缀索引</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#联合索引"><span class="nav-number">6.9.</span> <span class="nav-text">联合索引</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#事务"><span class="nav-number">7.</span> <span class="nav-text">事务</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#ACID特性"><span class="nav-number">7.1.</span> <span class="nav-text">ACID特性</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#幻读、脏读、不可重复读"><span class="nav-number">7.2.</span> <span class="nav-text">幻读、脏读、不可重复读</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#事务隔离级别"><span class="nav-number">7.3.</span> <span class="nav-text">事务隔离级别</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#锁"><span class="nav-number">8.</span> <span class="nav-text">锁</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#隔离级别与锁的关系"><span class="nav-number">8.1.</span> <span class="nav-text">隔离级别与锁的关系</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#行锁实现"><span class="nav-number">8.2.</span> <span class="nav-text">行锁实现</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#视图"><span class="nav-number">9.</span> <span class="nav-text">视图</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#使用场景-1"><span class="nav-number">9.1.</span> <span class="nav-text">使用场景</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#SQL约束"><span class="nav-number">10.</span> <span class="nav-text">SQL约束</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#关联查询"><span class="nav-number">11.</span> <span class="nav-text">关联查询</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#子查询"><span class="nav-number">12.</span> <span class="nav-text">子查询</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#drop、delete、truncate"><span class="nav-number">13.</span> <span class="nav-text">drop、delete、truncate</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#SQL优化"><span class="nav-number">14.</span> <span class="nav-text">SQL优化</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#SQL"><span class="nav-number">1.</span> <span class="nav-text">SQL</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#MySQL"><span class="nav-number">2.</span> <span class="nav-text">MySQL</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#MySQL的binlog"><span class="nav-number">3.</span> <span class="nav-text">MySQL的binlog</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#数据类型"><span class="nav-number">4.</span> <span class="nav-text">数据类型</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#引擎"><span class="nav-number">5.</span> <span class="nav-text">引擎</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#索引"><span class="nav-number">6.</span> <span class="nav-text">索引</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#使用场景"><span class="nav-number">6.1.</span> <span class="nav-text">使用场景</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#索引覆盖"><span class="nav-number">6.2.</span> <span class="nav-text">索引覆盖</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#索引类型"><span class="nav-number">6.3.</span> <span class="nav-text">索引类型</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#索引的数据结构"><span class="nav-number">6.4.</span> <span class="nav-text">索引的数据结构</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#索引的基本原理"><span class="nav-number">6.5.</span> <span class="nav-text">索引的基本原理</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#索引设计原则"><span class="nav-number">6.6.</span> <span class="nav-text">索引设计原则</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#百万级别以上的数据如何删除"><span class="nav-number">6.7.</span> <span class="nav-text">百万级别以上的数据如何删除</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#前缀索引"><span class="nav-number">6.8.</span> <span class="nav-text">前缀索引</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#联合索引"><span class="nav-number">6.9.</span> <span class="nav-text">联合索引</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#事务"><span class="nav-number">7.</span> <span class="nav-text">事务</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#ACID特性"><span class="nav-number">7.1.</span> <span class="nav-text">ACID特性</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#幻读、脏读、不可重复读"><span class="nav-number">7.2.</span> <span class="nav-text">幻读、脏读、不可重复读</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#事务隔离级别"><span class="nav-number">7.3.</span> <span class="nav-text">事务隔离级别</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#锁"><span class="nav-number">8.</span> <span class="nav-text">锁</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#隔离级别与锁的关系"><span class="nav-number">8.1.</span> <span class="nav-text">隔离级别与锁的关系</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#行锁实现"><span class="nav-number">8.2.</span> <span class="nav-text">行锁实现</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#视图"><span class="nav-number">9.</span> <span class="nav-text">视图</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#使用场景-1"><span class="nav-number">9.1.</span> <span class="nav-text">使用场景</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#SQL约束"><span class="nav-number">10.</span> <span class="nav-text">SQL约束</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#关联查询"><span class="nav-number">11.</span> <span class="nav-text">关联查询</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#子查询"><span class="nav-number">12.</span> <span class="nav-text">子查询</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#drop、delete、truncate"><span class="nav-number">13.</span> <span class="nav-text">drop、delete、truncate</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#SQL优化"><span class="nav-number">14.</span> <span class="nav-text">SQL优化</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#SQL生命周期"><span class="nav-number">15.</span> <span class="nav-text">SQL生命周期</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
