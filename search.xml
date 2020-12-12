@@ -1855,21 +1855,21 @@
 </tr>
 <tr>
 <td align="center">READ_COMMITTED</td>
-<td align="center">×</td>
+<td align="center">✗</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
 </tr>
 <tr>
 <td align="center">REPEATABLE_READ</td>
-<td align="center">×</td>
-<td align="center">×</td>
+<td align="center">✗</td>
+<td align="center">✗</td>
 <td align="center">✓</td>
 </tr>
 <tr>
 <td align="center">SERIALIZABLE</td>
-<td align="center">×</td>
-<td align="center">×</td>
-<td align="center">×</td>
+<td align="center">✗</td>
+<td align="center">✗</td>
+<td align="center">✗</td>
 </tr>
 </tbody></table>
 <p><code>MySQL</code>默认采用<strong>REPEATABLE_READ</strong>。</p>
