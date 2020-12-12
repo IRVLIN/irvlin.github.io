@@ -1849,21 +1849,21 @@
 </thead>
 <tbody><tr>
 <td align="center">READ-UNCOMMITTED</td>
-<td align="center">√</td>
-<td align="center">√</td>
-<td align="center">√</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
 </tr>
 <tr>
 <td align="center">READ_COMMITTED</td>
 <td align="center">×</td>
-<td align="center">√</td>
-<td align="center">√</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
 </tr>
 <tr>
 <td align="center">REPEATABLE_READ</td>
 <td align="center">×</td>
 <td align="center">×</td>
-<td align="center">√</td>
+<td align="center">✓</td>
 </tr>
 <tr>
 <td align="center">SERIALIZABLE</td>
