@@ -277,6 +277,11 @@
 <hr>
 <h4 id="strictfp关键字"><a href="#strictfp关键字" class="headerlink" title="strictfp关键字"></a>strictfp关键字</h4><p><code>strictfp</code>可以用来修饰类、接口和方法。在所声明的范围内，所有浮点数的计算都是精确的。当一个类被<code>strictfp</code>修饰时，所有方法默认也被<code>strictfp</code>修饰。</p>
 <h4 id="单精度、双精度"><a href="#单精度、双精度" class="headerlink" title="单精度、双精度"></a>单精度、双精度</h4><p><img src="%E5%8D%95%E7%B2%BE%E5%BA%A6%E3%80%81%E5%8F%8C%E7%B2%BE%E5%BA%A6.png" alt=""></p>
+<hr>
+<h4 id="Java对象内存分配如何保证线程安全"><a href="#Java对象内存分配如何保证线程安全" class="headerlink" title="Java对象内存分配如何保证线程安全"></a>Java对象内存分配如何保证线程安全</h4><ul>
+<li><code>CAS</code></li>
+<li><code>TLAB(Thread Local Allocation Buffer)</code>：每个线程在Java堆中预分配一小块内存，在给对象分配内存时，直接在自己这块”私有”内存中分配，当这部分区域用完之后，再分配新的”私有”内存。</li>
+</ul>
 ]]></content>
       <categories>
         <category>Java</category>
@@ -1637,6 +1642,7 @@
 </ol>
 <hr>
 <h4 id="AQS"><a href="#AQS" class="headerlink" title="AQS"></a>AQS</h4><p>定义：<code>AQS</code>是一个用于构建锁、同步器、协作工具类的工具类。有了<code>AQS</code>以后，更多的协作工具类都可以很方便得被写出来。以上提到的几个控制并发流程的工具类都用到了<code>AQS</code>，源码中都存在一个<code>Sync</code>的抽象静态内部类，继承了<code>AbstractQueuedSynchronizer</code>。</p>
+<p><code>AQS</code>内部维护了一个<code>state</code>状态位，尝试加锁时通过<code>CAS</code>修改值，如果成功设置为1，并且把当前线程ID赋值，说明加锁成功。一旦获取到锁，其他线程将会阻塞进入阻塞队列自旋，等待获取锁的线程唤醒。释放锁的时候会把<code>state</code>重置为0，同时把线程ID置空。</p>
 <p>利用<code>AQS</code>DIY一个简单的线程协作器。</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">OneShotLatch</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Sync sync = <span class="keyword">new</span> Sync();</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">await</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        sync.acquireShared(<span class="number">0</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">signal</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        sync.releaseShared(<span class="number">0</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">Sync</span> <span class="keyword">extends</span> <span class="title">AbstractQueuedSynchronizer</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">protected</span> <span class="keyword">int</span> <span class="title">tryAcquireShared</span><span class="params">(<span class="keyword">int</span> arg)</span> </span>&#123;</span><br><span class="line">            <span class="comment">// 返回1代表获取latch成功</span></span><br><span class="line">            <span class="keyword">return</span> getState() == <span class="number">1</span> ? <span class="number">1</span> : -<span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">protected</span> <span class="keyword">boolean</span> <span class="title">tryReleaseShared</span><span class="params">(<span class="keyword">int</span> arg)</span> </span>&#123;</span><br><span class="line">            setState(<span class="number">1</span>);</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</span><br><span class="line">        OneShotLatch oneShotLatch = <span class="keyword">new</span> OneShotLatch();</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">10</span>; i++) &#123;</span><br><span class="line">            <span class="keyword">new</span> Thread(() -&gt; &#123;</span><br><span class="line">                System.out.println(Thread.currentThread().getName() + <span class="string">"尝试获取latch，获取失败就等待"</span>);</span><br><span class="line">                oneShotLatch.await();</span><br><span class="line">                System.out.println(<span class="string">"开闸放行"</span> + Thread.currentThread().getName() + <span class="string">"继续运行"</span>);</span><br><span class="line">            &#125;).start();</span><br><span class="line">        &#125;</span><br><span class="line">        Thread.sleep(<span class="number">5000</span>);</span><br><span class="line">        oneShotLatch.signal();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
@@ -2026,12 +2032,206 @@
 <li>通过1建立的连接将结果返回给客户端</li>
 <li>关闭连接，释放资源</li>
 </ol>
+<hr>
+<h4 id="大数据查询优化"><a href="#大数据查询优化" class="headerlink" title="大数据查询优化"></a>大数据查询优化</h4><ol>
+<li>优化<code>schema</code>、<code>sql语句+索引</code></li>
+<li>加缓存，例如<code>redis</code></li>
+<li>主从复制、读写分离</li>
+<li>垂直拆分</li>
+<li>水平拆分</li>
+</ol>
+<hr>
+<h4 id="大数据分页"><a href="#大数据分页" class="headerlink" title="大数据分页"></a>大数据分页</h4><p>假设在<code>id</code>列建立了索引。现在执行查询语句<code>SELECT * FROM table WHERE age &lt; 60 LIMIT 1000000, 100</code>。这条SQL语句需要加载1000000条数据然后丢弃，只取后面的100条，这样是很慢的。可以改成<code>SELECT * FROM table WHERE id IN (SELECT id FROM table WHERE age &lt; 60 LIMIT 1000000, 100)</code>。虽然这条语句也加载了1000000条数据，但是由于索引覆盖，所查询的字段都在索引中，速度会很快。如果<code>id</code>是连续的，用<code>SELECT * FROM table WHERE id &gt; 1000000 LIMIT 100</code>就更快了。总之就是尽可能减少加载数据的数量。</p>
+<p>利用缓存当然是更好的。</p>
+<hr>
+<h4 id="慢SQL"><a href="#慢SQL" class="headerlink" title="慢SQL"></a>慢SQL</h4><p><code>SHOW VARIABLES LIKE &#39;slow_query_log&#39;</code>查看慢查询是否开启。可通过<code>SET GLOBAL slow_query_log = ON</code>开启。</p>
+<p><code>SHOW VARIABLES LIKE &#39;long_query_time&#39;</code>查看临界时间。可通过<code>SET long_query_time=临界时间</code>修改。一旦SQL执行时间超过设置的临界值，就会被记录到<code>datadir</code>目录下的<code>xxx-slow.log</code>文件中。</p>
+<h5 id="解决慢SQL"><a href="#解决慢SQL" class="headerlink" title="解决慢SQL"></a>解决慢SQL</h5><ul>
+<li>尽量减少加载语句的数量。</li>
+<li>分析语句执行计划，尽量使语句命中索引。</li>
+<li>有可能是数据量过大，可以考虑分表。</li>
+</ul>
+<hr>
+<h3 id="主从复制"><a href="#主从复制" class="headerlink" title="主从复制"></a>主从复制</h3><p>原理：将主数据库的DDL和DML操作通过二进制日志(binlog)传输到数据库上，重新执行这些日志，使得主从数据库数据一致。</p>
 ]]></content>
       <categories>
         <category>mysql</category>
       </categories>
       <tags>
         <tag>mysql</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>redis笔记</title>
+    <url>/2020/12/12/redis%E7%AC%94%E8%AE%B0/</url>
+    <content><![CDATA[<p>redis学习笔记</p>
+<a id="more"></a>
+
+<h4 id="简述"><a href="#简述" class="headerlink" title="简述"></a>简述</h4><p><code>redis(remote dictionary server)</code>是一个C语言编写的，开源的高性能非关系型的键值对数据库。</p>
+<p><code>redis</code>的值有5种不同类型：字符串、列表、集合、散列表、有序集合。键只能为字符串。</p>
+<p><code>redis</code>是单线程的，但其数据是存在于内存中的，所以读写数据很快，每秒可处理超过10万次读写。</p>
+<hr>
+<h4 id="redis优缺点"><a href="#redis优缺点" class="headerlink" title="redis优缺点"></a>redis优缺点</h4><h5 id="优点"><a href="#优点" class="headerlink" title="优点"></a>优点</h5><ul>
+<li>读写快，读的速度为110000次/s，写的速度是81000次/s。</li>
+<li>支持数据持久化，有<code>AOF</code>、<code>RDB</code>两种方式。</li>
+<li>支持事务。支持对多个操作合并后的原子性操作。</li>
+<li>数据结构丰富。</li>
+<li>支持主从复制，主机自动同步数据到从机。</li>
+</ul>
+<h5 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h5><ul>
+<li><code>redis</code>数据存在于内存中，难以用于海量数据的读写。</li>
+<li><code>redis</code>不具备自动容错和恢复机制，需等待重启或手动切换IP才能恢复。</li>
+<li>主机宕机，如果数据未及时同步到从机，切换IP后会出现数据不一致问题。</li>
+</ul>
+<hr>
+<h4 id="redis技术特点"><a href="#redis技术特点" class="headerlink" title="redis技术特点"></a>redis技术特点</h4><ol>
+<li>基于内存，绝大部分请求都是基于内存的操作。</li>
+<li>单线程，避免了多线程的上下文切换与竞争，减少了CPU的消耗。</li>
+<li>采用I/O多路复用模型，非阻塞IO。</li>
+<li>使用VM机制将不经常访问的数据从内存交换到磁盘中，腾出空间用于其他需要访问的数据。这样可以一定程度上避免内存不足造成数据访问速度下降的问题。</li>
+</ol>
+<hr>
+<h4 id="redis数据类型"><a href="#redis数据类型" class="headerlink" title="redis数据类型"></a>redis数据类型</h4><ul>
+<li><strong>STRING</strong>：可存储字符串、整数或浮点数。对整数或浮点数执行自增或自减操作。</li>
+<li><strong>LIST</strong>：存储列表，从两端压入或者弹出元素。</li>
+<li><strong>SET</strong>：存储无序集合。</li>
+<li><strong>HASH</strong>：存储包含键值对的无序散列表。</li>
+<li><strong>ZSET</strong>：有序集合。</li>
+</ul>
+<p><code>redis</code>还包括一些高级的数据结构，例如<code>HyperLogLog</code>、<code>BloomFilter</code>等等。</p>
+<h5 id="HyperLogLog"><a href="#HyperLogLog" class="headerlink" title="HyperLogLog"></a>HyperLogLog</h5><p>假设要统计<code>UV</code>，需要用到去重功能，同一个用户一天之内的多次访问只能计一次。首先想到的是<code>set</code>，把每一个请求都带上用户的ID，用<code>SADD</code>将ID放入集合，再调用<code>SCARD</code>就可以算出集合的大小。但是如果页面的访问量很大，这时集合的空间也会变得很大。于是便有了<code>HyperLogLog</code>这样的数据结构，它提供了<code>PFADD</code>、<code>PFCOUNT</code>两个指令，相当于<code>set</code>的<code>SADD</code>和<code>SCARD</code>。它的特点是，不存储元素本身，占用空间特别小，但数据可能不太准确。对于统计<code>UV</code>这样的数据再合适不过了。</p>
+<h5 id="BloomFilter"><a href="#BloomFilter" class="headerlink" title="BloomFilter"></a>BloomFilter</h5><p>如果我们想知道一个元素是否存在于某集合里，那么<code>HyperLogLog</code>就无能为力了，但使用<code>BloomFilter</code>就可以很高效地解决这个问题。<code>BloomFilter</code>最常见的使用场景就是消息推送了。比如我们在看新闻时，网页会不断推送给我们新内容，每次推送都需要去重增加用户体验，这时就可以用到<code>BloomFilter</code>。</p>
+<p><code>BloomFilter</code>的核心实现是一个超大的位数组以及几个哈希函数。假设位数组长度为m，哈希函数个数为k。</p>
+<p><img src="%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8.png" alt=""></p>
+<p>以上图为例，集合里有 x、y、z 三个元素，哈希函数的个数为3。首先初始化位数组，将元素全部置为0。对于 x、y、z 三个元素挨个通过3个哈希函数进行映射，每个映射都会生成一个哈希值，对应位数组上的一个位置，将这个位置的值置为1。对于要查询的元素w，同样通过这3个哈希函数获取映射，依次与位数组上对应位置的值进行比较，如果都为1，<code>BloomFilter</code>则判定w存在于集合中，否则则不存在。可以看出，<code>BloomFilter</code>并不能准确判定一个元素是否存在于集合中，因为位数组某个位置上的值为1，也有可能是其他元素通过哈希函数设置的；但很明显<code>BloomFilter</code>可以准确判定一个元素不存在于集合中。</p>
+<p>在<code>redis</code>中可以通过<code>BF.ADD</code>和<code>BF.EXISTS</code>添加元素和判断元素是否存在。</p>
+<p><code>BloomFilter</code>的<code>initial_size</code>如果过大，会浪费空间；如果过小，会影响准确率，所以需要尽可能精确估计好元素的数量。而<code>error_rate</code>设置得越小，需要的存储空间就越大，对于不需要太精确的场合，设置得大一些也没关系。</p>
+<hr>
+<h4 id="应用场景"><a href="#应用场景" class="headerlink" title="应用场景"></a>应用场景</h4><ul>
+<li>缓存。缓存是<code>redis</code>最常用的功能了。可以设置缓存的最大使用量以及淘汰策略以保证缓存的命中率。</li>
+<li>计数器。可以对<code>STRING</code>进行自增减操作，实现计数器的功能。由于<code>redis</code>是基于内存的，读写速度快，适合存储频繁读写的技术量。</li>
+<li>消息队列。<code>LIST</code>是一个双向链表，可以通过<code>lpush</code>、<code>rpop</code>写入和读取信息。</li>
+<li>分布式锁。在分布式场景下，无法使用单机环境下的锁完成对多个节点上的进程进行同步。这时可以使用<code>redis</code>自带的<code>SETNX</code>命令完成分布式锁。还可以使用<code>redlock</code>实现。</li>
+</ul>
+<hr>
+<h4 id="持久化"><a href="#持久化" class="headerlink" title="持久化"></a>持久化</h4><p>持久化就是把数据从内存写入到磁盘中，以免服务宕机或重启之后内存数据丢失。</p>
+<p><code>redis</code>支持<code>RDB(默认)</code>和<code>AOF</code>两种持久化机制。</p>
+<h5 id="RDB-Redis-DataBase"><a href="#RDB-Redis-DataBase" class="headerlink" title="RDB(Redis DataBase)"></a>RDB(Redis DataBase)</h5><p><code>RDB</code>是<code>redis</code>默认的持久化方式，按照一定的时间将内存中的数据以快照的形式保存到磁盘中，生成数据文件<code>dump.rdb</code>。可以通过配置文件中的<code>save</code>参数设置快照周期。</p>
+<p>优点：</p>
+<ol>
+<li>方便持久化，只有一个文件。</li>
+<li>容灾性好，一个文件可以保存到安全的磁盘。</li>
+<li>性能最大化。<code>fork</code>子线程完成写的操作，让主线程继续处理命令，使得IO最大化。使用单独子线程进行数据持久化，主线程不进行IO操作，保证了<code>redis</code>高性能。</li>
+<li>数据较大时，比<code>AOF</code>启动效率更高。</li>
+</ol>
+<p>缺点：</p>
+<ol>
+<li>数据安全性低。由于<code>RDB</code>持久化是有时间间隔的，如果在这期间<code>redis</code>发生故障，数据会丢失。</li>
+</ol>
+<h5 id="AOF-Append-Only-File"><a href="#AOF-Append-Only-File" class="headerlink" title="AOF(Append Only File)"></a>AOF(Append Only File)</h5><p><code>AOF</code>是将<code>redis</code>执行的每条命令记录到单独的日志文件中。当<code>redis</code>重启时，会重新将日志文件恢复数据。</p>
+<p>如果同时开启了两种持久化模式，<code>redis</code>会优先使用<code>AOF</code>。</p>
+<p>优点：</p>
+<ol>
+<li>数据安全性高。<code>AOF</code>可以配置<code>appendfsync</code>属性，设置为<code>always</code>则每执行一次命令操作就记录到文件中一次。</li>
+<li>通过<code>append</code>模式写文件，即使中途服务宕机，也可以通过<code>redis-check-aof</code>工具解决数据的一次性问题。</li>
+<li><code>AOF</code>机制的<code>rewrite</code>模式。<code>AOF</code>文件没有被<code>rewrite</code>之前，可以删除某些指令(例如误操作的<code>FLUSHALL</code>)。</li>
+</ol>
+<p>缺点：</p>
+<ol>
+<li><code>AOF</code>文件比<code>RDB</code>文件大，恢复速度慢。</li>
+<li>数据较大时，<code>AOF</code>比<code>RDB</code>启动效率低。</li>
+</ol>
+<hr>
+<h4 id="过期键删除策略"><a href="#过期键删除策略" class="headerlink" title="过期键删除策略"></a>过期键删除策略</h4><p>我们可以设置<code>redis</code>中<code>key</code>的过期时间。针对过期的<code>key</code>，主要有以下三种处理策略：</p>
+<ol>
+<li>定时过期：每个设置过期时间的<code>key</code>都需要创建一个定时器，到了过期时间就立即删除，释放内存。但同时又会占用大量CPU资源去处理过期的数据，影响性能。</li>
+<li>惰性过期：只有当访问了一个<code>key</code>时，才会去判断它是否已过期，过期则删除。该策略造成的问题与定时过期相反。</li>
+<li>定期过期：每隔一段时间，会扫描一定数量的数据库的<code>expire</code>字典中一定数量的<code>key</code>，并清除已过期的。<code>expire</code>字典会保存所有设置了过期时间的<code>key</code>的过期时间数据。</li>
+</ol>
+<p><code>redis</code>中可以通过<code>EXPIRE</code>和<code>PERSIST</code>命令分别设置<code>key</code>的过期时间与永不过期。</p>
+<hr>
+<h4 id="内存淘汰策略"><a href="#内存淘汰策略" class="headerlink" title="内存淘汰策略"></a>内存淘汰策略</h4><p>内存淘汰策略是指<code>redis</code>内存不足时，如何处理新数据。</p>
+<h5 id="全局的键空间选择性移除"><a href="#全局的键空间选择性移除" class="headerlink" title="全局的键空间选择性移除"></a>全局的键空间选择性移除</h5><ul>
+<li><code>noeviction</code>：内存不足以容纳新数据时，新写入的操作会报错。</li>
+<li><code>allkeys-lru</code>：内存不足以容纳新数据时，在键空间中移除最近最少使用的<code>key</code>。（常用）</li>
+<li><code>allkeys-random</code>：内存不足以容纳新数据时，在键空间随机移除某个<code>key</code>。</li>
+</ul>
+<h5 id="设置过期时间的键空间选择性移除"><a href="#设置过期时间的键空间选择性移除" class="headerlink" title="设置过期时间的键空间选择性移除"></a>设置过期时间的键空间选择性移除</h5><ul>
+<li><code>volatile-lru</code>：内存不足以容纳新数据时，在设置了过期时间的键空间中移除最近最少使用的<code>key</code>。</li>
+<li><code>volatile-random</code>：内存不足以容纳新数据时，在设置了过期时间的键空间中随机移除某个<code>key</code>。</li>
+<li><code>volatile-ttl</code>：内存不足以容纳新数据时，在设置了过期时间的键空间中优先移除过期时间更早的<code>key</code>。</li>
+</ul>
+<hr>
+<h4 id="线程模型"><a href="#线程模型" class="headerlink" title="线程模型"></a>线程模型</h4><p><code>redis</code>基于<code>reactor</code>模式开发了网络事件处理器，被称为<strong>文件事件处理器</strong>。它的组成分为四部分：多个套接字、IO多路复用程序、文件事件分派器、事件处理器。由于文件时间分派器对类的消费是单线程的，所以<code>redis</code>才是单线程模型。</p>
+<ul>
+<li>文件事件处理器使用I/O多路复用程序同时监听多个套接字，根据套接字目前执行的任务为套接字关联不同的事件处理器。</li>
+<li>当被监听的套接字准备好执行连接应答、读取、写入、关闭等操作时，与操作相对应的文件事件就会产生，这时文件事件处理器会调用套接字之前关联好的事件处理器来处理事件。</li>
+</ul>
+<hr>
+<h4 id="事务"><a href="#事务" class="headerlink" title="事务"></a>事务</h4><p><code>redis</code>事务是一次性、顺序性、排他性地执行队列中的一系列命令。</p>
+<h5 id="三个阶段"><a href="#三个阶段" class="headerlink" title="三个阶段"></a>三个阶段</h5><ol>
+<li>事务开始<code>MULTI</code></li>
+<li>命令入队</li>
+<li>事务执行<code>EXEC</code></li>
+</ol>
+<p><code>redis</code>会将一个事务中的所有命令序列化，按顺序执行。</p>
+<h5 id="相关命令"><a href="#相关命令" class="headerlink" title="相关命令"></a>相关命令</h5><ul>
+<li><code>MULTI</code>：开启一个事务，总是返回<code>OK</code>。<code>MULTI</code>执行之后，客户端仍可以向服务器发送任意多条命令，这些命令会被放入一个队列中，当<code>EXEC</code>命令被调用后，这些队列中的命令才会被执行。</li>
+<li><code>WATCH</code>：乐观锁，可以为所有<code>redis</code>事务提供<code>CAS</code>行为。可以监控任意多个键，一旦其中一个键被修改或移除，之后的事务就不会执行，监控一直持续到<code>EXEC</code>命令被调用。</li>
+<li><code>UNWATCH</code>：取消所有对<code>key</code>的监控。</li>
+<li><code>DISCARD</code>：客户端可以清空事务队列，放弃执行事务，并且客户端会从事务状态中退出。</li>
+<li><code>EXEC</code>：执行事务中的所有命令。返回所有命令的返回值，按命令执行的先后顺序排列。当操作被打断时，返回<code>nil</code>。</li>
+</ul>
+<p><code>redis</code>事务支持一致性和隔离性。当持久化模式为<code>AOF</code>，且<code>appendfsync</code>的值为<code>always</code>时，<code>redis</code>事务也支持持久性。</p>
+<p><code>redis</code>事务的单条命令是原子性的，但事务不保证原子性，没有回滚。事务中的任意命令执行失败，其他命令仍可以被执行。</p>
+<p>使用<code>lua</code>脚本可以保证脚本内的命令一次性、顺序性的被执行，但其仍然不支持回滚，如果部分命令执行失败，其他命令还是会被执行。</p>
+<hr>
+<h4 id="集群"><a href="#集群" class="headerlink" title="集群"></a>集群</h4><h5 id="哨兵模式"><a href="#哨兵模式" class="headerlink" title="哨兵模式"></a>哨兵模式</h5><p><img src="%E5%93%A8%E5%85%B5%E6%A8%A1%E5%BC%8F.png" alt=""></p>
+<p>哨兵是<code>redis</code>集群中非常重要的一个组件，主要有以下功能：</p>
+<ul>
+<li>集群监控：负责监控<code>redis</code> <code>master</code>与<code>slave</code>是否正常工作。</li>
+<li>消息通知：如果某个<code>redis</code>实例有故障，哨兵负责发送消息作为报警通知给管理员。</li>
+<li>故障转移：如果<code>master node</code>挂了，会自动转移到<code>slave node</code>上。</li>
+<li>配置中心：如果故障转移发生了，会通知<code>client</code>新的<code>master</code>地址。</li>
+</ul>
+<p>哨兵模式主要用于实现<code>redis</code>集群的高可用。判断一个<code>master node</code>是否挂了，需要大部分哨兵认同才算，这涉及到了分布式选举的问题。哨兵模式至少需要3个实例。</p>
+<h5 id="集群模式工作原理"><a href="#集群模式工作原理" class="headerlink" title="集群模式工作原理"></a>集群模式工作原理</h5><p>在<code>redis3.0</code>版本提供了<code>redis cluster</code>技术，采用<code>slot</code>的概念，一共16384个槽。将请求发向任意节点，接受到请求的节点将会查询请求发送到正确的节点上。</p>
+<p>在<code>redis cluster</code>架构下，每个<code>redis</code>需要开放两个端口，例如6379以及16379。16379主要用于节点之间的通信，也就是<code>cluster bus</code>，主要利用了一种二进制的通信协议：<code>gosip</code>协议，用于节点之间高效的数据交换，占用更少的带宽和处理时间。</p>
+<h5 id="主从架构"><a href="#主从架构" class="headerlink" title="主从架构"></a>主从架构</h5><p>对于缓存来说，是需要支持高并发场景的，所以架构一般做成主从架构，一主多从，主负责写，从负责读。</p>
+<h6 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h6><p>当启动一个<code>slave node</code>时，会发送一个<code>PSYNC</code>命令给<code>master node</code>。如果这是第一次连接，则会触发一次<strong>全量复制</strong>。<code>master</code>会启动一个后台线程生成一份<code>RDB</code>快照文件，同时将从<code>client</code>新收到的所有写命令缓存于内存中。<code>RDB</code>文件生成完成后，<code>master</code>会将这个文件发送给<code>slave</code>，<code>slave</code>先将这个文件写入本地磁盘，再加载到内存中。接着<code>master</code>将之前内存中的命令发送给<code>slave</code>，<code>slave</code>开始同步这部分数据。</p>
+<p>之后如果<code>slave node</code>与<code>master node</code>断开了连接，重连之后不再进行全量复制，只将<code>slave</code>缺失的数据复制给它。</p>
+<h5 id="分区"><a href="#分区" class="headerlink" title="分区"></a>分区</h5><p>分区是分割数据到多个<code>redis</code>实例的过程。每个实例只保存<code>key</code>的一个子集。</p>
+<hr>
+<h4 id="分布式"><a href="#分布式" class="headerlink" title="分布式"></a>分布式</h4><h5 id="分布式锁"><a href="#分布式锁" class="headerlink" title="分布式锁"></a>分布式锁</h5><p>通过<code>SETNX</code>命令获取锁。返回1说明获取成功，0说明获取失败。获取到锁之后，通过<code>EXPIRE</code>命令给<code>key</code>设置一个过期时间防止死锁。释放锁时通过<code>DEL</code>命令删除锁。</p>
+<p>但如果<code>SETNX</code>执行成功，<code>EXPIRE</code>执行失败那咋办？在<code>redis2.6.12</code>之后作者对<code>SET</code>命令进行了拓展，加了一系列参数：</p>
+<p><code>SET key value [EX seconds][PX milliseconds][NX|XX]</code>。例如<code>SET k v EX 5 NX</code>可将键<code>k</code>的值设置为<code>v</code>，5秒后超时，且仅当键不存在时才进行设置。仅当<code>SET</code>命令设置成功才返回<code>OK</code>，否则将返回空批量回复(NULL Bulk Reply)。</p>
+<h5 id="redlock"><a href="#redlock" class="headerlink" title="redlock"></a>redlock</h5><p><code>redis</code>提供了一种权威的基于<code>redis</code>实现分布式锁的方式叫做<code>redlock</code>。它能保证以下特性：</p>
+<ol>
+<li>安全：互斥访问，永远只有一个<code>client</code>能获取到锁。</li>
+<li>避免死锁。</li>
+<li>容错性：只要大部分<code>redis</code>节点存活就能正常提供服务。</li>
+</ol>
+<hr>
+<h4 id="缓存异常"><a href="#缓存异常" class="headerlink" title="缓存异常"></a>缓存异常</h4>]]></content>
+      <categories>
+        <category>redis</category>
+      </categories>
+      <tags>
+        <tag>redis</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>计算机网络笔记</title>
+    <url>/2020/12/13/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E7%AC%94%E8%AE%B0/</url>
+    <content><![CDATA[<p>计算机网络笔记</p>
+<a id="more"></a>
+
+]]></content>
+      <categories>
+        <category>计算机网络</category>
+      </categories>
+      <tags>
+        <tag>计算机网络</tag>
       </tags>
   </entry>
 </search>
