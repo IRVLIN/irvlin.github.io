@@ -872,9 +872,11 @@
     <content><![CDATA[<p>记录一下常规的排序算法</p>
 <a id="more"></a>
 <h3 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h3><h4 id="排序算法分类"><a href="#排序算法分类" class="headerlink" title="排序算法分类"></a>排序算法分类</h4><p>常见的排序算法可分为以下两大类：</p>
-<blockquote>
-<p>比较类排序：通过比较来决定元素间的相对顺序，由于其时间复杂度不能突破<code>O(nlogn)</code>，因此也称为非线性时间比较类排序。<br>非比较类排序：不通过比较来决定元素间的相对顺序，它可以突破基于比较排序的时间下界，以线性时间运行，因此也称为线性时间非比较类排序。<br><img src="%E6%8E%92%E5%BA%8F%E7%AE%97%E6%B3%95%E5%88%86%E7%B1%BB.png" alt=""></p>
-</blockquote>
+<ul>
+<li>比较类排序：通过比较来决定元素间的相对顺序，由于其时间复杂度不能突破<code>O(nlogn)</code>，因此也称为非线性时间比较类排序。</li>
+<li>非比较类排序：不通过比较来决定元素间的相对顺序，它可以突破基于比较排序的时间下界，以线性时间运行，因此也称为线性时间非比较类排序。</li>
+</ul>
+<p><img src="%E6%8E%92%E5%BA%8F%E7%AE%97%E6%B3%95%E5%88%86%E7%B1%BB.png" alt=""></p>
 <h4 id="时间、空间复杂度分析"><a href="#时间、空间复杂度分析" class="headerlink" title="时间、空间复杂度分析"></a>时间、空间复杂度分析</h4><p><img src="%E7%AE%97%E6%B3%95%E5%A4%8D%E6%9D%82%E5%BA%A6.png" alt=""></p>
 <hr>
 <h3 id="代码实现"><a href="#代码实现" class="headerlink" title="代码实现"></a>代码实现</h3><h4 id="冒泡排序"><a href="#冒泡排序" class="headerlink" title="冒泡排序"></a>冒泡排序</h4><h5 id="算法逻辑"><a href="#算法逻辑" class="headerlink" title="算法逻辑"></a>算法逻辑</h5><p>循环数组中的每一对元素，比较二者大小，逆序就交换位置。这样循环一轮后最大的数会在数组末尾。重复即可。</p>
@@ -2302,7 +2304,7 @@
 <hr>
 <h4 id="延时队列"><a href="#延时队列" class="headerlink" title="延时队列"></a>延时队列</h4><p>使用<code>ZSet</code>，用时间戳作为<code>score</code>，消息内容作为<code>key</code>，调用<code>ZADD</code>命令生产消息，消费者使用<code>ZRANGEBYSCORE</code>获取n秒之前的数据做轮询处理。</p>
 <hr>
-<h4 id="Bitmaps"><a href="#Bitmaps" class="headerlink" title="Bitmaps"></a>Bitmaps</h4><p><code>redis</code>提供的<code>Bitmaps</code>可以实现对位的操作。<code>Bitmaps</code>本身不是一种数据结构，其本质就是字符串，但可以对字符串进行位操作。其设置命令为<code>SETBIT key offset value</code>，获取值命令位<code>GETBIT key offset</code>，获取指定范围内为1的个数的指令为<code>BITCOUNT key [start] [end]</code>，这里的<code>start</code>和<code>end</code>指的是字符串的起始和结束位置。</p>
+<h4 id="Bitmaps"><a href="#Bitmaps" class="headerlink" title="Bitmaps"></a>Bitmaps</h4><p><code>redis</code>提供的<code>Bitmaps</code>可以实现对位的操作。<code>Bitmaps</code>本身不是一种数据结构，其本质就是字符串，但可以对字符串进行位操作。其设置命令为<code>SETBIT key offset value</code>，获取值命令为<code>GETBIT key offset</code>，获取指定范围内为1的个数的指令为<code>BITCOUNT key [start] [end]</code>，这里的<code>start</code>和<code>end</code>指的是字符串的起始和结束位置。</p>
 <p>假设我们要存储每个用户每个月的登录天数就可以使用<code>Bitmaps</code>。利用位操作将登录日期对应的位的值设置为1即代表当天已登录。利用<code>Bitmaps</code>的好处就是占用的空间小，操作快。</p>
 ]]></content>
       <categories>
@@ -2318,7 +2320,17 @@
     <content><![CDATA[<p>计算机网络笔记</p>
 <a id="more"></a>
 
-]]></content>
+<h3 id="TCP-IP"><a href="#TCP-IP" class="headerlink" title="TCP/IP"></a>TCP/IP</h3><h4 id="发展"><a href="#发展" class="headerlink" title="发展"></a>发展</h4><p>互联网的发展主要经历了以下七个阶段：</p>
+<ol>
+<li><strong>批处理</strong>：批处理是指事先把用户的程序数据装入卡带或者磁带，由计算机按一定的顺序进行读取处理。</li>
+<li><strong>分时系统</strong>：分时系统允许多个终端同时接入计算机，这允许了多个用户同时操作计算机。</li>
+<li><strong>计算机通信技术</strong>：分时系统中，两个主机互联、交互数据的过程相当繁琐，所以计算机通信技术应运而生，使得计算机之间的通信变得便捷，缩短了数据传输的速度。</li>
+<li><strong>计算机网络的产生</strong>：20世纪70年代，人们开始研究基于分组交换技术的计算机网络以及不同厂商的计算机之间的通信技术。直到80年代，一种能够互联多种计算机的网络诞生了。</li>
+<li><strong>互联网普及</strong>：20世纪90年代，计算机逐渐普及。各个厂商着力于让自己的网络技术兼容<strong>TCP/IP</strong>。</li>
+<li><strong>互联网时代</strong>：随着互联网的普及，人们已经离不开互联网了，世界进入万物互联时代。</li>
+<li><strong>网络安全时代</strong>：随着万物互联的时代到来，网络安全成了最重要的一环。</li>
+</ol>
+<h4 id="性能指标"><a href="#性能指标" class="headerlink" title="性能指标"></a>性能指标</h4>]]></content>
       <categories>
         <category>计算机网络</category>
       </categories>
