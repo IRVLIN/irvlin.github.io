@@ -142,8 +142,6 @@
 <li>如果单例模式实现了序列化接口，那么就可以通过反序列化进行破坏。所以可以不实现序列化接口，或者重写反序列化方法<code>readResolve()</code>，直接返回单例对象。<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> Object <span class="title">readResolve</span><span class="params">()</span> <span class="keyword">throws</span> ObjectStreamException </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> instance;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 </li>
 </ol>
-<hr>
-<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>…</p>
 ]]></content>
       <categories>
         <category>Java设计模式</category>
