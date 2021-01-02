@@ -1134,7 +1134,29 @@
 </li>
 </ol>
 <h4 id="应用场景"><a href="#应用场景" class="headerlink" title="应用场景"></a>应用场景</h4><p>使用代理模式主要有两个目的：<strong>保护目标对象</strong>和<strong>增强目标对象</strong>。代理模式大量应用在框架当中，例如<code>spring</code>中的<code>AOP(面向切面编程)</code>就是利用了动态代理模式增强了目标对象。</p>
-<p>…</p>
+<hr>
+<h3 id="访问者模式"><a href="#访问者模式" class="headerlink" title="访问者模式"></a>访问者模式</h3><h4 id="定义-5"><a href="#定义-5" class="headerlink" title="定义"></a>定义</h4><p>访问者模式是一种操作一组对象的操作，目的是不改变对象的定义，但允许新增不同的访问者，来定义新的操作。</p>
+<h4 id="类图-5"><a href="#类图-5" class="headerlink" title="类图"></a>类图</h4><p><img src="%E8%AE%BF%E9%97%AE%E8%80%85%E6%A8%A1%E5%BC%8F.png" alt=""></p>
+<p>原始的访问者模式比较复杂，实现了“双重分派”，设计了一个回调再回调的机制。这里记录简化版的访问者模式。</p>
+<p>假设要递归遍历某个文件夹的所有子文件夹和文件，找出<code>.java</code>类型的文件，普通的做法是递归。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">scan</span><span class="params">(File dir, List&lt;File&gt; list)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (File file : Objects.requireNonNull(dir.listFiles())) &#123;</span><br><span class="line">        <span class="keyword">if</span> (file.isFile() &amp;&amp; file.getName().endsWith(<span class="string">".java"</span>)) &#123;</span><br><span class="line">            list.add(file);</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (file.isDirectory()) &#123;</span><br><span class="line">            <span class="comment">// 递归</span></span><br><span class="line">            scan(file, list);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上述做法的缺陷在于，扫描目录和处理<code>.java</code>文件的逻辑混在了一起，如果要新添一个清理<code>.class</code>文件的功能，就需要再写一个扫描的逻辑。因此，访问者模式把数据结构和对其的操作分开，如果要新添功能，只要新增访问者即可，不必修改现有的逻辑。</p>
+<p>首先定义访问者接口，包含了访问者能做的事。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Visitor</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">visitDir</span><span class="params">(File dir)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">visitFile</span><span class="params">(File file)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>接着，定义数据结构，它能同时持有文件夹和文件。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Structure</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 根目录</span></span><br><span class="line">    <span class="keyword">private</span> File path;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Structure</span><span class="params">(File path)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.path = path;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>给数据结构增加一个<code>handle</code>方法，传入访问者。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Structure</span> </span>&#123;</span><br><span class="line">    <span class="comment">// 根目录</span></span><br><span class="line">    <span class="keyword">private</span> File path;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Structure</span><span class="params">(File path)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.path = path;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">handle</span><span class="params">(Visitor visitor)</span> </span>&#123;</span><br><span class="line">        scan(<span class="keyword">this</span>.path, visitor);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">scan</span><span class="params">(File file, Visitor visitor)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (file.isDirectory()) &#123;</span><br><span class="line">            visitor.visitDir(file);</span><br><span class="line">            <span class="keyword">for</span> (File f : file.listFiles()) &#123;</span><br><span class="line">                scan(f, visitor);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (file.isFile()) &#123;</span><br><span class="line">            visitor.visitFile(file);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>相当于把访问者的行为抽象出来了。如果要查找出所有<code>.java</code>文件，就传入一个<code>JavaFileVisitor</code>。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Structure s = <span class="keyword">new</span> Structure(<span class="keyword">new</span> File(<span class="string">"根目录位置"</span>));</span><br><span class="line">s.handle(<span class="keyword">new</span> JavaFileVisitor());</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">JavaFileVisitor</span> <span class="keyword">implements</span> <span class="title">Visitor</span> </span>&#123;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">visitDir</span><span class="params">(File dir)</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"visit dir: "</span> + dir);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">visitFile</span><span class="params">(File file)</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"visit file: "</span> + file);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如果要添加其他功能，就传入相应的访问者就行了，每个访问者都有自己的实现。</p>
 ]]></content>
       <categories>
         <category>设计模式</category>
@@ -2634,6 +2656,20 @@
       </categories>
       <tags>
         <tag>Java泛型</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Spring笔记</title>
+    <url>/2021/01/02/Spring%E7%AC%94%E8%AE%B0/</url>
+    <content><![CDATA[<p>学习 Spring 的笔记</p>
+<a id="more"></a>
+
+]]></content>
+      <categories>
+        <category>Spring</category>
+      </categories>
+      <tags>
+        <tag>Spring</tag>
       </tags>
   </entry>
 </search>
