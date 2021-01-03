@@ -2659,17 +2659,43 @@
       </tags>
   </entry>
   <entry>
-    <title>Spring笔记</title>
-    <url>/2021/01/02/Spring%E7%AC%94%E8%AE%B0/</url>
-    <content><![CDATA[<p>学习 Spring 的笔记</p>
+    <title>MyBatis笔记</title>
+    <url>/2021/01/02/MyBatis%E7%AC%94%E8%AE%B0/</url>
+    <content><![CDATA[<p>MyBatis 学习笔记</p>
 <a id="more"></a>
 
+<h3 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h3><h4 id="是什么"><a href="#是什么" class="headerlink" title="是什么"></a>是什么</h4><p>MyBatis 是一款持久化框架，一个<strong>半 ORM</strong> 框架，支持定制化 SQL、存储过程以及高级映射。MyBatis 避免了几乎所有 JDBC 代码和手动设置参数以及获取结果集。MyBatis 可以使用简单的 XML 或者注解来配置和映射原生类型、接口和 Java 的 POJO 为数据库所记录。</p>
+<h4 id="ORM"><a href="#ORM" class="headerlink" title="ORM"></a>ORM</h4><p>ORM（Object Relational Mapping），对象关系映射，通过使用描述对象和数据库之间映射的元数据，将程序中的对象自动持久化到关系型数据库中。</p>
+<h4 id="半自动-ORM-映射"><a href="#半自动-ORM-映射" class="headerlink" title="半自动 ORM 映射"></a>半自动 ORM 映射</h4><p>Hibernate 属于全自动 ORM 映射工具，使用 Hibernate 查询关联对象或关联集合对象时，可以根据对象关系模型直接获取，所以是全自动的。MyBatis 则需要手动编写 SQL，因此是半自动的。</p>
+<h4 id="传统-JDBC-开发的问题"><a href="#传统-JDBC-开发的问题" class="headerlink" title="传统 JDBC 开发的问题"></a>传统 JDBC 开发的问题</h4><ul>
+<li>频繁创建、释放数据库连接对象，很浪费系统资源，影响性能。如果使用连接池可以解决这个问题，但是使用 JDBC 需要自己实现连接池。</li>
+<li>SQL 语句定义、参数设置、结果集的处理存在硬编码。实际项目中 SQL 语句变化的可能性较大，如果发生变化就要修改代码，系统要重新编译、发布，不易维护。</li>
+<li>使用 preparedStatement 向占有位符号传参存在硬编码，SQL 语句的<code>WHERE</code>条件不是一定的，修改 SQL 语句还要修改 Java 代码，因此不易维护。</li>
+<li>结果集的处理十分麻烦，如果映射为 Java 对象会比较好处理。</li>
+</ul>
+<h4 id="MyBatis如何解决这些问题"><a href="#MyBatis如何解决这些问题" class="headerlink" title="MyBatis如何解决这些问题"></a>MyBatis如何解决这些问题</h4><ul>
+<li>使用数据库连接池可以解决频繁创建、释放数据库连接的问题，在 MyBatis 中可以通过<code>mybtais-config.xml</code>配置连接池，很方便。</li>
+<li>SQL 语句写在代码中不易维护，在 MyBatis 中将 SQL 语句写在<code>XXXMapper.xml</code> 中与 Java 代码分离易于维护。</li>
+<li>SQL 语句传参麻烦，因为条件不一定，使用 MyBatis 可以自动将 Java 对象映射到 SQL 语句。</li>
+<li>结果集的处理很麻烦，使用 MyBatis 可以自动将 SQL 语句执行的结果映射到 Java 对象方便后续的处理。</li>
+</ul>
+<h4 id="MyBatis-优点"><a href="#MyBatis-优点" class="headerlink" title="MyBatis 优点"></a>MyBatis 优点</h4><ul>
+<li>基于 SQL 语句编程，将 SQL 写在<code>xml</code>文件中，与程序代码解耦，方便维护管理。还支持动态 SQL 语句，很灵活。</li>
+<li>不用手动编写开关数据库连接等等冗余的代码，专注于 SQL 的编写。</li>
+<li>和 Spring 框架有很好的集成。</li>
+<li>支持数据库和对象的映射。</li>
+<li>与很多数据库都兼容（只要 JDBC 支持的数据库 MyBatis 都支持）。</li>
+</ul>
+<h4 id="MyBatis-缺点"><a href="#MyBatis-缺点" class="headerlink" title="MyBatis 缺点"></a>MyBatis 缺点</h4><ul>
+<li>SQL 语句需要自己编写，工作量可能比较大。</li>
+<li>SQL 语句依赖数据库，导致数据库移植性比较差。</li>
+</ul>
 ]]></content>
       <categories>
-        <category>Spring</category>
+        <category>MyBatis</category>
       </categories>
       <tags>
-        <tag>Spring</tag>
+        <tag>MyBatis</tag>
       </tags>
   </entry>
 </search>
