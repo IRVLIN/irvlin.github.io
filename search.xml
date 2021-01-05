@@ -2756,6 +2756,9 @@
 <p>有了映射关系后，Mybatis 会利用反射创建对象，给属性逐一赋值然后返回。</p>
 <h4 id="A-标签引用（include）了-B-标签的内容，B-标签能否写在-A-后面？"><a href="#A-标签引用（include）了-B-标签的内容，B-标签能否写在-A-后面？" class="headerlink" title="A 标签引用（include）了 B 标签的内容，B 标签能否写在 A 后面？"></a>A 标签引用（include）了 B 标签的内容，B 标签能否写在 A 后面？</h4><p>B 标签可以定义在任何地方。MyBatis 按顺序先解析了 xml 文件的 A 标签，A 引用了 B，但 B 还没解析到，所以会被 MyBatis 标记为尚未解析状态，然后继续解析，解析到了 B 标签。解析完成后，Mybatis 会重新解析被标记为尚未解析的标签，这时 B 标签已被解析，A 也可以顺利被解析。</p>
 <hr>
+<h3 id="高级查询"><a href="#高级查询" class="headerlink" title="高级查询"></a>高级查询</h3><h4 id="MyBatis-是否可以映射枚举类？"><a href="#MyBatis-是否可以映射枚举类？" class="headerlink" title="MyBatis 是否可以映射枚举类？"></a>MyBatis 是否可以映射枚举类？</h4><p>MyBatis 可以通过自定义<code>TypeHandler</code>并实现<code>TypeHandler</code>接口的<code>setParameter()</code>和<code>getResult()</code>方法映射任何对象到表的一列上。</p>
+<p><code>TypeHandler</code>可以完成从<code>JavaType</code>至<code>jdbcType</code>的转换，也可以完成<code>jdbcType</code>到<code>JavaType</code>的转换。</p>
+<hr>
 <h3 id="动态-SQL"><a href="#动态-SQL" class="headerlink" title="动态 SQL"></a>动态 SQL</h3><p>MyBatis 有9种动态 SQL 标签</p>
 <ul>
 <li>trim</li>
@@ -2770,7 +2773,13 @@
 </ul>
 <p>MyBatis 使用<code>OGNL</code>从 SQL 参数对象中计算表达式的值，根据表达式的值动态拼接 SQL。</p>
 <hr>
-<h3 id="MyBatis-插件运行原理"><a href="#MyBatis-插件运行原理" class="headerlink" title="MyBatis 插件运行原理"></a>MyBatis 插件运行原理</h3>]]></content>
+<h3 id="MyBatis-插件运行原理"><a href="#MyBatis-插件运行原理" class="headerlink" title="MyBatis 插件运行原理"></a>MyBatis 插件运行原理</h3><p>MyBatis 仅可以编写针对<code>ParameterHandler</code>、<code>ResultSetHandler</code>、<code>StatementHandler</code>、<code>Executor</code>接口的插件。MyBatis 使用<strong>JDK 动态代理</strong>，为需要拦截的接口生成代理对象以实现接口方法拦截功能，每当执行这4种接口对象的方法时，就会进入拦截方法，具体是<code>InvocationHandler</code>的<code>invoke()</code>方法，拦截指定配置的需要拦截的方法。</p>
+<p>实现 MyBatis 的<code>interceptor</code>接口并且复写<code>intercept()</code>方法，然后给插件写注解，指定拦截哪个接口的哪些方法，最后在配置文件配置编写的插件。</p>
+<hr>
+<h3 id="缓存"><a href="#缓存" class="headerlink" title="缓存"></a>缓存</h3><h4 id="一级缓存"><a href="#一级缓存" class="headerlink" title="一级缓存"></a>一级缓存</h4><p>MyBatis 的一级缓存是基于<code>PerpetualCache</code>的<code>HashMap</code>本地缓存，存储作用域为<code>session</code>。当<code>session</code>执行了<code>flush</code>或者<code>close</code>之后，会将该<code>session</code>的所有<code>cache</code>清空。默认情况下是打开一级缓存的。</p>
+<h4 id="二级缓存"><a href="#二级缓存" class="headerlink" title="二级缓存"></a>二级缓存</h4><p>二级缓存默认也是采用<code>PerpetualCache</code>，<code>HashMap</code>存储。不同的是存储作用域不同，是<code>Mapper</code>。还可以自定义存储源，例如<code>Redis</code>、<code>Ehcache</code>。默认情况下不开启二级缓存。如果要开启需要实现<code>Serializable</code>序列化接口，并在配置文件中配置<code>&lt;cache/&gt;</code>。</p>
+<h4 id="缓存更新"><a href="#缓存更新" class="headerlink" title="缓存更新"></a>缓存更新</h4><p>当缓存相应的作用域执行了增删改之后，该作用域下所有的<code>SELECT</code>中的缓存都会失效。</p>
+]]></content>
       <categories>
         <category>MyBatis</category>
       </categories>
