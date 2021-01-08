@@ -2121,7 +2121,83 @@
 <li><strong>ZSET</strong>：有序集合。</li>
 </ul>
 <p><code>redis</code>还包括一些高级的数据结构，例如<code>HyperLogLog</code>、<code>BloomFilter</code>等等。</p>
-<h5 id="HyperLogLog"><a href="#HyperLogLog" class="headerlink" title="HyperLogLog"></a>HyperLogLog</h5><p>假设要统计<code>UV</code>，需要用到去重功能，同一个用户一天之内的多次访问只能计一次。首先想到的是<code>set</code>，把每一个请求都带上用户的ID，用<code>SADD</code>将ID放入集合，再调用<code>SCARD</code>就可以算出集合的大小。但是如果页面的访问量很大，这时集合的空间也会变得很大。于是便有了<code>HyperLogLog</code>这样的数据结构，它提供了<code>PFADD</code>、<code>PFCOUNT</code>两个指令，相当于<code>set</code>的<code>SADD</code>和<code>SCARD</code>。它的特点是，不存储元素本身，占用空间特别小，但数据可能不太准确。对于统计<code>UV</code>这样的数据再合适不过了。</p>
+<h5 id="String"><a href="#String" class="headerlink" title="String"></a>String</h5><h6 id="数据结构"><a href="#数据结构" class="headerlink" title="数据结构"></a>数据结构</h6><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sdshdr</span> &#123;</span></span><br><span class="line">    <span class="comment">// 记录buf数组已使用字节的数量</span></span><br><span class="line">    <span class="keyword">int</span> len;</span><br><span class="line">    <span class="comment">// 记录buf数组未使用字节的数量</span></span><br><span class="line">    <span class="keyword">int</span> <span class="built_in">free</span>;</span><br><span class="line">    <span class="comment">// 字节数组，保存字符串</span></span><br><span class="line">    <span class="keyword">char</span> buf[];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h6 id="常见操作"><a href="#常见操作" class="headerlink" title="常见操作"></a>常见操作</h6><ul>
+<li><code>set</code>：给一个<code>key</code>赋值。</li>
+<li><code>append</code>：如果一个<code>key</code>已经存在，直接在对应的<code>value</code>追加值，否则创建新的键值对。</li>
+<li><code>decr</code>：对<code>value</code>减 1，如果<code>value</code>不是数字，会报<code>(error) ERR value is not an integer or out of range</code>错误。如果<code>key</code>不存在，会给一个默认值0，再减1得到-1。</li>
+<li><code>decrby</code>：和<code>decr</code>类似，可以设置步长。</li>
+<li><code>get</code>：获取一个<code>key</code>的<code>value</code>。</li>
+<li><code>getrange</code>：返回一个<code>key</code>的<code>value</code>的子串。命令的第二和第三个参数表示截取子串的起始位置和结束位置。可以像<code>python</code>一样用负数来表示位置。</li>
+<li><code>getset</code>：获取并更新某个<code>key</code>对应的<code>value</code>。</li>
+<li><code>incr</code>：对应<code>decr</code>。</li>
+<li><code>incrby</code>：对应<code>decrby</code>。</li>
+<li><code>incrbyfloat</code>：自增，可以设置步长并且步长可以是浮点数。</li>
+<li><code>mget</code>、<code>mset</code>：批量获取、批量存储。</li>
+<li><code>ttl</code>：查看<code>key</code>的有效期。</li>
+<li><code>setex</code>：给<code>key</code>设置<code>value</code>时添加过期时间。</li>
+<li><code>psetex</code>：和<code>setex</code>类似，只不过过期时间的单位是毫秒。</li>
+<li><code>setnx</code>：如果<code>key</code>不存在才会设置值。</li>
+<li><code>msetnx</code>：批量<code>setnx</code>。</li>
+<li><code>setrange</code>：如果<code>key</code>存在，覆盖对应的<code>value</code>，且带有偏移量。例如<code>k</code>的<code>value</code>为<code>abc</code>，命令<code>setrange k 1 def</code>，<code>value</code>变为<code>adef</code>。如果<code>key</code>不存在且命令带有偏移量，<code>redis</code>会用零字节<code>\x00</code>弥补空白。</li>
+<li><code>strlen</code>：查看字符串长度。</li>
+</ul>
+<h5 id="List"><a href="#List" class="headerlink" title="List"></a>List</h5><h6 id="数据结构-1"><a href="#数据结构-1" class="headerlink" title="数据结构"></a>数据结构</h6><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">listNode</span> &#123;</span></span><br><span class="line">    <span class="comment">// 前一个节点</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">listNode</span> *<span class="title">prev</span>;</span></span><br><span class="line">    <span class="comment">// 后一个节点</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">listNode</span> *<span class="title">next</span>;</span></span><br><span class="line">    <span class="comment">// 节点值</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">value</span>;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h6 id="常见操作-1"><a href="#常见操作-1" class="headerlink" title="常见操作"></a>常见操作</h6><ul>
+<li><code>lpush</code>：将所有指定的值存入<code>key</code>的列表的头部。如果<code>key</code>不存在会先创建一个空列表，如果<code>key</code>对应的值不是列表会报错。</li>
+<li><code>lrange</code>：返回列表指定区间内的元素。</li>
+<li><code>rpush</code>：对应<code>lpush</code>，将元素存入列表的尾部。</li>
+<li><code>lpop</code>：移除并返回列表的头元素。</li>
+<li><code>rpop</code>：移除并返回列表的尾元素。</li>
+<li><code>lindex</code>：返回列表中下标为<code>index</code>的元素。</li>
+<li><code>ltrim</code>：对列表进行修剪。</li>
+<li><code>blpop</code>：阻塞式<code>lpop</code>。</li>
+<li><code>brpop</code>：阻塞式<code>rpop</code>。</li>
+</ul>
+<h5 id="Set"><a href="#Set" class="headerlink" title="Set"></a>Set</h5><h6 id="数据结构-2"><a href="#数据结构-2" class="headerlink" title="数据结构"></a>数据结构</h6><figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">intset</span> &#123;</span></span><br><span class="line">    <span class="comment">// 编码格式</span></span><br><span class="line">    <span class="keyword">uint32_t</span> encoding;</span><br><span class="line">    <span class="comment">// 数组包含的元素数量</span></span><br><span class="line">    <span class="keyword">uint32_t</span> length;</span><br><span class="line">    <span class="comment">// 保存元素的数组</span></span><br><span class="line">    <span class="keyword">int8_t</span> contents[];</span><br><span class="line">&#125; intset;</span><br></pre></td></tr></table></figure>
+
+<h6 id="常见操作-2"><a href="#常见操作-2" class="headerlink" title="常见操作"></a>常见操作</h6><ul>
+<li><code>sadd</code>：添加一个元素到<code>key</code>对应的值中。<code>key</code>不存在就新创建一个<code>set</code>。如果<code>value</code>不是<code>set</code>会报错。</li>
+<li><code>smembers</code>：获取一个<code>key</code>下对应的所有元素。</li>
+<li><code>srem</code>：移除指定的元素。</li>
+<li><code>sismember</code>：返回一个元素是否在集合中。</li>
+<li><code>scard</code>：返回一个集合中元素的数量。</li>
+<li><code>srandmember</code>：在指定集合中随机返回一个元素。</li>
+<li><code>spop</code>：在指定集合中随机返回并出栈一个元素。</li>
+<li><code>smove</code>：把一个元素从一个集合移动到另一个集合中。</li>
+<li><code>sdiff</code>：返回集合的差集。</li>
+<li><code>sinter</code>：返回集合的交集。</li>
+<li><code>sunion</code>：返回集合的并集。</li>
+<li><code>sdiffstore</code>：类似于<code>sdiff</code>，计算出的结果会保存在一个新的集合中。</li>
+<li><code>sinterstore</code>：类似于<code>sinter</code>，计算出的结果会保存在一个新的集合中。</li>
+<li><code>sunionstore</code>：类似于<code>sunion</code>，计算出的结果会保存在一个新的集合中。</li>
+</ul>
+<h5 id="Hash"><a href="#Hash" class="headerlink" title="Hash"></a>Hash</h5><h6 id="数据结构-3"><a href="#数据结构-3" class="headerlink" title="数据结构"></a>数据结构</h6><p><code>dictht</code>是一个散列表结构，使用<strong>拉链法</strong>解决哈希冲突的问题。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">dictht</span> &#123;</span></span><br><span class="line">    <span class="comment">// 哈希表数组</span></span><br><span class="line">    dictEntry **table;</span><br><span class="line">    <span class="comment">// 哈希表大小</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="built_in">size</span>;</span><br><span class="line">    <span class="comment">// 哈希表大小掩码，用于计算索引值</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span> sizemask;</span><br><span class="line">    <span class="comment">// 该哈希表已有的节点数量</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span> used;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">dictEntry</span> &#123;</span></span><br><span class="line">    <span class="comment">// 键</span></span><br><span class="line">    <span class="keyword">void</span> *key;</span><br><span class="line">    <span class="comment">// 值</span></span><br><span class="line">    <span class="keyword">union</span> &#123;</span><br><span class="line">        <span class="keyword">void</span> *val;</span><br><span class="line">        uint64_tu64;</span><br><span class="line">        int64_ts64;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">dictEntry</span> *<span class="title">next</span>;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>redis</code>的字典<code>dict</code>包含两个哈希表<code>dictht</code>，这是为了方便<code>rehash</code>。扩容时，将其中一个<code>dictht</code>上的键值对<code>rehash</code>到另一个<code>dictht</code>上，完成之后释放空间并交换两个<code>dictht</code>。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">dict</span> &#123;</span></span><br><span class="line">    dictType *type;</span><br><span class="line">    <span class="keyword">void</span> *privdata;</span><br><span class="line">    <span class="comment">// 两个hash表</span></span><br><span class="line">    dictht ht[<span class="number">2</span>];</span><br><span class="line">    <span class="comment">// rehash的索引，如果为-1表示没有进行rehash</span></span><br><span class="line">    <span class="keyword">long</span> rehashidx;</span><br><span class="line">    <span class="comment">// 目前正在运行的迭代器数量</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span> iterators;</span><br><span class="line">&#125; dict;</span><br></pre></td></tr></table></figure>
+
+<p><code>rehash</code>的操作不是一次性完成的，而是逐步完成的，为的就是不给服务器造成太多的负担。这时<code>rehashidx</code>就派上了用场。它是从0开始的，每执行一次<code>rehash</code>，比如把<code>ht[0]</code>的<code>table[rehashidx]</code>的键值对<code>rehash</code>到<code>ht[1]</code>上，<code>ht[0]</code>的<code>table[rehashidx]</code>指向<code>null</code>，并把<code>rehashidx</code>加一。每当对字典进行增删改查都会执行一次<code>rehash</code>。这样会导致数据分布在不同的<code>ht</code>上，于是对字典的操作也会在两个<code>ht</code>上进行，先对第一个哈希表进行操作，如果没有数据再去找第二个。</p>
+<h6 id="常见操作-3"><a href="#常见操作-3" class="headerlink" title="常见操作"></a>常见操作</h6><ul>
+<li><code>hset</code>：向指定散列表设置一个键值对。</li>
+<li><code>hget</code>：获取指定散列表上一个指定的键对应的值。</li>
+<li><code>hmset</code>：批量设置<code>hset</code>。</li>
+<li><code>hmget</code>：批量获取<code>hget</code>。</li>
+<li><code>hdel</code>：删除一个指定散列表上的指定键值对。</li>
+<li><code>hsetnx</code>：和<code>setnx</code>类似。</li>
+<li><code>hvals</code>：获取指定散列表上的所有<code>value</code>。</li>
+<li><code>hkeys</code>：获取指定散列表上的所有<code>key</code>。</li>
+<li><code>hgetall</code>：获取指定散列表上的所有<code>key</code>和<code>value</code>。</li>
+<li><code>hexists</code>：返回<code>field</code>是否存在与指定的散列表中。</li>
+<li><code>hincrby</code>：使指定的<code>value</code>自增。</li>
+<li><code>hincrbyfloat</code>：使指定的<code>value</code>自增，可以为浮点数。</li>
+<li><code>hlen</code>：返回某个<code>key</code>中<code>value</code>的数量。</li>
+<li><code>hstrlen</code>：返回某个<code>key</code>中的某个<code>field</code>的值的字符串的长度。</li>
+</ul>
+<h5 id="ZSet"><a href="#ZSet" class="headerlink" title="ZSet"></a>ZSet</h5><h6 id="数据结构-4"><a href="#数据结构-4" class="headerlink" title="数据结构"></a>数据结构</h6><h6 id="常见操作-4"><a href="#常见操作-4" class="headerlink" title="常见操作"></a>常见操作</h6><h5 id="HyperLogLog"><a href="#HyperLogLog" class="headerlink" title="HyperLogLog"></a>HyperLogLog</h5><p>假设要统计<code>UV</code>，需要用到去重功能，同一个用户一天之内的多次访问只能计一次。首先想到的是<code>set</code>，把每一个请求都带上用户的ID，用<code>SADD</code>将ID放入集合，再调用<code>SCARD</code>就可以算出集合的大小。但是如果页面的访问量很大，这时集合的空间也会变得很大。于是便有了<code>HyperLogLog</code>这样的数据结构，它提供了<code>PFADD</code>、<code>PFCOUNT</code>两个指令，相当于<code>set</code>的<code>SADD</code>和<code>SCARD</code>。它的特点是，不存储元素本身，占用空间特别小，但数据可能不太准确。对于统计<code>UV</code>这样的数据再合适不过了。</p>
 <h5 id="BloomFilter"><a href="#BloomFilter" class="headerlink" title="BloomFilter"></a>BloomFilter</h5><p>如果我们想知道一个元素是否存在于某集合里，那么<code>HyperLogLog</code>就无能为力了，但使用<code>BloomFilter</code>就可以很高效地解决这个问题。<code>BloomFilter</code>最常见的使用场景就是消息推送了。比如我们在看新闻时，网页会不断推送给我们新内容，每次推送都需要去重增加用户体验，这时就可以用到<code>BloomFilter</code>。</p>
 <p><code>BloomFilter</code>的核心实现是一个超大的位数组以及几个哈希函数。假设位数组长度为m，哈希函数个数为k。</p>
 <p><img src="%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8.png" alt=""></p>
