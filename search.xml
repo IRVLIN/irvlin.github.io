@@ -2229,9 +2229,37 @@
 <li>对于范围查找的支持比较好，首先找到区间起始位置，用跳表的时间复杂度是<code>log(n)</code>的，然后按顺序往后遍历即可。</li>
 </ul>
 <h5 id="常见操作-4"><a href="#常见操作-4" class="headerlink" title="常见操作"></a>常见操作</h5><ul>
-<li><h4 id="HyperLogLog"><a href="#HyperLogLog" class="headerlink" title="HyperLogLog"></a>HyperLogLog</h4></li>
+<li><p><code>zadd</code>：将指定元素添加到有序集合中。</p>
+</li>
+<li><p><code>zscore</code>：返回<code>member</code>的<code>score</code>值。</p>
+</li>
+<li><p><code>zrange</code>：通过指定起始位置和结束位置返回集合中某一范围内的元素，可以通过参数<code>WITHSCORES</code>选择是否同时显示<code>score</code>。</p>
+</li>
+<li><p><code>zrevrange</code>：返回倒序的<code>zrange</code>。</p>
+</li>
+<li><p><code>zcard</code>：返回指定集合内元素的个数。</p>
+</li>
+<li><p><code>zcount</code>：返回指定集合内<code>score</code>在指定区间内的元素个数。</p>
+</li>
+<li><p><code>zrangebyscore</code>：返回指定集合内<code>score</code>在指定区间内的元素。</p>
+</li>
+<li><p><code>zrank</code>：返回指定集合内元素的排名（按照<code>score</code>从小到大，从0开始）。</p>
+</li>
+<li><p><code>zrevrank</code>：返回倒序的<code>zrank</code>。</p>
+</li>
+<li><p><code>zincrby</code>：增加指定集合内指定元素的<code>score</code>，需要指定增加的大小。</p>
+</li>
+<li><p><code>zinterstore</code>：根据<code>member</code>求两个集合的交集，并存到新的集合中，两个<code>member</code>的<code>score</code>会相加。</p>
+</li>
+<li><p><code>zrem</code>：移除指定集合中的元素。</p>
+</li>
+<li><p><code>zlexcount</code>：返回指定集合内指定字典区间内的元素数量。例如：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">127.0.0.1:6379&gt; ZADD set 0 a 1 b 2 c</span><br><span class="line">(integer) 3</span><br><span class="line">127.0.0.1:6379&gt; ZLEXCOUNT set - +</span><br><span class="line">(integer) 3</span><br><span class="line">127.0.0.1:6379&gt; ZLEXCOUNT set [a [c</span><br><span class="line">(integer) 3</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><code>zrangebylex</code>：返回指定集合内指定字典区间内的元素，可以指定偏移量。</p>
+</li>
 </ul>
-<p>假设要统计<code>UV</code>，需要用到去重功能，同一个用户一天之内的多次访问只能计一次。首先想到的是<code>set</code>，把每一个请求都带上用户的ID，用<code>SADD</code>将ID放入集合，再调用<code>SCARD</code>就可以算出集合的大小。但是如果页面的访问量很大，这时集合的空间也会变得很大。于是便有了<code>HyperLogLog</code>这样的数据结构，它提供了<code>PFADD</code>、<code>PFCOUNT</code>两个指令，相当于<code>set</code>的<code>SADD</code>和<code>SCARD</code>。它的特点是，不存储元素本身，占用空间特别小，但数据可能不太准确。对于统计<code>UV</code>这样的数据再合适不过了。</p>
+<h4 id="HyperLogLog"><a href="#HyperLogLog" class="headerlink" title="HyperLogLog"></a>HyperLogLog</h4><p>假设要统计<code>UV</code>，需要用到去重功能，同一个用户一天之内的多次访问只能计一次。首先想到的是<code>set</code>，把每一个请求都带上用户的ID，用<code>SADD</code>将ID放入集合，再调用<code>SCARD</code>就可以算出集合的大小。但是如果页面的访问量很大，这时集合的空间也会变得很大。于是便有了<code>HyperLogLog</code>这样的数据结构，它提供了<code>PFADD</code>、<code>PFCOUNT</code>两个指令，相当于<code>set</code>的<code>SADD</code>和<code>SCARD</code>。它的特点是，不存储元素本身，占用空间特别小，但数据可能不太准确。对于统计<code>UV</code>这样的数据再合适不过了。</p>
 <h4 id="BloomFilter"><a href="#BloomFilter" class="headerlink" title="BloomFilter"></a>BloomFilter</h4><p>如果我们想知道一个元素是否存在于某集合里，那么<code>HyperLogLog</code>就无能为力了，但使用<code>BloomFilter</code>就可以很高效地解决这个问题。<code>BloomFilter</code>最常见的使用场景就是消息推送了。比如我们在看新闻时，网页会不断推送给我们新内容，每次推送都需要去重增加用户体验，这时就可以用到<code>BloomFilter</code>。</p>
 <p><code>BloomFilter</code>的核心实现是一个超大的位数组以及几个哈希函数。假设位数组长度为m，哈希函数个数为k。</p>
 <p><img src="%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8.png" alt=""></p>
