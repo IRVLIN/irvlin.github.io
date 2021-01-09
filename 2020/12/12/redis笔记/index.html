@@ -32,7 +32,7 @@
 <meta property="og:image" content="http://irvlin.xyz/2020/12/12/redis%E7%AC%94%E8%AE%B0/%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8.png">
 <meta property="og:image" content="http://irvlin.xyz/2020/12/12/redis%E7%AC%94%E8%AE%B0/%E5%93%A8%E5%85%B5%E6%A8%A1%E5%BC%8F.png">
 <meta property="article:published_time" content="2020-12-12T14:10:49.000Z">
-<meta property="article:modified_time" content="2021-01-08T17:44:26.135Z">
+<meta property="article:modified_time" content="2021-01-09T11:31:04.561Z">
 <meta property="article:author" content="Charispsychoma">
 <meta property="article:tag" content="redis">
 <meta name="twitter:card" content="summary">
@@ -228,7 +228,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-01-09 01:44:26" itemprop="dateModified" datetime="2021-01-09T01:44:26+08:00">2021-01-09</time>
+                <time title="修改时间：2021-01-09 19:31:04" itemprop="dateModified" datetime="2021-01-09T19:31:04+08:00">2021-01-09</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -275,31 +275,31 @@
         <p>redis学习笔记</p>
 <a id="more"></a>
 
-<h4 id="简述"><a href="#简述" class="headerlink" title="简述"></a>简述</h4><p><code>redis(remote dictionary server)</code>是一个C语言编写的，开源的高性能非关系型的键值对数据库。</p>
+<h3 id="简述"><a href="#简述" class="headerlink" title="简述"></a>简述</h3><p><code>redis(remote dictionary server)</code>是一个C语言编写的，开源的高性能非关系型的键值对数据库。</p>
 <p><code>redis</code>的值有5种不同类型：字符串、列表、集合、散列表、有序集合。键只能为字符串。</p>
 <p><code>redis</code>是单线程的，但其数据是存在于内存中的，所以读写数据很快，每秒可处理超过10万次读写。</p>
 <hr>
-<h4 id="redis优缺点"><a href="#redis优缺点" class="headerlink" title="redis优缺点"></a>redis优缺点</h4><h5 id="优点"><a href="#优点" class="headerlink" title="优点"></a>优点</h5><ul>
+<h3 id="redis优缺点"><a href="#redis优缺点" class="headerlink" title="redis优缺点"></a>redis优缺点</h3><h4 id="优点"><a href="#优点" class="headerlink" title="优点"></a>优点</h4><ul>
 <li>读写快，读的速度为110000次/s，写的速度是81000次/s。</li>
 <li>支持数据持久化，有<code>AOF</code>、<code>RDB</code>两种方式。</li>
 <li>支持事务。支持对多个操作合并后的原子性操作。</li>
 <li>数据结构丰富。</li>
 <li>支持主从复制，主机自动同步数据到从机。</li>
 </ul>
-<h5 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h5><ul>
+<h4 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h4><ul>
 <li><code>redis</code>数据存在于内存中，难以用于海量数据的读写。</li>
 <li><code>redis</code>不具备自动容错和恢复机制，需等待重启或手动切换IP才能恢复。</li>
 <li>主机宕机，如果数据未及时同步到从机，切换IP后会出现数据不一致问题。</li>
 </ul>
 <hr>
-<h4 id="redis技术特点"><a href="#redis技术特点" class="headerlink" title="redis技术特点"></a>redis技术特点</h4><ol>
+<h3 id="redis技术特点"><a href="#redis技术特点" class="headerlink" title="redis技术特点"></a>redis技术特点</h3><ol>
 <li>基于内存，绝大部分请求都是基于内存的操作。</li>
 <li>单线程，避免了多线程的上下文切换与竞争，减少了CPU的消耗。</li>
 <li>采用I/O多路复用模型，非阻塞IO。</li>
 <li>使用VM机制将不经常访问的数据从内存交换到磁盘中，腾出空间用于其他需要访问的数据。这样可以一定程度上避免内存不足造成数据访问速度下降的问题。</li>
 </ol>
 <hr>
-<h4 id="redis数据类型"><a href="#redis数据类型" class="headerlink" title="redis数据类型"></a>redis数据类型</h4><ul>
+<h3 id="redis数据类型"><a href="#redis数据类型" class="headerlink" title="redis数据类型"></a>redis数据类型</h3><ul>
 <li><strong>STRING</strong>：可存储字符串、整数或浮点数。对整数或浮点数执行自增或自减操作。</li>
 <li><strong>LIST</strong>：存储列表，从两端压入或者弹出元素。</li>
 <li><strong>SET</strong>：存储无序集合。</li>
@@ -307,9 +307,9 @@
 <li><strong>ZSET</strong>：有序集合。</li>
 </ul>
 <p><code>redis</code>还包括一些高级的数据结构，例如<code>HyperLogLog</code>、<code>BloomFilter</code>等等。</p>
-<h5 id="String"><a href="#String" class="headerlink" title="String"></a>String</h5><h6 id="数据结构"><a href="#数据结构" class="headerlink" title="数据结构"></a>数据结构</h6><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sdshdr</span> &#123;</span></span><br><span class="line">    <span class="comment">// 记录buf数组已使用字节的数量</span></span><br><span class="line">    <span class="keyword">int</span> len;</span><br><span class="line">    <span class="comment">// 记录buf数组未使用字节的数量</span></span><br><span class="line">    <span class="keyword">int</span> <span class="built_in">free</span>;</span><br><span class="line">    <span class="comment">// 字节数组，保存字符串</span></span><br><span class="line">    <span class="keyword">char</span> buf[];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="String"><a href="#String" class="headerlink" title="String"></a>String</h4><h5 id="数据结构"><a href="#数据结构" class="headerlink" title="数据结构"></a>数据结构</h5><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sdshdr</span> &#123;</span></span><br><span class="line">    <span class="comment">// 记录buf数组已使用字节的数量</span></span><br><span class="line">    <span class="keyword">int</span> len;</span><br><span class="line">    <span class="comment">// 记录buf数组未使用字节的数量</span></span><br><span class="line">    <span class="keyword">int</span> <span class="built_in">free</span>;</span><br><span class="line">    <span class="comment">// 字节数组，保存字符串</span></span><br><span class="line">    <span class="keyword">char</span> buf[];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<h6 id="常见操作"><a href="#常见操作" class="headerlink" title="常见操作"></a>常见操作</h6><ul>
+<h5 id="常见操作"><a href="#常见操作" class="headerlink" title="常见操作"></a>常见操作</h5><ul>
 <li><code>set</code>：给一个<code>key</code>赋值。</li>
 <li><code>append</code>：如果一个<code>key</code>已经存在，直接在对应的<code>value</code>追加值，否则创建新的键值对。</li>
 <li><code>decr</code>：对<code>value</code>减 1，如果<code>value</code>不是数字，会报<code>(error) ERR value is not an integer or out of range</code>错误。如果<code>key</code>不存在，会给一个默认值0，再减1得到-1。</li>
@@ -329,9 +329,9 @@
 <li><code>setrange</code>：如果<code>key</code>存在，覆盖对应的<code>value</code>，且带有偏移量。例如<code>k</code>的<code>value</code>为<code>abc</code>，命令<code>setrange k 1 def</code>，<code>value</code>变为<code>adef</code>。如果<code>key</code>不存在且命令带有偏移量，<code>redis</code>会用零字节<code>\x00</code>弥补空白。</li>
 <li><code>strlen</code>：查看字符串长度。</li>
 </ul>
-<h5 id="List"><a href="#List" class="headerlink" title="List"></a>List</h5><h6 id="数据结构-1"><a href="#数据结构-1" class="headerlink" title="数据结构"></a>数据结构</h6><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">listNode</span> &#123;</span></span><br><span class="line">    <span class="comment">// 前一个节点</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">listNode</span> *<span class="title">prev</span>;</span></span><br><span class="line">    <span class="comment">// 后一个节点</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">listNode</span> *<span class="title">next</span>;</span></span><br><span class="line">    <span class="comment">// 节点值</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">value</span>;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="List"><a href="#List" class="headerlink" title="List"></a>List</h4><h5 id="数据结构-1"><a href="#数据结构-1" class="headerlink" title="数据结构"></a>数据结构</h5><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">listNode</span> &#123;</span></span><br><span class="line">    <span class="comment">// 前一个节点</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">listNode</span> *<span class="title">prev</span>;</span></span><br><span class="line">    <span class="comment">// 后一个节点</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">listNode</span> *<span class="title">next</span>;</span></span><br><span class="line">    <span class="comment">// 节点值</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">value</span>;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<h6 id="常见操作-1"><a href="#常见操作-1" class="headerlink" title="常见操作"></a>常见操作</h6><ul>
+<h5 id="常见操作-1"><a href="#常见操作-1" class="headerlink" title="常见操作"></a>常见操作</h5><ul>
 <li><code>lpush</code>：将所有指定的值存入<code>key</code>的列表的头部。如果<code>key</code>不存在会先创建一个空列表，如果<code>key</code>对应的值不是列表会报错。</li>
 <li><code>lrange</code>：返回列表指定区间内的元素。</li>
 <li><code>rpush</code>：对应<code>lpush</code>，将元素存入列表的尾部。</li>
@@ -342,9 +342,9 @@
 <li><code>blpop</code>：阻塞式<code>lpop</code>。</li>
 <li><code>brpop</code>：阻塞式<code>rpop</code>。</li>
 </ul>
-<h5 id="Set"><a href="#Set" class="headerlink" title="Set"></a>Set</h5><h6 id="数据结构-2"><a href="#数据结构-2" class="headerlink" title="数据结构"></a>数据结构</h6><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">intset</span> &#123;</span></span><br><span class="line">    <span class="comment">// 编码格式</span></span><br><span class="line">    <span class="keyword">uint32_t</span> encoding;</span><br><span class="line">    <span class="comment">// 数组包含的元素数量</span></span><br><span class="line">    <span class="keyword">uint32_t</span> length;</span><br><span class="line">    <span class="comment">// 保存元素的数组</span></span><br><span class="line">    <span class="keyword">int8_t</span> contents[];</span><br><span class="line">&#125; intset;</span><br></pre></td></tr></table></figure>
+<h4 id="Set"><a href="#Set" class="headerlink" title="Set"></a>Set</h4><h5 id="数据结构-2"><a href="#数据结构-2" class="headerlink" title="数据结构"></a>数据结构</h5><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">intset</span> &#123;</span></span><br><span class="line">    <span class="comment">// 编码格式</span></span><br><span class="line">    <span class="keyword">uint32_t</span> encoding;</span><br><span class="line">    <span class="comment">// 数组包含的元素数量</span></span><br><span class="line">    <span class="keyword">uint32_t</span> length;</span><br><span class="line">    <span class="comment">// 保存元素的数组</span></span><br><span class="line">    <span class="keyword">int8_t</span> contents[];</span><br><span class="line">&#125; intset;</span><br></pre></td></tr></table></figure>
 
-<h6 id="常见操作-2"><a href="#常见操作-2" class="headerlink" title="常见操作"></a>常见操作</h6><ul>
+<h5 id="常见操作-2"><a href="#常见操作-2" class="headerlink" title="常见操作"></a>常见操作</h5><ul>
 <li><code>sadd</code>：添加一个元素到<code>key</code>对应的值中。<code>key</code>不存在就新创建一个<code>set</code>。如果<code>value</code>不是<code>set</code>会报错。</li>
 <li><code>smembers</code>：获取一个<code>key</code>下对应的所有元素。</li>
 <li><code>srem</code>：移除指定的元素。</li>
@@ -360,14 +360,14 @@
 <li><code>sinterstore</code>：类似于<code>sinter</code>，计算出的结果会保存在一个新的集合中。</li>
 <li><code>sunionstore</code>：类似于<code>sunion</code>，计算出的结果会保存在一个新的集合中。</li>
 </ul>
-<h5 id="Hash"><a href="#Hash" class="headerlink" title="Hash"></a>Hash</h5><h6 id="数据结构-3"><a href="#数据结构-3" class="headerlink" title="数据结构"></a>数据结构</h6><p><code>dictht</code>是一个散列表结构，使用<strong>拉链法</strong>解决哈希冲突的问题。</p>
+<h4 id="Hash"><a href="#Hash" class="headerlink" title="Hash"></a>Hash</h4><h5 id="数据结构-3"><a href="#数据结构-3" class="headerlink" title="数据结构"></a>数据结构</h5><p><code>dictht</code>是一个散列表结构，使用<strong>拉链法</strong>解决哈希冲突的问题。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">dictht</span> &#123;</span></span><br><span class="line">    <span class="comment">// 哈希表数组</span></span><br><span class="line">    dictEntry **table;</span><br><span class="line">    <span class="comment">// 哈希表大小</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span> <span class="built_in">size</span>;</span><br><span class="line">    <span class="comment">// 哈希表大小掩码，用于计算索引值</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span> sizemask;</span><br><span class="line">    <span class="comment">// 该哈希表已有的节点数量</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span> used;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">dictEntry</span> &#123;</span></span><br><span class="line">    <span class="comment">// 键</span></span><br><span class="line">    <span class="keyword">void</span> *key;</span><br><span class="line">    <span class="comment">// 值</span></span><br><span class="line">    <span class="keyword">union</span> &#123;</span><br><span class="line">        <span class="keyword">void</span> *val;</span><br><span class="line">        uint64_tu64;</span><br><span class="line">        int64_ts64;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">dictEntry</span> *<span class="title">next</span>;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p><code>redis</code>的字典<code>dict</code>包含两个哈希表<code>dictht</code>，这是为了方便<code>rehash</code>。扩容时，将其中一个<code>dictht</code>上的键值对<code>rehash</code>到另一个<code>dictht</code>上，完成之后释放空间并交换两个<code>dictht</code>。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">dict</span> &#123;</span></span><br><span class="line">    dictType *type;</span><br><span class="line">    <span class="keyword">void</span> *privdata;</span><br><span class="line">    <span class="comment">// 两个hash表</span></span><br><span class="line">    dictht ht[<span class="number">2</span>];</span><br><span class="line">    <span class="comment">// rehash的索引，如果为-1表示没有进行rehash</span></span><br><span class="line">    <span class="keyword">long</span> rehashidx;</span><br><span class="line">    <span class="comment">// 目前正在运行的迭代器数量</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span> iterators;</span><br><span class="line">&#125; dict;</span><br></pre></td></tr></table></figure>
 
 <p><code>rehash</code>的操作不是一次性完成的，而是逐步完成的，为的就是不给服务器造成太多的负担。这时<code>rehashidx</code>就派上了用场。它是从0开始的，每执行一次<code>rehash</code>，比如把<code>ht[0]</code>的<code>table[rehashidx]</code>的键值对<code>rehash</code>到<code>ht[1]</code>上，<code>ht[0]</code>的<code>table[rehashidx]</code>指向<code>null</code>，并把<code>rehashidx</code>加一。每当对字典进行增删改查都会执行一次<code>rehash</code>。这样会导致数据分布在不同的<code>ht</code>上，于是对字典的操作也会在两个<code>ht</code>上进行，先对第一个哈希表进行操作，如果没有数据再去找第二个。</p>
-<h6 id="常见操作-3"><a href="#常见操作-3" class="headerlink" title="常见操作"></a>常见操作</h6><ul>
+<h5 id="常见操作-3"><a href="#常见操作-3" class="headerlink" title="常见操作"></a>常见操作</h5><ul>
 <li><code>hset</code>：向指定散列表设置一个键值对。</li>
 <li><code>hget</code>：获取指定散列表上一个指定的键对应的值。</li>
 <li><code>hmset</code>：批量设置<code>hset</code>。</li>
@@ -383,24 +383,58 @@
 <li><code>hlen</code>：返回某个<code>key</code>中<code>value</code>的数量。</li>
 <li><code>hstrlen</code>：返回某个<code>key</code>中的某个<code>field</code>的值的字符串的长度。</li>
 </ul>
-<h5 id="ZSet"><a href="#ZSet" class="headerlink" title="ZSet"></a>ZSet</h5><h6 id="数据结构-4"><a href="#数据结构-4" class="headerlink" title="数据结构"></a>数据结构</h6><h6 id="常见操作-4"><a href="#常见操作-4" class="headerlink" title="常见操作"></a>常见操作</h6><h5 id="HyperLogLog"><a href="#HyperLogLog" class="headerlink" title="HyperLogLog"></a>HyperLogLog</h5><p>假设要统计<code>UV</code>，需要用到去重功能，同一个用户一天之内的多次访问只能计一次。首先想到的是<code>set</code>，把每一个请求都带上用户的ID，用<code>SADD</code>将ID放入集合，再调用<code>SCARD</code>就可以算出集合的大小。但是如果页面的访问量很大，这时集合的空间也会变得很大。于是便有了<code>HyperLogLog</code>这样的数据结构，它提供了<code>PFADD</code>、<code>PFCOUNT</code>两个指令，相当于<code>set</code>的<code>SADD</code>和<code>SCARD</code>。它的特点是，不存储元素本身，占用空间特别小，但数据可能不太准确。对于统计<code>UV</code>这样的数据再合适不过了。</p>
-<h5 id="BloomFilter"><a href="#BloomFilter" class="headerlink" title="BloomFilter"></a>BloomFilter</h5><p>如果我们想知道一个元素是否存在于某集合里，那么<code>HyperLogLog</code>就无能为力了，但使用<code>BloomFilter</code>就可以很高效地解决这个问题。<code>BloomFilter</code>最常见的使用场景就是消息推送了。比如我们在看新闻时，网页会不断推送给我们新内容，每次推送都需要去重增加用户体验，这时就可以用到<code>BloomFilter</code>。</p>
+<h4 id="ZSet"><a href="#ZSet" class="headerlink" title="ZSet"></a>ZSet</h4><h5 id="数据结构-4"><a href="#数据结构-4" class="headerlink" title="数据结构"></a>数据结构</h5><p><code>ZSet</code>的编码可以是<code>ziplist</code>或者<code>skiplist</code>。如果同时满足以下条件的话使用<code>ziplist</code>。</p>
+<ul>
+<li>元素数量小于128个。</li>
+<li>所有成员的长度都小于64字节。</li>
+</ul>
+<p>以上两个条件的阈值可以通过<code>zset-max-ziplist-entries</code>和<code>zset-max-ziplist-value</code>来修改。</p>
+<p><code>ziplist</code>编码的有序集合使用紧挨在一起的压缩列表节点来保存，第一个节点保存<code>member</code>，第二个节点保存<code>score</code>。<code>ziplist</code>内的集合元素按照<code>score</code>从小到大排序。由于<code>ziplist</code>的节点指针只能线性移动，因此增删改查这些操作的时间复杂度都不低于<code>O(N)</code>。</p>
+<p><code>skiplist</code>编码的有序集合底层是一个<code>zset</code>的结构体，<code>zset</code>结构体又包含一个<code>dict</code>和一个<code>skiplist</code>。<code>skiplist</code>存储按照<code>score</code>从小到大保存的所有元素，<code>dict</code>保存从<code>member</code>到<code>score</code>的映射。这样的话就可以在<code>O(1)</code>的时间复杂度内查找<code>member</code>对应的<code>score</code>。虽然使用了两种数据结构，但是它们会共享相同元素的<code>member</code>和<code>score</code>，不会浪费额外的内存。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">zskiplistNode</span> &#123;</span></span><br><span class="line">    <span class="comment">// 成员对象</span></span><br><span class="line">    robj *obj;</span><br><span class="line">    <span class="comment">// 分数值</span></span><br><span class="line">    <span class="keyword">double</span> score;</span><br><span class="line">    <span class="comment">// 后退指针</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">zskiplistNode</span> *<span class="title">backward</span>;</span></span><br><span class="line">    <span class="comment">// 层</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">zskiplistLevel</span> &#123;</span></span><br><span class="line">        <span class="comment">// 前进指针</span></span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">zskiplistNode</span> *<span class="title">forward</span>;</span></span><br><span class="line">        <span class="comment">// 跨度</span></span><br><span class="line">        <span class="keyword">unsigned</span> <span class="keyword">int</span> span;</span><br><span class="line">    &#125; level[];</span><br><span class="line">&#125; zskiplistNode;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">zskiplist</span> &#123;</span></span><br><span class="line">    <span class="comment">// 表头节点、表尾节点</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">zskiplistNode</span> *<span class="title">header</span>, *<span class="title">tail</span>;</span></span><br><span class="line">    <span class="comment">// 节点数量</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span> length;</span><br><span class="line">    <span class="comment">// 表中层数最大的节点的层数</span></span><br><span class="line">    <span class="keyword">int</span> level;</span><br><span class="line">&#125; zskiplist;</span><br></pre></td></tr></table></figure>
+
+<h6 id="redis-的-skiplist-和经典的有何不同？"><a href="#redis-的-skiplist-和经典的有何不同？" class="headerlink" title="redis 的 skiplist 和经典的有何不同？"></a>redis 的 skiplist 和经典的有何不同？</h6><ul>
+<li><code>skiplist</code>的<code>score</code>允许重复，也就是跳表的<code>key</code>允许重复。</li>
+<li>比较时不仅比较<code>score</code>，还比较数据本身。当元素分数相同时，根据数据内容字典排序。</li>
+<li>第一层链表不是单向链表，而是双向链表，为了方便以倒序的方式获取范围内的元素。</li>
+<li>在<code>skiplist</code>中可以很方便地计算出每个元素的排名。</li>
+</ul>
+<h6 id="为什么使用skiplist而不是其他平衡树？"><a href="#为什么使用skiplist而不是其他平衡树？" class="headerlink" title="为什么使用skiplist而不是其他平衡树？"></a>为什么使用<code>skiplist</code>而不是其他平衡树？</h6><p>这个问题<code>redis</code>的作者有回答。</p>
+<blockquote>
+<p>There are a few reasons:</p>
+<p>1) They are not very memory intensive. It’s up to you basically. Changing parameters about the probability of a node to have a given number of levels will make then <em>less</em> memory intensive than btrees.</p>
+<p>2) A sorted set is often target of many ZRANGE or ZREVRANGE operations, that is, traversing the skip list as a linked list. With this operation the cache locality of skip lists is at least as good as with other kind of balanced trees.</p>
+<p>3) They are simpler to implement, debug, and so forth. For instance thanks to the skip list simplicity I received a patch (already in Redis master) with augmented skip lists implementing ZRANK in O(log(N)). It required little changes to the code.</p>
+<p>About the Append Only durability &amp; speed, I don’t think it is a good idea to optimize Redis at cost of more code and more complexity for a use case that IMHO should be rare for the Redis target (fsync() at every command). Almost no one is using this feature even with ACID SQL databases, as the performance hint is big anyway.</p>
+<p>About threads: our experience shows that Redis is mostly I/O bound. I’m using threads to serve things from Virtual Memory. The long term solution to exploit all the cores, assuming your link is so fast that you can saturate a single core, is running multiple instances of Redis (no locks, almost fully scalable linearly with number of cores), and using the “Redis Cluster” solution that I plan to develop in the future.</p>
+</blockquote>
+<p>主要就是：</p>
+<ul>
+<li>实现简单。</li>
+<li>内存不是密集的。</li>
+<li>对于范围查找的支持比较好，首先找到区间起始位置，用跳表的时间复杂度是<code>log(n)</code>的，然后按顺序往后遍历即可。</li>
+</ul>
+<h5 id="常见操作-4"><a href="#常见操作-4" class="headerlink" title="常见操作"></a>常见操作</h5><ul>
+<li><h4 id="HyperLogLog"><a href="#HyperLogLog" class="headerlink" title="HyperLogLog"></a>HyperLogLog</h4></li>
+</ul>
+<p>假设要统计<code>UV</code>，需要用到去重功能，同一个用户一天之内的多次访问只能计一次。首先想到的是<code>set</code>，把每一个请求都带上用户的ID，用<code>SADD</code>将ID放入集合，再调用<code>SCARD</code>就可以算出集合的大小。但是如果页面的访问量很大，这时集合的空间也会变得很大。于是便有了<code>HyperLogLog</code>这样的数据结构，它提供了<code>PFADD</code>、<code>PFCOUNT</code>两个指令，相当于<code>set</code>的<code>SADD</code>和<code>SCARD</code>。它的特点是，不存储元素本身，占用空间特别小，但数据可能不太准确。对于统计<code>UV</code>这样的数据再合适不过了。</p>
+<h4 id="BloomFilter"><a href="#BloomFilter" class="headerlink" title="BloomFilter"></a>BloomFilter</h4><p>如果我们想知道一个元素是否存在于某集合里，那么<code>HyperLogLog</code>就无能为力了，但使用<code>BloomFilter</code>就可以很高效地解决这个问题。<code>BloomFilter</code>最常见的使用场景就是消息推送了。比如我们在看新闻时，网页会不断推送给我们新内容，每次推送都需要去重增加用户体验，这时就可以用到<code>BloomFilter</code>。</p>
 <p><code>BloomFilter</code>的核心实现是一个超大的位数组以及几个哈希函数。假设位数组长度为m，哈希函数个数为k。</p>
 <p><img src="%E5%B8%83%E9%9A%86%E8%BF%87%E6%BB%A4%E5%99%A8.png" alt=""></p>
 <p>以上图为例，集合里有 x、y、z 三个元素，哈希函数的个数为3。首先初始化位数组，将元素全部置为0。对于 x、y、z 三个元素挨个通过3个哈希函数进行映射，每个映射都会生成一个哈希值，对应位数组上的一个位置，将这个位置的值置为1。对于要查询的元素w，同样通过这3个哈希函数获取映射，依次与位数组上对应位置的值进行比较，如果都为1，<code>BloomFilter</code>则判定w存在于集合中，否则则不存在。可以看出，<code>BloomFilter</code>并不能准确判定一个元素是否存在于集合中，因为位数组某个位置上的值为1，也有可能是其他元素通过哈希函数设置的；但很明显<code>BloomFilter</code>可以准确判定一个元素不存在于集合中。</p>
 <p>在<code>redis</code>中可以通过<code>BF.ADD</code>和<code>BF.EXISTS</code>添加元素和判断元素是否存在。</p>
 <p><code>BloomFilter</code>的<code>initial_size</code>如果过大，会浪费空间；如果过小，会影响准确率，所以需要尽可能精确估计好元素的数量。而<code>error_rate</code>设置得越小，需要的存储空间就越大，对于不需要太精确的场合，设置得大一些也没关系。</p>
 <hr>
-<h4 id="应用场景"><a href="#应用场景" class="headerlink" title="应用场景"></a>应用场景</h4><ul>
+<h3 id="应用场景"><a href="#应用场景" class="headerlink" title="应用场景"></a>应用场景</h3><ul>
 <li>缓存。缓存是<code>redis</code>最常用的功能了。可以设置缓存的最大使用量以及淘汰策略以保证缓存的命中率。</li>
 <li>计数器。可以对<code>STRING</code>进行自增减操作，实现计数器的功能。由于<code>redis</code>是基于内存的，读写速度快，适合存储频繁读写的技术量。</li>
 <li>消息队列。<code>LIST</code>是一个双向链表，可以通过<code>lpush</code>、<code>rpop</code>写入和读取信息。</li>
 <li>分布式锁。在分布式场景下，无法使用单机环境下的锁完成对多个节点上的进程进行同步。这时可以使用<code>redis</code>自带的<code>SETNX</code>命令完成分布式锁。还可以使用<code>redlock</code>实现。</li>
 </ul>
 <hr>
-<h4 id="持久化"><a href="#持久化" class="headerlink" title="持久化"></a>持久化</h4><p>持久化就是把数据从内存写入到磁盘中，以免服务宕机或重启之后内存数据丢失。</p>
+<h3 id="持久化"><a href="#持久化" class="headerlink" title="持久化"></a>持久化</h3><p>持久化就是把数据从内存写入到磁盘中，以免服务宕机或重启之后内存数据丢失。</p>
 <p><code>redis</code>支持<code>RDB(默认)</code>和<code>AOF</code>两种持久化机制。</p>
-<h5 id="RDB-Redis-DataBase"><a href="#RDB-Redis-DataBase" class="headerlink" title="RDB(Redis DataBase)"></a>RDB(Redis DataBase)</h5><p><code>RDB</code>是<code>redis</code>默认的持久化方式，按照一定的时间将内存中的数据以快照的形式保存到磁盘中，生成数据文件<code>dump.rdb</code>。可以通过配置文件中的<code>save</code>参数设置快照周期。</p>
+<h4 id="RDB-Redis-DataBase"><a href="#RDB-Redis-DataBase" class="headerlink" title="RDB(Redis DataBase)"></a>RDB(Redis DataBase)</h4><p><code>RDB</code>是<code>redis</code>默认的持久化方式，按照一定的时间将内存中的数据以快照的形式保存到磁盘中，生成数据文件<code>dump.rdb</code>。可以通过配置文件中的<code>save</code>参数设置快照周期。</p>
 <p>优点：</p>
 <ol>
 <li>方便持久化，只有一个文件。</li>
@@ -412,7 +446,7 @@
 <ol>
 <li>数据安全性低。由于<code>RDB</code>持久化是有时间间隔的，如果在这期间<code>redis</code>发生故障，数据会丢失。</li>
 </ol>
-<h5 id="AOF-Append-Only-File"><a href="#AOF-Append-Only-File" class="headerlink" title="AOF(Append Only File)"></a>AOF(Append Only File)</h5><p><code>AOF</code>是将<code>redis</code>执行的每条命令记录到单独的日志文件中。当<code>redis</code>重启时，会重新将日志文件恢复数据。</p>
+<h4 id="AOF-Append-Only-File"><a href="#AOF-Append-Only-File" class="headerlink" title="AOF(Append Only File)"></a>AOF(Append Only File)</h4><p><code>AOF</code>是将<code>redis</code>执行的每条命令记录到单独的日志文件中。当<code>redis</code>重启时，会重新将日志文件恢复数据。</p>
 <p>如果同时开启了两种持久化模式，<code>redis</code>会优先使用<code>AOF</code>。</p>
 <p>优点：</p>
 <ol>
@@ -426,7 +460,7 @@
 <li>数据较大时，<code>AOF</code>比<code>RDB</code>启动效率低。</li>
 </ol>
 <hr>
-<h4 id="过期键删除策略"><a href="#过期键删除策略" class="headerlink" title="过期键删除策略"></a>过期键删除策略</h4><p>我们可以设置<code>redis</code>中<code>key</code>的过期时间。针对过期的<code>key</code>，主要有以下三种处理策略：</p>
+<h3 id="过期键删除策略"><a href="#过期键删除策略" class="headerlink" title="过期键删除策略"></a>过期键删除策略</h3><p>我们可以设置<code>redis</code>中<code>key</code>的过期时间。针对过期的<code>key</code>，主要有以下三种处理策略：</p>
 <ol>
 <li>定时过期：每个设置过期时间的<code>key</code>都需要创建一个定时器，到了过期时间就立即删除，释放内存。但同时又会占用大量CPU资源去处理过期的数据，影响性能。</li>
 <li>惰性过期：只有当访问了一个<code>key</code>时，才会去判断它是否已过期，过期则删除。该策略造成的问题与定时过期相反。</li>
@@ -434,32 +468,32 @@
 </ol>
 <p><code>redis</code>中可以通过<code>EXPIRE</code>和<code>PERSIST</code>命令分别设置<code>key</code>的过期时间与永不过期。</p>
 <hr>
-<h4 id="内存淘汰策略"><a href="#内存淘汰策略" class="headerlink" title="内存淘汰策略"></a>内存淘汰策略</h4><p>内存淘汰策略是指<code>redis</code>内存不足时，如何处理新数据。</p>
-<h5 id="全局的键空间选择性移除"><a href="#全局的键空间选择性移除" class="headerlink" title="全局的键空间选择性移除"></a>全局的键空间选择性移除</h5><ul>
+<h3 id="内存淘汰策略"><a href="#内存淘汰策略" class="headerlink" title="内存淘汰策略"></a>内存淘汰策略</h3><p>内存淘汰策略是指<code>redis</code>内存不足时，如何处理新数据。</p>
+<h4 id="全局的键空间选择性移除"><a href="#全局的键空间选择性移除" class="headerlink" title="全局的键空间选择性移除"></a>全局的键空间选择性移除</h4><ul>
 <li><code>noeviction</code>：内存不足以容纳新数据时，新写入的操作会报错。</li>
 <li><code>allkeys-lru</code>：内存不足以容纳新数据时，在键空间中移除最近最少使用的<code>key</code>。（常用）</li>
 <li><code>allkeys-random</code>：内存不足以容纳新数据时，在键空间随机移除某个<code>key</code>。</li>
 </ul>
-<h5 id="设置过期时间的键空间选择性移除"><a href="#设置过期时间的键空间选择性移除" class="headerlink" title="设置过期时间的键空间选择性移除"></a>设置过期时间的键空间选择性移除</h5><ul>
+<h4 id="设置过期时间的键空间选择性移除"><a href="#设置过期时间的键空间选择性移除" class="headerlink" title="设置过期时间的键空间选择性移除"></a>设置过期时间的键空间选择性移除</h4><ul>
 <li><code>volatile-lru</code>：内存不足以容纳新数据时，在设置了过期时间的键空间中移除最近最少使用的<code>key</code>。</li>
 <li><code>volatile-random</code>：内存不足以容纳新数据时，在设置了过期时间的键空间中随机移除某个<code>key</code>。</li>
 <li><code>volatile-ttl</code>：内存不足以容纳新数据时，在设置了过期时间的键空间中优先移除过期时间更早的<code>key</code>。</li>
 </ul>
 <hr>
-<h4 id="线程模型"><a href="#线程模型" class="headerlink" title="线程模型"></a>线程模型</h4><p><code>redis</code>基于<code>reactor</code>模式开发了网络事件处理器，被称为<strong>文件事件处理器</strong>。它的组成分为四部分：多个套接字、IO多路复用程序、文件事件分派器、事件处理器。由于文件时间分派器对类的消费是单线程的，所以<code>redis</code>才是单线程模型。</p>
+<h3 id="线程模型"><a href="#线程模型" class="headerlink" title="线程模型"></a>线程模型</h3><p><code>redis</code>基于<code>reactor</code>模式开发了网络事件处理器，被称为<strong>文件事件处理器</strong>。它的组成分为四部分：多个套接字、IO多路复用程序、文件事件分派器、事件处理器。由于文件时间分派器对类的消费是单线程的，所以<code>redis</code>才是单线程模型。</p>
 <ul>
 <li>文件事件处理器使用I/O多路复用程序同时监听多个套接字，根据套接字目前执行的任务为套接字关联不同的事件处理器。</li>
 <li>当被监听的套接字准备好执行连接应答、读取、写入、关闭等操作时，与操作相对应的文件事件就会产生，这时文件事件处理器会调用套接字之前关联好的事件处理器来处理事件。</li>
 </ul>
 <hr>
-<h4 id="事务"><a href="#事务" class="headerlink" title="事务"></a>事务</h4><p><code>redis</code>事务是一次性、顺序性、排他性地执行队列中的一系列命令。</p>
-<h5 id="三个阶段"><a href="#三个阶段" class="headerlink" title="三个阶段"></a>三个阶段</h5><ol>
+<h3 id="事务"><a href="#事务" class="headerlink" title="事务"></a>事务</h3><p><code>redis</code>事务是一次性、顺序性、排他性地执行队列中的一系列命令。</p>
+<h4 id="三个阶段"><a href="#三个阶段" class="headerlink" title="三个阶段"></a>三个阶段</h4><ol>
 <li>事务开始<code>MULTI</code></li>
 <li>命令入队</li>
 <li>事务执行<code>EXEC</code></li>
 </ol>
 <p><code>redis</code>会将一个事务中的所有命令序列化，按顺序执行。</p>
-<h5 id="相关命令"><a href="#相关命令" class="headerlink" title="相关命令"></a>相关命令</h5><ul>
+<h4 id="相关命令"><a href="#相关命令" class="headerlink" title="相关命令"></a>相关命令</h4><ul>
 <li><code>MULTI</code>：开启一个事务，总是返回<code>OK</code>。<code>MULTI</code>执行之后，客户端仍可以向服务器发送任意多条命令，这些命令会被放入一个队列中，当<code>EXEC</code>命令被调用后，这些队列中的命令才会被执行。</li>
 <li><code>WATCH</code>：乐观锁，可以为所有<code>redis</code>事务提供<code>CAS</code>行为。可以监控任意多个键，一旦其中一个键被修改或移除，之后的事务就不会执行，监控一直持续到<code>EXEC</code>命令被调用。</li>
 <li><code>UNWATCH</code>：取消所有对<code>key</code>的监控。</li>
@@ -470,7 +504,7 @@
 <p><code>redis</code>事务的单条命令是原子性的，但事务不保证原子性，没有回滚。事务中的任意命令执行失败，其他命令仍可以被执行。</p>
 <p>使用<code>lua</code>脚本可以保证脚本内的命令一次性、顺序性的被执行，但其仍然不支持回滚，如果部分命令执行失败，其他命令还是会被执行。</p>
 <hr>
-<h4 id="集群"><a href="#集群" class="headerlink" title="集群"></a>集群</h4><h5 id="哨兵模式"><a href="#哨兵模式" class="headerlink" title="哨兵模式"></a>哨兵模式</h5><p><img src="%E5%93%A8%E5%85%B5%E6%A8%A1%E5%BC%8F.png" alt=""></p>
+<h3 id="集群"><a href="#集群" class="headerlink" title="集群"></a>集群</h3><h4 id="哨兵模式"><a href="#哨兵模式" class="headerlink" title="哨兵模式"></a>哨兵模式</h4><p><img src="%E5%93%A8%E5%85%B5%E6%A8%A1%E5%BC%8F.png" alt=""></p>
 <p>哨兵是<code>redis</code>集群中非常重要的一个组件，主要有以下功能：</p>
 <ul>
 <li>集群监控：负责监控<code>redis</code> <code>master</code>与<code>slave</code>是否正常工作。</li>
@@ -479,47 +513,47 @@
 <li>配置中心：如果故障转移发生了，会通知<code>client</code>新的<code>master</code>地址。</li>
 </ul>
 <p>哨兵模式主要用于实现<code>redis</code>集群的高可用。判断一个<code>master node</code>是否挂了，需要大部分哨兵认同才算，这涉及到了分布式选举的问题。哨兵模式至少需要3个实例。</p>
-<h5 id="集群模式工作原理"><a href="#集群模式工作原理" class="headerlink" title="集群模式工作原理"></a>集群模式工作原理</h5><p>在<code>redis3.0</code>版本提供了<code>redis cluster</code>技术，采用<code>slot</code>的概念，一共16384个槽。将请求发向任意节点，接受到请求的节点将会查询请求发送到正确的节点上。</p>
+<h4 id="集群模式工作原理"><a href="#集群模式工作原理" class="headerlink" title="集群模式工作原理"></a>集群模式工作原理</h4><p>在<code>redis3.0</code>版本提供了<code>redis cluster</code>技术，采用<code>slot</code>的概念，一共16384个槽。将请求发向任意节点，接受到请求的节点将会查询请求发送到正确的节点上。</p>
 <p>在<code>redis cluster</code>架构下，每个<code>redis</code>需要开放两个端口，例如6379以及16379。16379主要用于节点之间的通信，也就是<code>cluster bus</code>，主要利用了一种二进制的通信协议：<code>gosip</code>协议，用于节点之间高效的数据交换，占用更少的带宽和处理时间。</p>
-<h5 id="主从架构"><a href="#主从架构" class="headerlink" title="主从架构"></a>主从架构</h5><p>对于缓存来说，是需要支持高并发场景的，所以架构一般做成主从架构，一主多从，主负责写，从负责读。</p>
-<h6 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h6><p>当启动一个<code>slave node</code>时，会发送一个<code>PSYNC</code>命令给<code>master node</code>。如果这是第一次连接，则会触发一次<strong>全量复制</strong>。<code>master</code>会启动一个后台线程生成一份<code>RDB</code>快照文件，同时将从<code>client</code>新收到的所有写命令缓存于内存中。<code>RDB</code>文件生成完成后，<code>master</code>会将这个文件发送给<code>slave</code>，<code>slave</code>先将这个文件写入本地磁盘，再加载到内存中。接着<code>master</code>将之前内存中的命令发送给<code>slave</code>，<code>slave</code>开始同步这部分数据。</p>
+<h4 id="主从架构"><a href="#主从架构" class="headerlink" title="主从架构"></a>主从架构</h4><p>对于缓存来说，是需要支持高并发场景的，所以架构一般做成主从架构，一主多从，主负责写，从负责读。</p>
+<h5 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h5><p>当启动一个<code>slave node</code>时，会发送一个<code>PSYNC</code>命令给<code>master node</code>。如果这是第一次连接，则会触发一次<strong>全量复制</strong>。<code>master</code>会启动一个后台线程生成一份<code>RDB</code>快照文件，同时将从<code>client</code>新收到的所有写命令缓存于内存中。<code>RDB</code>文件生成完成后，<code>master</code>会将这个文件发送给<code>slave</code>，<code>slave</code>先将这个文件写入本地磁盘，再加载到内存中。接着<code>master</code>将之前内存中的命令发送给<code>slave</code>，<code>slave</code>开始同步这部分数据。</p>
 <p>之后如果<code>slave node</code>与<code>master node</code>断开了连接，重连之后不再进行全量复制，只将<code>slave</code>缺失的数据复制给它。</p>
-<h5 id="分区"><a href="#分区" class="headerlink" title="分区"></a>分区</h5><p>分区是分割数据到多个<code>redis</code>实例的过程。每个实例只保存<code>key</code>的一个子集。</p>
+<h4 id="分区"><a href="#分区" class="headerlink" title="分区"></a>分区</h4><p>分区是分割数据到多个<code>redis</code>实例的过程。每个实例只保存<code>key</code>的一个子集。</p>
 <hr>
-<h4 id="分布式"><a href="#分布式" class="headerlink" title="分布式"></a>分布式</h4><h5 id="分布式锁"><a href="#分布式锁" class="headerlink" title="分布式锁"></a>分布式锁</h5><p>通过<code>SETNX</code>命令获取锁。返回1说明获取成功，0说明获取失败。获取到锁之后，通过<code>EXPIRE</code>命令给<code>key</code>设置一个过期时间防止死锁。释放锁时通过<code>DEL</code>命令删除锁。</p>
+<h3 id="分布式"><a href="#分布式" class="headerlink" title="分布式"></a>分布式</h3><h4 id="分布式锁"><a href="#分布式锁" class="headerlink" title="分布式锁"></a>分布式锁</h4><p>通过<code>SETNX</code>命令获取锁。返回1说明获取成功，0说明获取失败。获取到锁之后，通过<code>EXPIRE</code>命令给<code>key</code>设置一个过期时间防止死锁。释放锁时通过<code>DEL</code>命令删除锁。</p>
 <p>但如果<code>SETNX</code>执行成功，<code>EXPIRE</code>执行失败那咋办？在<code>redis2.6.12</code>之后作者对<code>SET</code>命令进行了拓展，加了一系列参数：</p>
 <p><code>SET key value [EX seconds][PX milliseconds][NX|XX]</code>。例如<code>SET k v EX 5 NX</code>可将键<code>k</code>的值设置为<code>v</code>，5秒后超时，且仅当键不存在时才进行设置。仅当<code>SET</code>命令设置成功才返回<code>OK</code>，否则将返回空批量回复(NULL Bulk Reply)。</p>
-<h5 id="redlock"><a href="#redlock" class="headerlink" title="redlock"></a>redlock</h5><p><code>redis</code>提供了一种权威的基于<code>redis</code>实现分布式锁的方式叫做<code>redlock</code>。它能保证以下特性：</p>
+<h4 id="redlock"><a href="#redlock" class="headerlink" title="redlock"></a>redlock</h4><p><code>redis</code>提供了一种权威的基于<code>redis</code>实现分布式锁的方式叫做<code>redlock</code>。它能保证以下特性：</p>
 <ol>
 <li>安全：互斥访问，永远只有一个<code>client</code>能获取到锁。</li>
 <li>避免死锁。</li>
 <li>容错性：只要大部分<code>redis</code>节点存活就能正常提供服务。</li>
 </ol>
 <hr>
-<h4 id="缓存异常"><a href="#缓存异常" class="headerlink" title="缓存异常"></a>缓存异常</h4><h5 id="缓存雪崩"><a href="#缓存雪崩" class="headerlink" title="缓存雪崩"></a>缓存雪崩</h5><p>指缓存同一时间大面积失效。所有请求都会落到数据库上，可能造成数据库短时间承受过多请求而崩掉。</p>
-<h6 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h6><ol>
+<h3 id="缓存异常"><a href="#缓存异常" class="headerlink" title="缓存异常"></a>缓存异常</h3><h4 id="缓存雪崩"><a href="#缓存雪崩" class="headerlink" title="缓存雪崩"></a>缓存雪崩</h4><p>指缓存同一时间大面积失效。所有请求都会落到数据库上，可能造成数据库短时间承受过多请求而崩掉。</p>
+<h5 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h5><ol>
 <li>给缓存的数据的过期时间设置随机值，以免同一时间大量缓存同时过期。</li>
 <li>如果并发量不是很大，可以给请求加锁排队，避免同一时间请求过多。</li>
 <li>给每个缓存设置缓存标记，记录缓存是否失效，如果失效则更新数据缓存。</li>
 </ol>
-<h5 id="缓存穿透"><a href="#缓存穿透" class="headerlink" title="缓存穿透"></a>缓存穿透</h5><p>指缓存和数据库中都没有的数据，还是导致所有请求都落到数据库上，可能造成数据库短时间承受过多请求而崩掉。这可能是由于恶意请求导致的，例如伪造id为-1的请求，这实际上是不存在的数据。</p>
-<h6 id="解决方案-1"><a href="#解决方案-1" class="headerlink" title="解决方案"></a>解决方案</h6><ol>
+<h4 id="缓存穿透"><a href="#缓存穿透" class="headerlink" title="缓存穿透"></a>缓存穿透</h4><p>指缓存和数据库中都没有的数据，还是导致所有请求都落到数据库上，可能造成数据库短时间承受过多请求而崩掉。这可能是由于恶意请求导致的，例如伪造id为-1的请求，这实际上是不存在的数据。</p>
+<h5 id="解决方案-1"><a href="#解决方案-1" class="headerlink" title="解决方案"></a>解决方案</h5><ol>
 <li>接口层增加数据校验，对请求的数据做一些基本的过滤。例如<code>id&lt;=0</code>直接拦截不走缓存和数据库。</li>
 <li>缓存和数据库都没有的数据，可以将<code>key-value</code>设置为<code>key-null</code>，设置一个较短的过期时间，防止短时间内大量恶意请求攻击。</li>
 <li>使用布隆过滤器，将所有可能存在的数据通过哈希放到足够大的位数组中，如果请求数据不存在会被布隆过滤器直接拦截。</li>
 </ol>
-<h5 id="缓存击穿"><a href="#缓存击穿" class="headerlink" title="缓存击穿"></a>缓存击穿</h5><p>指缓存中没有数据库中有的数据（一般是缓存时间过期），这时由于并发量大，同一时间大量请求走数据库导致崩溃。和缓存雪崩不同的是，缓存击穿指并发查同一条数据，缓存雪崩指不同数据。</p>
-<h6 id="解决方案-2"><a href="#解决方案-2" class="headerlink" title="解决方案"></a>解决方案</h6><ol>
+<h4 id="缓存击穿"><a href="#缓存击穿" class="headerlink" title="缓存击穿"></a>缓存击穿</h4><p>指缓存中没有数据库中有的数据（一般是缓存时间过期），这时由于并发量大，同一时间大量请求走数据库导致崩溃。和缓存雪崩不同的是，缓存击穿指并发查同一条数据，缓存雪崩指不同数据。</p>
+<h5 id="解决方案-2"><a href="#解决方案-2" class="headerlink" title="解决方案"></a>解决方案</h5><ol>
 <li>热点数据设置永不过期。</li>
 <li>互斥锁。</li>
 </ol>
-<h5 id="缓存预热"><a href="#缓存预热" class="headerlink" title="缓存预热"></a>缓存预热</h5><p>指系统上线后，将缓存的数据预先加载到系统中，避免一开始的请求先查询数据库再将数据缓存。</p>
-<h6 id="解决方案-3"><a href="#解决方案-3" class="headerlink" title="解决方案"></a>解决方案</h6><ol>
+<h4 id="缓存预热"><a href="#缓存预热" class="headerlink" title="缓存预热"></a>缓存预热</h4><p>指系统上线后，将缓存的数据预先加载到系统中，避免一开始的请求先查询数据库再将数据缓存。</p>
+<h5 id="解决方案-3"><a href="#解决方案-3" class="headerlink" title="解决方案"></a>解决方案</h5><ol>
 <li>项目启动时手动加载缓存。</li>
 <li>定时刷新缓存。</li>
 </ol>
 <hr>
-<h4 id="redis与memcached区别"><a href="#redis与memcached区别" class="headerlink" title="redis与memcached区别"></a>redis与memcached区别</h4><p>两者都是非关系型数据库，基于内存。</p>
+<h3 id="redis与memcached区别"><a href="#redis与memcached区别" class="headerlink" title="redis与memcached区别"></a>redis与memcached区别</h3><p>两者都是非关系型数据库，基于内存。</p>
 <table>
 <thead>
 <tr>
@@ -575,18 +609,18 @@
 </tr>
 </tbody></table>
 <hr>
-<h4 id="双写数据一致性"><a href="#双写数据一致性" class="headerlink" title="双写数据一致性"></a>双写数据一致性</h4><p>如果用到了缓存，就可能会涉及缓存和数据库双存储双写，只要双写就会有数据一致性的问题。如何解决一致性问题呢？</p>
+<h3 id="双写数据一致性"><a href="#双写数据一致性" class="headerlink" title="双写数据一致性"></a>双写数据一致性</h3><p>如果用到了缓存，就可能会涉及缓存和数据库双存储双写，只要双写就会有数据一致性的问题。如何解决一致性问题呢？</p>
 <p>一般来说，如果允许缓存可以稍微和数据库偶尔有不一致的情况，那么最好不要将读请求和写请求串行化，存到内存队列中。串行化可以保证一定不会出现数据不一致的情况，但也导致了系统的吞吐量大幅度降低。可以先更新数据库，将缓存设为失效。这样再次读取数据时，如果缓存不存在就会读取数据库，这时再写入缓存。</p>
 <hr>
-<h4 id="一个字符串类型的值存储的最大容量"><a href="#一个字符串类型的值存储的最大容量" class="headerlink" title="一个字符串类型的值存储的最大容量"></a>一个字符串类型的值存储的最大容量</h4><p>512M</p>
+<h3 id="一个字符串类型的值存储的最大容量"><a href="#一个字符串类型的值存储的最大容量" class="headerlink" title="一个字符串类型的值存储的最大容量"></a>一个字符串类型的值存储的最大容量</h3><p>512M</p>
 <hr>
-<h4 id="redis插入大量数据"><a href="#redis插入大量数据" class="headerlink" title="redis插入大量数据"></a>redis插入大量数据</h4><p><code>redis2.6</code>开始<code>redis-cli</code>支持一种新的模式<code>pip mode</code>用于执行大量数据的插入。</p>
+<h3 id="redis插入大量数据"><a href="#redis插入大量数据" class="headerlink" title="redis插入大量数据"></a>redis插入大量数据</h3><p><code>redis2.6</code>开始<code>redis-cli</code>支持一种新的模式<code>pip mode</code>用于执行大量数据的插入。</p>
 <hr>
-<h4 id="异步队列"><a href="#异步队列" class="headerlink" title="异步队列"></a>异步队列</h4><p>用<code>list</code>保存数据，<code>RPUSH</code>生产消息，<code>LPOP</code>消费信息。<code>LPOP</code>无消息时，可以使用<code>BLPOP</code>，会一直阻塞直到消息的到来。</p>
+<h3 id="异步队列"><a href="#异步队列" class="headerlink" title="异步队列"></a>异步队列</h3><p>用<code>list</code>保存数据，<code>RPUSH</code>生产消息，<code>LPOP</code>消费信息。<code>LPOP</code>无消息时，可以使用<code>BLPOP</code>，会一直阻塞直到消息的到来。</p>
 <hr>
-<h4 id="延时队列"><a href="#延时队列" class="headerlink" title="延时队列"></a>延时队列</h4><p>使用<code>ZSet</code>，用时间戳作为<code>score</code>，消息内容作为<code>key</code>，调用<code>ZADD</code>命令生产消息，消费者使用<code>ZRANGEBYSCORE</code>获取n秒之前的数据做轮询处理。</p>
+<h3 id="延时队列"><a href="#延时队列" class="headerlink" title="延时队列"></a>延时队列</h3><p>使用<code>ZSet</code>，用时间戳作为<code>score</code>，消息内容作为<code>key</code>，调用<code>ZADD</code>命令生产消息，消费者使用<code>ZRANGEBYSCORE</code>获取n秒之前的数据做轮询处理。</p>
 <hr>
-<h4 id="Bitmaps"><a href="#Bitmaps" class="headerlink" title="Bitmaps"></a>Bitmaps</h4><p><code>redis</code>提供的<code>Bitmaps</code>可以实现对位的操作。<code>Bitmaps</code>本身不是一种数据结构，其本质就是字符串，但可以对字符串进行位操作。其设置命令为<code>SETBIT key offset value</code>，获取值命令为<code>GETBIT key offset</code>，获取指定范围内为1的个数的指令为<code>BITCOUNT key [start] [end]</code>，这里的<code>start</code>和<code>end</code>指的是字符串的起始和结束位置。</p>
+<h3 id="Bitmaps"><a href="#Bitmaps" class="headerlink" title="Bitmaps"></a>Bitmaps</h3><p><code>redis</code>提供的<code>Bitmaps</code>可以实现对位的操作。<code>Bitmaps</code>本身不是一种数据结构，其本质就是字符串，但可以对字符串进行位操作。其设置命令为<code>SETBIT key offset value</code>，获取值命令为<code>GETBIT key offset</code>，获取指定范围内为1的个数的指令为<code>BITCOUNT key [start] [end]</code>，这里的<code>start</code>和<code>end</code>指的是字符串的起始和结束位置。</p>
 <p>假设我们要存储每个用户每个月的登录天数就可以使用<code>Bitmaps</code>。利用位操作将登录日期对应的位的值设置为1即代表当天已登录。利用<code>Bitmaps</code>的好处就是占用的空间小，操作快。</p>
 
     </div>
@@ -672,7 +706,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#简述"><span class="nav-number">1.</span> <span class="nav-text">简述</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#redis优缺点"><span class="nav-number">2.</span> <span class="nav-text">redis优缺点</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#优点"><span class="nav-number">2.1.</span> <span class="nav-text">优点</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#缺点"><span class="nav-number">2.2.</span> <span class="nav-text">缺点</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#redis技术特点"><span class="nav-number">3.</span> <span class="nav-text">redis技术特点</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#redis数据类型"><span class="nav-number">4.</span> <span class="nav-text">redis数据类型</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#String"><span class="nav-number">4.1.</span> <span class="nav-text">String</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#数据结构"><span class="nav-number">4.1.1.</span> <span class="nav-text">数据结构</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#常见操作"><span class="nav-number">4.1.2.</span> <span class="nav-text">常见操作</span></a></li></ol></li><li class="nav-item nav-level-5"><a class="nav-link" href="#List"><span class="nav-number">4.2.</span> <span class="nav-text">List</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#数据结构-1"><span class="nav-number">4.2.1.</span> <span class="nav-text">数据结构</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#常见操作-1"><span class="nav-number">4.2.2.</span> <span class="nav-text">常见操作</span></a></li></ol></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Set"><span class="nav-number">4.3.</span> <span class="nav-text">Set</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#数据结构-2"><span class="nav-number">4.3.1.</span> <span class="nav-text">数据结构</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#常见操作-2"><span class="nav-number">4.3.2.</span> <span class="nav-text">常见操作</span></a></li></ol></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Hash"><span class="nav-number">4.4.</span> <span class="nav-text">Hash</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#数据结构-3"><span class="nav-number">4.4.1.</span> <span class="nav-text">数据结构</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#常见操作-3"><span class="nav-number">4.4.2.</span> <span class="nav-text">常见操作</span></a></li></ol></li><li class="nav-item nav-level-5"><a class="nav-link" href="#ZSet"><span class="nav-number">4.5.</span> <span class="nav-text">ZSet</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#数据结构-4"><span class="nav-number">4.5.1.</span> <span class="nav-text">数据结构</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#常见操作-4"><span class="nav-number">4.5.2.</span> <span class="nav-text">常见操作</span></a></li></ol></li><li class="nav-item nav-level-5"><a class="nav-link" href="#HyperLogLog"><span class="nav-number">4.6.</span> <span class="nav-text">HyperLogLog</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#BloomFilter"><span class="nav-number">4.7.</span> <span class="nav-text">BloomFilter</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#应用场景"><span class="nav-number">5.</span> <span class="nav-text">应用场景</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#持久化"><span class="nav-number">6.</span> <span class="nav-text">持久化</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#RDB-Redis-DataBase"><span class="nav-number">6.1.</span> <span class="nav-text">RDB(Redis DataBase)</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#AOF-Append-Only-File"><span class="nav-number">6.2.</span> <span class="nav-text">AOF(Append Only File)</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#过期键删除策略"><span class="nav-number">7.</span> <span class="nav-text">过期键删除策略</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#内存淘汰策略"><span class="nav-number">8.</span> <span class="nav-text">内存淘汰策略</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#全局的键空间选择性移除"><span class="nav-number">8.1.</span> <span class="nav-text">全局的键空间选择性移除</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#设置过期时间的键空间选择性移除"><span class="nav-number">8.2.</span> <span class="nav-text">设置过期时间的键空间选择性移除</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#线程模型"><span class="nav-number">9.</span> <span class="nav-text">线程模型</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#事务"><span class="nav-number">10.</span> <span class="nav-text">事务</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#三个阶段"><span class="nav-number">10.1.</span> <span class="nav-text">三个阶段</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#相关命令"><span class="nav-number">10.2.</span> <span class="nav-text">相关命令</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#集群"><span class="nav-number">11.</span> <span class="nav-text">集群</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#哨兵模式"><span class="nav-number">11.1.</span> <span class="nav-text">哨兵模式</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#集群模式工作原理"><span class="nav-number">11.2.</span> <span class="nav-text">集群模式工作原理</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#主从架构"><span class="nav-number">11.3.</span> <span class="nav-text">主从架构</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#原理"><span class="nav-number">11.3.1.</span> <span class="nav-text">原理</span></a></li></ol></li><li class="nav-item nav-level-5"><a class="nav-link" href="#分区"><span class="nav-number">11.4.</span> <span class="nav-text">分区</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#分布式"><span class="nav-number">12.</span> <span class="nav-text">分布式</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#分布式锁"><span class="nav-number">12.1.</span> <span class="nav-text">分布式锁</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#redlock"><span class="nav-number">12.2.</span> <span class="nav-text">redlock</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#缓存异常"><span class="nav-number">13.</span> <span class="nav-text">缓存异常</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#缓存雪崩"><span class="nav-number">13.1.</span> <span class="nav-text">缓存雪崩</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#解决方案"><span class="nav-number">13.1.1.</span> <span class="nav-text">解决方案</span></a></li></ol></li><li class="nav-item nav-level-5"><a class="nav-link" href="#缓存穿透"><span class="nav-number">13.2.</span> <span class="nav-text">缓存穿透</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#解决方案-1"><span class="nav-number">13.2.1.</span> <span class="nav-text">解决方案</span></a></li></ol></li><li class="nav-item nav-level-5"><a class="nav-link" href="#缓存击穿"><span class="nav-number">13.3.</span> <span class="nav-text">缓存击穿</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#解决方案-2"><span class="nav-number">13.3.1.</span> <span class="nav-text">解决方案</span></a></li></ol></li><li class="nav-item nav-level-5"><a class="nav-link" href="#缓存预热"><span class="nav-number">13.4.</span> <span class="nav-text">缓存预热</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#解决方案-3"><span class="nav-number">13.4.1.</span> <span class="nav-text">解决方案</span></a></li></ol></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#redis与memcached区别"><span class="nav-number">14.</span> <span class="nav-text">redis与memcached区别</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#双写数据一致性"><span class="nav-number">15.</span> <span class="nav-text">双写数据一致性</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#一个字符串类型的值存储的最大容量"><span class="nav-number">16.</span> <span class="nav-text">一个字符串类型的值存储的最大容量</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#redis插入大量数据"><span class="nav-number">17.</span> <span class="nav-text">redis插入大量数据</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#异步队列"><span class="nav-number">18.</span> <span class="nav-text">异步队列</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#延时队列"><span class="nav-number">19.</span> <span class="nav-text">延时队列</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Bitmaps"><span class="nav-number">20.</span> <span class="nav-text">Bitmaps</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#简述"><span class="nav-number">1.</span> <span class="nav-text">简述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#redis优缺点"><span class="nav-number">2.</span> <span class="nav-text">redis优缺点</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#优点"><span class="nav-number">2.1.</span> <span class="nav-text">优点</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#缺点"><span class="nav-number">2.2.</span> <span class="nav-text">缺点</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#redis技术特点"><span class="nav-number">3.</span> <span class="nav-text">redis技术特点</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#redis数据类型"><span class="nav-number">4.</span> <span class="nav-text">redis数据类型</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#String"><span class="nav-number">4.1.</span> <span class="nav-text">String</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#数据结构"><span class="nav-number">4.1.1.</span> <span class="nav-text">数据结构</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#常见操作"><span class="nav-number">4.1.2.</span> <span class="nav-text">常见操作</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#List"><span class="nav-number">4.2.</span> <span class="nav-text">List</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#数据结构-1"><span class="nav-number">4.2.1.</span> <span class="nav-text">数据结构</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#常见操作-1"><span class="nav-number">4.2.2.</span> <span class="nav-text">常见操作</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Set"><span class="nav-number">4.3.</span> <span class="nav-text">Set</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#数据结构-2"><span class="nav-number">4.3.1.</span> <span class="nav-text">数据结构</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#常见操作-2"><span class="nav-number">4.3.2.</span> <span class="nav-text">常见操作</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Hash"><span class="nav-number">4.4.</span> <span class="nav-text">Hash</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#数据结构-3"><span class="nav-number">4.4.1.</span> <span class="nav-text">数据结构</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#常见操作-3"><span class="nav-number">4.4.2.</span> <span class="nav-text">常见操作</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#ZSet"><span class="nav-number">4.5.</span> <span class="nav-text">ZSet</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#数据结构-4"><span class="nav-number">4.5.1.</span> <span class="nav-text">数据结构</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#redis-的-skiplist-和经典的有何不同？"><span class="nav-number">4.5.1.1.</span> <span class="nav-text">redis 的 skiplist 和经典的有何不同？</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#为什么使用skiplist而不是其他平衡树？"><span class="nav-number">4.5.1.2.</span> <span class="nav-text">为什么使用skiplist而不是其他平衡树？</span></a></li></ol></li><li class="nav-item nav-level-5"><a class="nav-link" href="#常见操作-4"><span class="nav-number">4.5.2.</span> <span class="nav-text">常见操作</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#HyperLogLog"><span class="nav-number">4.6.</span> <span class="nav-text">HyperLogLog</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#BloomFilter"><span class="nav-number">4.7.</span> <span class="nav-text">BloomFilter</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#应用场景"><span class="nav-number">5.</span> <span class="nav-text">应用场景</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#持久化"><span class="nav-number">6.</span> <span class="nav-text">持久化</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#RDB-Redis-DataBase"><span class="nav-number">6.1.</span> <span class="nav-text">RDB(Redis DataBase)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#AOF-Append-Only-File"><span class="nav-number">6.2.</span> <span class="nav-text">AOF(Append Only File)</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#过期键删除策略"><span class="nav-number">7.</span> <span class="nav-text">过期键删除策略</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#内存淘汰策略"><span class="nav-number">8.</span> <span class="nav-text">内存淘汰策略</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#全局的键空间选择性移除"><span class="nav-number">8.1.</span> <span class="nav-text">全局的键空间选择性移除</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#设置过期时间的键空间选择性移除"><span class="nav-number">8.2.</span> <span class="nav-text">设置过期时间的键空间选择性移除</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#线程模型"><span class="nav-number">9.</span> <span class="nav-text">线程模型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#事务"><span class="nav-number">10.</span> <span class="nav-text">事务</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#三个阶段"><span class="nav-number">10.1.</span> <span class="nav-text">三个阶段</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#相关命令"><span class="nav-number">10.2.</span> <span class="nav-text">相关命令</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#集群"><span class="nav-number">11.</span> <span class="nav-text">集群</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#哨兵模式"><span class="nav-number">11.1.</span> <span class="nav-text">哨兵模式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#集群模式工作原理"><span class="nav-number">11.2.</span> <span class="nav-text">集群模式工作原理</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#主从架构"><span class="nav-number">11.3.</span> <span class="nav-text">主从架构</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#原理"><span class="nav-number">11.3.1.</span> <span class="nav-text">原理</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#分区"><span class="nav-number">11.4.</span> <span class="nav-text">分区</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#分布式"><span class="nav-number">12.</span> <span class="nav-text">分布式</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#分布式锁"><span class="nav-number">12.1.</span> <span class="nav-text">分布式锁</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#redlock"><span class="nav-number">12.2.</span> <span class="nav-text">redlock</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#缓存异常"><span class="nav-number">13.</span> <span class="nav-text">缓存异常</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#缓存雪崩"><span class="nav-number">13.1.</span> <span class="nav-text">缓存雪崩</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#解决方案"><span class="nav-number">13.1.1.</span> <span class="nav-text">解决方案</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#缓存穿透"><span class="nav-number">13.2.</span> <span class="nav-text">缓存穿透</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#解决方案-1"><span class="nav-number">13.2.1.</span> <span class="nav-text">解决方案</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#缓存击穿"><span class="nav-number">13.3.</span> <span class="nav-text">缓存击穿</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#解决方案-2"><span class="nav-number">13.3.1.</span> <span class="nav-text">解决方案</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#缓存预热"><span class="nav-number">13.4.</span> <span class="nav-text">缓存预热</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#解决方案-3"><span class="nav-number">13.4.1.</span> <span class="nav-text">解决方案</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#redis与memcached区别"><span class="nav-number">14.</span> <span class="nav-text">redis与memcached区别</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#双写数据一致性"><span class="nav-number">15.</span> <span class="nav-text">双写数据一致性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#一个字符串类型的值存储的最大容量"><span class="nav-number">16.</span> <span class="nav-text">一个字符串类型的值存储的最大容量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#redis插入大量数据"><span class="nav-number">17.</span> <span class="nav-text">redis插入大量数据</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#异步队列"><span class="nav-number">18.</span> <span class="nav-text">异步队列</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#延时队列"><span class="nav-number">19.</span> <span class="nav-text">延时队列</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Bitmaps"><span class="nav-number">20.</span> <span class="nav-text">Bitmaps</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
