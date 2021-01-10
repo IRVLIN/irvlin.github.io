@@ -2464,7 +2464,9 @@
 <hr>
 <h3 id="Bitmaps"><a href="#Bitmaps" class="headerlink" title="Bitmaps"></a>Bitmaps</h3><p><code>redis</code>提供的<code>Bitmaps</code>可以实现对位的操作。<code>Bitmaps</code>本身不是一种数据结构，其本质就是字符串，但可以对字符串进行位操作。其设置命令为<code>SETBIT key offset value</code>，获取值命令为<code>GETBIT key offset</code>，获取指定范围内为1的个数的指令为<code>BITCOUNT key [start] [end]</code>，这里的<code>start</code>和<code>end</code>指的是字符串的起始和结束位置。</p>
 <p>假设我们要存储每个用户每个月的登录天数就可以使用<code>Bitmaps</code>。利用位操作将登录日期对应的位的值设置为1即代表当天已登录。利用<code>Bitmaps</code>的好处就是占用的空间小，操作快。</p>
-]]></content>
+<hr>
+<h3 id="SCAN"><a href="#SCAN" class="headerlink" title="SCAN"></a>SCAN</h3><hr>
+<h3 id="LRU"><a href="#LRU" class="headerlink" title="LRU"></a>LRU</h3>]]></content>
       <categories>
         <category>redis</category>
       </categories>
