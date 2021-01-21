@@ -2086,7 +2086,7 @@
   <entry>
     <title>redis笔记</title>
     <url>/2020/12/12/redis%E7%AC%94%E8%AE%B0/</url>
-    <content><![CDATA[<p>redis学习笔记</p>
+    <content><![CDATA[<p>redis 学习笔记</p>
 <a id="more"></a>
 
 <h3 id="简述"><a href="#简述" class="headerlink" title="简述"></a>简述</h3><p><code>redis(remote dictionary server)</code>是一个C语言编写的，开源的高性能非关系型的键值对数据库。</p>
@@ -3222,6 +3222,20 @@
       </categories>
       <tags>
         <tag>RabbitMQ</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>SpringCloud笔记</title>
+    <url>/2021/01/21/SpringCloud%E7%AC%94%E8%AE%B0/</url>
+    <content><![CDATA[<p>SpringCloud 笔记</p>
+<a id="more"></a>
+
+]]></content>
+      <categories>
+        <category>SpringCloud</category>
+      </categories>
+      <tags>
+        <tag>SpringCloud</tag>
       </tags>
   </entry>
 </search>
