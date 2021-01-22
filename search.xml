@@ -3230,6 +3230,138 @@
     <content><![CDATA[<p>SpringCloud 笔记</p>
 <a id="more"></a>
 
+<h3 id="微服务架构"><a href="#微服务架构" class="headerlink" title="微服务架构"></a>微服务架构</h3><h4 id="为什么需要微服务"><a href="#为什么需要微服务" class="headerlink" title="为什么需要微服务"></a>为什么需要微服务</h4><p>在没有微服务架构之前，大多数应用都是采用单体架构，把开发好的项目打包，然后发布到<code>tomcat</code>之类的容器之中运行。但是单体架构存在诸多问题：</p>
+<ul>
+<li>复杂性高：对于一个大型的单体项目来说，整个项目的模块非常多，模块的边界模糊，依赖的关系复杂，代码的质量也是参差不齐，导致维护起来非常困难。</li>
+<li>部署效率低：对于单体应用，每次对于项目功能的修复、变更，都需要重新部署整个项目。而随着代码的增多，构建以及部署的时间肯定会增加的，这导致部署的效率很低。</li>
+<li>可靠性低：对于单体应用，如果某个服务出现了<code>bug</code>，可能会导致整个应用的崩溃。</li>
+<li>扩展能力低：单体的应用只能作为整体进行扩展。比如，某些功能需要大量的计算，这就需要比较强劲的<code>CPU</code>；而另一些服务可能需要比较大的内存。如果这些服务部署在一起，就不得不对硬件做出妥协。</li>
+<li>技术创新难：作为单体应用，使用的技术必然是统一的，每个开发成员都需要使用相同的开发语言和框架，如果要引入新的技术会变得很困难。</li>
+</ul>
+<p>为了解决以上的问题，引入了微服务架构。</p>
+<h4 id="什么是微服务"><a href="#什么是微服务" class="headerlink" title="什么是微服务"></a>什么是微服务</h4><p>微服务是一种将一个单一应用程序拆分成一组小型服务的方法，拆分完成后，每个服务都运行在独立的进程中，服务间的通信采用轻量级通信机制，例如<code>HTTP</code>、<code>RPC</code>。每个服务都围绕具体的业务进行构建，例如一个电商系统，会分为订单服务、物流服务、支付服务、会员服务等等，每个服务都会被拆分成单独的应用，独立部署到生产环境中。这些服务共用一个最小型的集中式管理。每个服务都可以采用不同的语言进行开发，使用不同的数据存储技术。</p>
+<hr>
+<h3 id="SpringCloud-介绍"><a href="#SpringCloud-介绍" class="headerlink" title="SpringCloud 介绍"></a>SpringCloud 介绍</h3><p><code>SpringCloud</code>是微服务思想在<code>Java</code>语言的具体实现。它提供了组件的一键式启动和部署能力，极大简化了微服务架构的落地。<code>SpringCloud</code>内部包含了许多框架，这些框架相互协作，共同来构建分布式系统。</p>
+<h4 id="核心特性"><a href="#核心特性" class="headerlink" title="核心特性"></a>核心特性</h4><ul>
+<li>服务注册与发现</li>
+<li>负载均衡</li>
+<li>服务间调用</li>
+<li>容错、服务降级、断路器</li>
+<li>消息总线</li>
+<li>分布式配置中心</li>
+<li>链路器</li>
+</ul>
+<h4 id="版本"><a href="#版本" class="headerlink" title="版本"></a>版本</h4><p><code>SpringCloud</code>的版本是根据伦敦地铁站的名字命名的。<code>A(Angel)</code>、<code>B(Brixton)</code>、<code>C(Camden)</code>…目前已经到了<code>H(Hoxton)</code>。而版本后面的还带着小版本。</p>
+<ul>
+<li><code>M</code>：是里程碑<code>milestone</code>的缩写。</li>
+<li><code>RC</code>：是<code>Release Candidate</code>的缩写，表示该版本处于候选状态。</li>
+<li><code>SR</code>：是<code>Service Release</code>的缩写，是正式稳定版。相当于<code>GA(Generally Avaliable)</code>版本。</li>
+<li><code>SNAPSHOT</code>：快照版本。</li>
+</ul>
+<hr>
+<h3 id="SpringCloud-体系"><a href="#SpringCloud-体系" class="headerlink" title="SpringCloud 体系"></a>SpringCloud 体系</h3><h4 id="组件"><a href="#组件" class="headerlink" title="组件"></a>组件</h4><ul>
+<li><code>SpringCloud Netflix</code>：<code>SpringCloud</code>成立之初立下了汗马功劳。现在已经断更了。</li>
+<li><code>SpringCloud Config</code>：分布式配置中心。利用<code>git</code>、<code>svn</code>集中管理项目的配置文件。</li>
+<li><code>SpringCloud Bus</code>：消息总线。构建消息驱动的微服务，也可以用来做状态管理。</li>
+<li><code>SpringCloud Cloudfoundry</code>：集成应用程序。</li>
+<li><code>SpringCloud Consul</code>：服务注册发现。</li>
+<li><code>SpringCloud Security</code>：在<code>Zuul</code>代理中，为<code>Oauth2</code>客户端认证提供支持。</li>
+<li><code>SpringCloud Stream</code>：基于<code>Redis</code>、<code>RabbitMQ</code>、<code>Kafka</code>实现的消息微服务。</li>
+<li><code>SpringCloud AWS</code>：快速集成亚马逊云服务。</li>
+<li><code>SpringCloud Openfeign</code>：提供<code>OpenFeign</code>集成到<code>SpringBoot</code>应用中的方式，主要解决微服务之间的调用问题。</li>
+<li><code>SpringCloud Contract</code>：消费者驱动的、面向<code>Java</code>的契约框架。</li>
+<li><code>SpringCloud Zookeeper</code>：基于<code>Apache Zookeeper</code>的服务注册和发现。</li>
+<li><code>SpringCloud Data Flow</code>：在一个结构化的平台上，组成数据微服务。</li>
+<li><code>SpringCLoud Gateway</code>：网关服务。</li>
+<li><code>SpringCloud Kubernetes</code>：<code>SpringCloud</code>提供的针对<code>Kubernetes</code>的支持。</li>
+<li><code>SpringCloud Task</code>：短生命周期的微服务。</li>
+</ul>
+<hr>
+<h3 id="Eureka"><a href="#Eureka" class="headerlink" title="Eureka"></a>Eureka</h3><p><code>Eureka</code>是<code>SpringCloud</code>的一个注册中心，类似于<code>Zookeeper</code>。</p>
+<h4 id="注册中心"><a href="#注册中心" class="headerlink" title="注册中心"></a>注册中心</h4><p>什么是注册中心？为什么需要注册中心？</p>
+<p>单体应用中，所有业务都集中在一起，用户从浏览器发送请求，直接由前端发起请求给后端，后端处理业务逻辑返回结果给前端做出响应。这是不需要注册中心的。</p>
+<p>但如果将系统拆分为多个服务模块，每个模块独立运行，这时就需要模块之间相互协作，互相调用。模块之间的调用存在强耦合的问题。比如<code>A</code>调用<code>B</code>，那么就需要在<code>A</code>中写上<code>B</code>的地址，如果<code>B</code>的地址改了<code>A</code>也要改，如果<code>B</code>进行集群化部署的话<code>A</code>也要修改。</p>
+<p>为了解决高耦合的问题，引入了注册中心。</p>
+<h4 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h4><p><code>Eureka</code>是<code>Netflix</code>公司提供的一款服务注册中心，基于<code>REST</code>实现服务的注册和发现。</p>
+<p><code>Eureka</code>由服务端和客户端构成。服务端就是注册中心，用来接收服务的注册，客户端是<code>Java</code>客户端，用于注册并可以实现负载均衡等等功能。</p>
+<h4 id="步骤"><a href="#步骤" class="headerlink" title="步骤"></a>步骤</h4><p><img src="eureka.png" alt=""></p>
+<ol>
+<li>服务提供者将服务注册到注册中心。</li>
+<li>服务消费者通过注册中心查找服务。</li>
+<li>服务消费者查找到服务后进行调用，无需硬编码<code>url</code>。</li>
+<li>服务消费者与注册中心保持心跳连接，一旦服务提供者的地址发生变更，注册中心就会通知服务消费者。</li>
+</ol>
+<h4 id="基本搭建"><a href="#基本搭建" class="headerlink" title="基本搭建"></a>基本搭建</h4><p><code>Eureka</code>是使用<code>Java</code>开发的，<code>SpringCloud</code>使用了<code>SpringBoot</code>对<code>Eureka</code>进行了封装，只要引入<code>spring-cloud-starter-netflix-eureka-server</code>依赖即可使用。</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.cloud<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-cloud-starter-netflix-eureka-server<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>在项目启动类添加注解<code>@EnableEurekaServer</code>标记该项目是<code>Eureka server</code>。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@SpringBootApplication</span></span><br><span class="line"><span class="meta">@EnableEurekaServer</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">EurekaApplication</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        SpringApplication.run(EurekaApplication<span class="class">.<span class="keyword">class</span>, <span class="title">args</span>)</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>添加配置信息</p>
+<figure class="highlight properties"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 服务名</span></span><br><span class="line"><span class="meta">spring.application.name</span>=<span class="string">eureka</span></span><br><span class="line"><span class="comment"># 端口</span></span><br><span class="line"><span class="meta">server.port</span>=<span class="string">1111</span></span><br><span class="line"><span class="comment"># 当前项目不注册到注册中心上</span></span><br><span class="line"><span class="meta">eureka.client.register-with-eureka</span>=<span class="string">false</span></span><br><span class="line"><span class="comment"># 不从 Eureka Server 上获取注册信息</span></span><br><span class="line"><span class="meta">eureka.client.fetch-registry</span>=<span class="string">false</span></span><br></pre></td></tr></table></figure>
+
+<p>浏览器输入<code>localhost:1111</code>即可看到<code>Eureka</code>页面。</p>
+<p><img src="eureka_server.png" alt=""></p>
+<h4 id="集群搭建"><a href="#集群搭建" class="headerlink" title="集群搭建"></a>集群搭建</h4><p>使用了注册中心后，所有的服务都会通过注册中心进行数据通信，那么注册中心的可用性就很重要了，如果挂了那就会影响到整个系统。所以<code>Eureka</code>一般是以集群的方式部署的。</p>
+<p><code>Eureka</code>集群，实际上就是启动多个<code>Eureka</code>实例，实例之间相互注册、同步数据，共同组成一个<code>Eureka</code>集群。</p>
+<p>我们搭建两个<code>Eureka</code>实例，添加两个配置文件。</p>
+<figure class="highlight properties"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 服务名</span></span><br><span class="line"><span class="meta">spring.application.name</span>=<span class="string">eureka</span></span><br><span class="line"><span class="comment"># 端口</span></span><br><span class="line"><span class="meta">server.port</span>=<span class="string">1111</span></span><br><span class="line"><span class="comment"># 实例名</span></span><br><span class="line"><span class="meta">eureka.instance.hostname</span>=<span class="string">eurekaA</span></span><br><span class="line"><span class="comment"># A 注册到 B</span></span><br><span class="line"><span class="meta">eureka.client.register-with-eureka</span>=<span class="string">true</span></span><br><span class="line"><span class="meta">eureka.client.service-url.defaultZone</span>=<span class="string">http://eurekaB:1112/eureka</span></span><br><span class="line"><span class="meta">eureka.client.fetch-registry</span>=<span class="string">true</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight properties"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 服务名</span></span><br><span class="line"><span class="meta">spring.application.name</span>=<span class="string">eureka</span></span><br><span class="line"><span class="comment"># 端口</span></span><br><span class="line"><span class="meta">server.port</span>=<span class="string">1112</span></span><br><span class="line"><span class="comment"># 实例名</span></span><br><span class="line"><span class="meta">eureka.instance.hostname</span>=<span class="string">eurekaB</span></span><br><span class="line"><span class="comment"># B 注册到 A</span></span><br><span class="line"><span class="meta">eureka.client.register-with-eureka</span>=<span class="string">true</span></span><br><span class="line"><span class="meta">eureka.client.service-url.defaultZone</span>=<span class="string">http://eurekaA:1111/eureka</span></span><br><span class="line"><span class="meta">eureka.client.fetch-registry</span>=<span class="string">true</span></span><br></pre></td></tr></table></figure>
+
+<p>在<code>hosts</code>文件中添加<code>127.0.0.1 eurakaA eurekaB</code>，使得主机名可以映射为<code>IP</code>地址。</p>
+<p>用<code>maven</code>打包项目，通过命令行启动两个实例。最后在浏览器输入<code>1111</code>和<code>1112</code>端口，就可以看见集群已经搭建成功了。</p>
+<h4 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h4><p><code>Eureka</code>本身可以分为<code>Eureka Server</code>和<code>Eureka Client</code>。</p>
+<h5 id="Eureka-Server"><a href="#Eureka-Server" class="headerlink" title="Eureka Server"></a>Eureka Server</h5><p><code>Eureka Server</code>主要提供三个功能：</p>
+<ul>
+<li>服务注册，所有的服务都注册到<code>Eureka Server</code>上。</li>
+<li>提供注册表，注册表就是所有注册到<code>Eureka Server</code>上的服务的列表，<code>Eureka Client</code>在调用服务时，需要获取这个注册表。注册表会进行缓存，如果缓存失效，就会获取最新的注册表。</li>
+<li>同步状态，<code>Eureka Client</code>通过注册、心跳等机制，和<code>Eureka Server</code>同步当前客户端的状态。</li>
+</ul>
+<h5 id="Eureka-Client"><a href="#Eureka-Client" class="headerlink" title="Eureka Client"></a>Eureka Client</h5><p><code>Eureka Client</code>用于简化服务和<code>Eureka Server</code>之间的交互。<code>Eureka Client</code>会自动拉取、更新和缓存<code>Eureka Server</code>中的信息，即使<code>Eureka Server</code>所有节点都宕机了，<code>Eureka Client</code>依然能够获取想要调用的服务的地址，不过这个地址可能不是准确的。</p>
+<h6 id="服务注册"><a href="#服务注册" class="headerlink" title="服务注册"></a>服务注册</h6><p>服务提供者将自己的服务注册到注册中心，提供自身的元数据信息，例如<code>IP</code>地址、端口、名称、运行状态等等。</p>
+<h6 id="服务续约"><a href="#服务续约" class="headerlink" title="服务续约"></a>服务续约</h6><p><code>Eureka Client</code>注册到<code>Eureka Server</code>上，默认情况下每<strong>30秒</strong>就要向<code>Eureka Server</code>发送一条心跳消息，告诉<code>Eureka Server</code>自己还在运行。如果<code>Eureka Server</code>连续<strong>90秒</strong>都没有收到<code>Eureka Client</code>的续约消息，会认为它已经掉线了，将其从注册表中移除。</p>
+<h6 id="服务下线"><a href="#服务下线" class="headerlink" title="服务下线"></a>服务下线</h6><p><code>Eureka Client</code>下线时会主动发送消息告诉<code>Eureka Server</code>。</p>
+<h6 id="获取注册表信息"><a href="#获取注册表信息" class="headerlink" title="获取注册表信息"></a>获取注册表信息</h6><p><code>Eureka Client</code>从<code>Eureka Server</code>获取注册表信息缓存在本地。客户端需要调用服务时会从注册表获取对应的<code>IP</code>地址、端口等信息。缓存的注册表信息会定期更新，如果<code>Eureka Server</code>和本缓存的注册表信息不同的话<code>Eureka Client</code>会自动处理。在配置文件中可以通过</p>
+<figure class="highlight properties"><table><tr><td class="code"><pre><span class="line"><span class="meta">eureka.client.fetch-registry</span>=<span class="string">true</span></span><br></pre></td></tr></table></figure>
+
+<p>来配置是否允许客户端获取注册表信息进行缓存，通过</p>
+<figure class="highlight properties"><table><tr><td class="code"><pre><span class="line"><span class="meta">eureka.client.registry-fetch-interval-seconds</span>=<span class="string">30</span></span><br></pre></td></tr></table></figure>
+
+<p>来配置更新注册表的时间间隔，默认为<strong>30秒</strong>。</p>
+<h4 id="集群原理"><a href="#集群原理" class="headerlink" title="集群原理"></a>集群原理</h4><p><img src="eureka%E9%9B%86%E7%BE%A4.png" alt=""></p>
+<p><code>Eureka Server</code>之间通过<code>Replicate</code>同步数据，它们之间不区分主从节点，通过<code>service-url</code>相互注册，构成集群，提高节点的可用性。如果某个节点宕机了，<code>Eureka Client</code>会自动切换到新的<code>Eureka Server</code>上，每个<code>Eureka Server</code>节点都会相互同步数据。<code>Eureka Server</code>的连接方式也可以是单线的，例如<code>A -&gt; B -&gt; C</code>，这样<code>A</code>和<code>C</code>之间也可以同步数据。但是一般不这样写。</p>
+<h4 id="分区"><a href="#分区" class="headerlink" title="分区"></a>分区</h4><p><code>Eureka</code>提供了<code>region</code>和<code>zone</code>进行分区。</p>
+<ul>
+<li><code>region</code>：地理分区，比如亚洲地区，或者东北地区，再或者北京、上海地区等等，没有具体大小的限制。</li>
+<li><code>zone</code>：某个<code>region</code>内的具体机房。</li>
+</ul>
+<p>假设有一个<code>region</code>，底下有两个<code>zone</code>。每个<code>zone</code>有自己的注册中心和服务提供者。现在在<code>zone1</code>下创建消费者调用服务，则会优先调用<code>zone1</code>下的服务提供者提供的服务。</p>
+<h4 id="服务注册-1"><a href="#服务注册-1" class="headerlink" title="服务注册"></a>服务注册</h4><p>把一个服务注册到注册中心上，当其他服务需要调用该服务时，就可以从注册中心上查询该服务的信息。</p>
+<p>创建一个<code>provider</code>。首先添加<code>Eureka Client</code>和<code>web</code>依赖。</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.cloud<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-cloud-starter-netflix-eureka-client<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-web<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>配置注册地址</p>
+<figure class="highlight properties"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 服务名</span></span><br><span class="line"><span class="meta">spring.application.name</span>=<span class="string">provider</span></span><br><span class="line"><span class="comment"># 端口</span></span><br><span class="line"><span class="meta">server.port</span>=<span class="string">1113</span></span><br><span class="line"><span class="comment"># 注册地址</span></span><br><span class="line"><span class="meta">eureka.client.service-url.defaultZone</span>=<span class="string">http://localhost:1111/eureka</span></span><br></pre></td></tr></table></figure>
+
+<p>最后访问<code>localhost:1111</code>就可以看到注册信息了。</p>
+<h4 id="服务消费"><a href="#服务消费" class="headerlink" title="服务消费"></a>服务消费</h4><p>在<code>provider</code>中提供一个服务。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HelloController</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Value</span>(<span class="string">"$&#123;server.port&#125;"</span>)</span><br><span class="line">    Integer port;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@GetMapping</span>(<span class="string">"/hello/&#123;name&#125;"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">hello</span><span class="params">(@PathVariable String name)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"hello "</span> + name + <span class="string">": "</span> + port + <span class="string">" "</span> + <span class="keyword">new</span> Date();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>接着创建一个<code>consumer</code>。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">UserHelloController</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> DiscoveryClient discoveryClient;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setDiscoveryClient</span><span class="params">(DiscoveryClient discoveryClient)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.discoveryClient = discoveryClient;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@GetMapping</span>(<span class="string">"/hello/&#123;name&#125;"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">hello</span><span class="params">(@PathVariable String name)</span> </span>&#123;</span><br><span class="line">        List&lt;ServiceInstance&gt; list = discoveryClient.getInstances(<span class="string">"provider"</span>);</span><br><span class="line">        ServiceInstance instance = list.get(<span class="number">0</span>);</span><br><span class="line">        String host = instance.getHost();</span><br><span class="line">        <span class="keyword">int</span> port = instance.getPort();</span><br><span class="line">        String path = <span class="string">"http://"</span> + host + <span class="string">":"</span> + port + <span class="string">"/hello/"</span> + name;</span><br><span class="line">        HttpURLConnection conn = <span class="keyword">null</span>;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            URL url = <span class="keyword">new</span> URL(path);</span><br><span class="line">            conn = ((HttpURLConnection) url.openConnection());</span><br><span class="line">            <span class="keyword">if</span> (conn.getResponseCode() == <span class="number">200</span>) &#123;</span><br><span class="line">                BufferedReader br = <span class="keyword">new</span> BufferedReader(<span class="keyword">new</span> InputStreamReader(conn.getInputStream()));</span><br><span class="line">                <span class="keyword">return</span> br.readLine();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"error"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>配置</p>
+<figure class="highlight properties"><table><tr><td class="code"><pre><span class="line"><span class="meta">spring.application.name</span>=<span class="string">consumer</span></span><br><span class="line"><span class="meta">server.port</span>=<span class="string">1115</span></span><br><span class="line"><span class="meta">eureka.client.service-url.defaultZone</span>=<span class="string">http://localhost:1111/eureka</span></span><br></pre></td></tr></table></figure>
+
+<p>访问<code>localhost:1115/hello/XXX</code>可以看到<code>hello XXX: 1113</code>。说明调用了<code>provider</code>提供的服务。</p>
+<p>这里利用了<code>DiscoveryClient</code>类通过注册的服务名称获取服务的信息，然后拼接成<code>URL</code>地址就可以访问了。这样解决了硬编码<code>URL</code>的问题，如果服务提供者的地址发生了变化也依然可以访问到。</p>
+<h5 id="集群化部署-provider"><a href="#集群化部署-provider" class="headerlink" title="集群化部署 provider"></a>集群化部署 provider</h5><p>前面只部署了一个服务提供者，不能保证高可用性，所以采用集群化部署，通过运行时指定端口就可以实现注册多个实例。</p>
+<p>这里采用<code>1113</code>和<code>1114</code>端口部署。运行发现其中一个端口会一直为我们提供服务，如果把这个端口的服务下线，我们依然可以享受到这个服务，只不过提供者的端口变成了另一个。</p>
+<p>这是因为<code>ServiceInstance instance = list.get(0);</code>始终获取的都是第一个实例。如果要实现<strong>负载均衡</strong>，可以这样：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">int</span> cnt = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line"><span class="meta">@GetMapping</span>(<span class="string">"/hello/&#123;name&#125;"</span>)</span><br><span class="line"><span class="function"><span class="keyword">public</span> String <span class="title">hello</span><span class="params">(@PathVariable String name)</span> </span>&#123;</span><br><span class="line">    List&lt;ServiceInstance&gt; list = discoveryClient.getInstances(<span class="string">"provider"</span>);</span><br><span class="line">    <span class="comment">// 对服务列表长度取余</span></span><br><span class="line">    ServiceInstance instance = list.get((cnt++) % list.size());</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>相当于自己实现了线性负载均衡的功能。</p>
 ]]></content>
       <categories>
         <category>SpringCloud</category>
