@@ -4315,4 +4315,161 @@
         <tag>SpringCloud</tag>
       </tags>
   </entry>
+  <entry>
+    <title>Java IO</title>
+    <url>/2021/02/03/Java-IO/</url>
+    <content><![CDATA[<p>Java IO笔记</p>
+<a id="more"></a>
+
+<h3 id="Java-IO"><a href="#Java-IO" class="headerlink" title="Java IO"></a>Java IO</h3><h4 id="Java-IO分类"><a href="#Java-IO分类" class="headerlink" title="Java IO分类"></a>Java IO分类</h4><p><code>IO</code>指的是<code>Input/Output</code>，也就是输入和输出。</p>
+<ul>
+<li><code>Input</code>：从外部把数据读入内存。例如：硬盘、网络、<code>USB</code>等等。</li>
+<li><code>Output</code>：从内存中把数据输出到外部。同样的，可以输出到硬盘、网络、<code>USB</code>等等。</li>
+</ul>
+<p>从数据传输的方式来看，可以将<code>IO</code>分为<strong>字节流</strong>和<strong>字符流</strong>。<code>Java</code>中字节流以字节为单位传输数据，字符流则是以字符（根据编码的不同对应的字节也不同）为单位。</p>
+<p><img src="%E5%AD%97%E8%8A%82%E6%B5%81.png" alt=""></p>
+<p><img src="%E5%AD%97%E7%AC%A6%E6%B5%81.png" alt=""></p>
+<p>将字符转换为字节就称之为<strong>编码</strong>，反之称之为<strong>解码</strong>。如果编码和解码使用了不同的编码方式，那么就会出现<strong>乱码</strong>的情况。</p>
+<p>从数据来源的角度来看，<code>IO</code>可以分为以下几类：</p>
+<p><img src="IO%E5%88%86%E7%B1%BB.png" alt=""></p>
+<h4 id="实战"><a href="#实战" class="headerlink" title="实战"></a>实战</h4><h5 id="File类"><a href="#File类" class="headerlink" title="File类"></a>File类</h5><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 递归读取一个目录下所有文件</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">listAllFiles</span><span class="params">(File dir)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (dir == <span class="keyword">null</span> || !dir.exists()) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> Exception(<span class="string">"input path is null or doesn't exist"</span>);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (dir.isFile()) &#123;</span><br><span class="line">        System.out.println(dir.getName());</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">for</span> (File f : dir.listFiles()) &#123;</span><br><span class="line">            listAllFiles(f);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h5 id="字节流类"><a href="#字节流类" class="headerlink" title="字节流类"></a>字节流类</h5><h6 id="FileInputStream"><a href="#FileInputStream" class="headerlink" title="FileInputStream"></a>FileInputStream</h6><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">    File file = <span class="keyword">new</span> File(<span class="string">"test.txt"</span>);</span><br><span class="line">    InputStream is = <span class="keyword">new</span> FileInputStream(file);</span><br><span class="line">    StringBuilder sb = <span class="keyword">new</span> StringBuilder();</span><br><span class="line">    <span class="keyword">int</span> cnt;</span><br><span class="line">    <span class="comment">// 每次读取一个字节</span></span><br><span class="line">    <span class="keyword">while</span> ((cnt = is.read()) != -<span class="number">1</span>) &#123;</span><br><span class="line">        sb.append((<span class="keyword">char</span>) cnt);</span><br><span class="line">    &#125;</span><br><span class="line">    System.out.println(sb.toString());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>以上代码可以完成对<code>test.txt</code>文件的读取。但是，这样效率太低，每次只从文件中读取一个字节，<code>IO</code>次数太多，效率低。所以可以用缓冲区一次多读一些字节。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">    File file = <span class="keyword">new</span> File(<span class="string">"test.txt"</span>);</span><br><span class="line">    InputStream is = <span class="keyword">new</span> FileInputStream(file);</span><br><span class="line">    <span class="keyword">byte</span>[] buff = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">1024</span>];</span><br><span class="line">    StringBuilder sb = <span class="keyword">new</span> StringBuilder();</span><br><span class="line">    <span class="keyword">int</span> cnt;</span><br><span class="line">    <span class="comment">// 每次读取1024字节</span></span><br><span class="line">    <span class="keyword">while</span> ((cnt = is.read(buff)) != -<span class="number">1</span>) &#123;</span><br><span class="line">        sb.append(<span class="keyword">new</span> String(buff, <span class="number">0</span> ,cnt));</span><br><span class="line">    &#125;</span><br><span class="line">    System.out.println(sb.toString());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h6 id="BufferedInputStream"><a href="#BufferedInputStream" class="headerlink" title="BufferedInputStream"></a>BufferedInputStream</h6><p>我们还可以利用<code>BufferedInputStream</code>继续优化。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">    File file = <span class="keyword">new</span> File(<span class="string">"test.txt"</span>);</span><br><span class="line">    <span class="comment">// 使用了缓冲区，默认大小为8192字节，也就是说会一次性读取8kb的数据到内存中，进一步减少了与磁盘的IO次数。</span></span><br><span class="line">    InputStream is = <span class="keyword">new</span> BufferedInputStream(<span class="keyword">new</span> FileInputStream(file), <span class="number">8192</span>);</span><br><span class="line">    <span class="keyword">byte</span>[] buff = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">1024</span>];</span><br><span class="line">    StringBuilder sb = <span class="keyword">new</span> StringBuilder();</span><br><span class="line">    <span class="keyword">int</span> cnt;</span><br><span class="line">    <span class="keyword">while</span> ((cnt = is.read(buff)) != -<span class="number">1</span>) &#123;</span><br><span class="line">        sb.append(<span class="keyword">new</span> String(buff, <span class="number">0</span> ,cnt));</span><br><span class="line">    &#125;</span><br><span class="line">    System.out.println(sb.toString());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h5 id="字符流类"><a href="#字符流类" class="headerlink" title="字符流类"></a>字符流类</h5><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 按行读取一个文件</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">readFileByLine</span><span class="params">(String path)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">    FileReader reader = <span class="keyword">new</span> FileReader(path);</span><br><span class="line">    BufferedReader br = <span class="keyword">new</span> BufferedReader(reader);</span><br><span class="line">    String line;</span><br><span class="line">    <span class="keyword">while</span> ((line = br.readLine()) != <span class="keyword">null</span>) &#123;</span><br><span class="line">        System.out.println(line);</span><br><span class="line">    &#125;</span><br><span class="line">    br.close();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h5 id="Socket"><a href="#Socket" class="headerlink" title="Socket"></a>Socket</h5><p><code>server</code></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Server</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        ServerSocket server = <span class="keyword">new</span> ServerSocket(<span class="number">8080</span>);</span><br><span class="line">        Socket socket;</span><br><span class="line">        InputStream is;</span><br><span class="line">        <span class="keyword">byte</span>[] buff = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">1024</span>];</span><br><span class="line">        <span class="keyword">int</span> cnt;</span><br><span class="line">        <span class="keyword">while</span> (!Thread.currentThread().isInterrupted()) &#123;</span><br><span class="line">            socket = server.accept();</span><br><span class="line">            is = socket.getInputStream();</span><br><span class="line">            StringBuilder sb = <span class="keyword">new</span> StringBuilder();</span><br><span class="line">            <span class="keyword">while</span> ((cnt = is.read(buff)) != -<span class="number">1</span>) &#123;</span><br><span class="line">                sb.append(<span class="keyword">new</span> String(buff, <span class="number">0</span> ,cnt));</span><br><span class="line">            &#125;</span><br><span class="line">            System.out.println(sb.toString());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>client</code></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Client</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">        Socket socket = <span class="keyword">new</span> Socket(<span class="string">"localhost"</span>, <span class="number">8080</span>);</span><br><span class="line">        OutputStream os = socket.getOutputStream();</span><br><span class="line">        os.write(<span class="string">"hello world"</span>.getBytes());</span><br><span class="line">        os.close();</span><br><span class="line">        socket.close();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h5 id="URL"><a href="#URL" class="headerlink" title="URL"></a>URL</h5><p>直接从<code>URL</code>中读取字节流数据。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">readData</span><span class="params">(String path)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">    URL url = <span class="keyword">new</span> URL(path);</span><br><span class="line">    InputStream is = url.openStream();</span><br><span class="line">    InputStreamReader isr = <span class="keyword">new</span> InputStreamReader(is, StandardCharsets.UTF_8);</span><br><span class="line">    BufferedReader br = <span class="keyword">new</span> BufferedReader(isr);</span><br><span class="line">    String line;</span><br><span class="line">    <span class="keyword">while</span> ((line = br.readLine()) != <span class="keyword">null</span>) &#123;</span><br><span class="line">        System.out.println(line);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="装饰器模式"><a href="#装饰器模式" class="headerlink" title="装饰器模式"></a>装饰器模式</h4><p>装饰器模式允许向现有的对象添加额外的功能，而同时不改变其结构。</p>
+<h5 id="举例"><a href="#举例" class="headerlink" title="举例"></a>举例</h5><p>创建一个<code>Card</code>接口，我们可以裁剪它。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Card</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">cut</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>创建实现类：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Rect</span> <span class="keyword">implements</span> <span class="title">Card</span> </span>&#123;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">cut</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"cut shape: rectangle"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Circle</span> <span class="keyword">implements</span> <span class="title">Card</span> </span>&#123;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">cut</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"cut shape: circle"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>创建抽象装饰类：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">ColorDecorator</span> <span class="keyword">implements</span> <span class="title">Card</span> </span>&#123;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">protected</span> Card card;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">ColorDecorator</span><span class="params">(Card card)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.card = card;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">cut</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        card.cut();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>创建实体装饰类：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RedCardDecorator</span> <span class="keyword">extends</span> <span class="title">ColorDecorator</span> </span>&#123;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">RedCardDecorator</span><span class="params">(Card card)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>(card);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">cut</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        card.cut();</span><br><span class="line">        drawColor(card);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">drawColor</span><span class="params">(Card card)</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"draw color: red"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>实例</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Test</span> </span>&#123;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        Card card = <span class="keyword">new</span> Card();</span><br><span class="line">        <span class="comment">// 利用装饰器给Card添加着色的功能</span></span><br><span class="line">        ColorDecorator redRect = <span class="keyword">new</span> RedCardDecorator(<span class="keyword">new</span> Rect());</span><br><span class="line">        ColorDecorator redCircle = <span class="keyword">new</span> RedCardDecorator(<span class="keyword">new</span> Circle());</span><br><span class="line">        System.out.println(<span class="string">"make a red rectangle card"</span>);</span><br><span class="line">        redRect.cut();</span><br><span class="line">        System.out.println(<span class="string">"make a red circle card"</span>);</span><br><span class="line">        redCircle.cut();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h5 id="IO装饰器"><a href="#IO装饰器" class="headerlink" title="IO装饰器"></a>IO装饰器</h5><p>以<code>InputStream</code>为例，<code>InputStream</code>本身是抽象类，<code>FileInputStream</code>是<code>InputStream</code>的子类，提供了基于字节流的输入操作。而<code>FilterInputStream</code>就相当于抽象装饰类，其实现类例如<code>DataInputStream</code>、<code>BufferedInputStream</code>相当于具体的装饰类，为<code>FileInputStream</code>提供了额外的功能。例如前面提到的<code>BufferedInputStream</code>为<code>FileInputStream</code>提供了缓冲区的功能。</p>
+<p>使用装饰器模式的好处是比继承更加灵活。继承是静态的，一旦使用继承所有的子类都会有一样的功能，而装饰器模式可以动态添加功能。而且装饰器模式更加容易复用，直接在原有对象套上一层装饰器对象即可。</p>
+<hr>
+<h3 id="同步-异步-阻塞-非阻塞"><a href="#同步-异步-阻塞-非阻塞" class="headerlink" title="同步/异步/阻塞/非阻塞"></a>同步/异步/阻塞/非阻塞</h3><h4 id="同步与异步"><a href="#同步与异步" class="headerlink" title="同步与异步"></a>同步与异步</h4><p>同步和异步指的是执行流程中一个方法是否要等到前一个方法执行完成后才能执行。同步的话一旦方法调用，就必须等到方法调用返回才能继续后续的流程；而异步不必等待，调用立即返回，继续后续的流程。也就是说异步执行方法会交给其他线程，不阻塞主线程。</p>
+<p>同步和异步关注的是方法的执行线程是主线程还是其他线程。</p>
+<h4 id="阻塞与非阻塞"><a href="#阻塞与非阻塞" class="headerlink" title="阻塞与非阻塞"></a>阻塞与非阻塞</h4><p>阻塞与非阻塞指的是单个线程内遇到同步等待时，是否待在原地不做任何操作。阻塞的话会一直待在原地等待同步方法执行完成。非阻塞的话不会待在原地，可以先去做其他操作，但要定期检查同步方法是否执行完成了。</p>
+<p>阻塞和非阻塞关注的是线程是否会在原地等待同步方法。</p>
+<hr>
+<h3 id="Unix-IO模型"><a href="#Unix-IO模型" class="headerlink" title="Unix IO模型"></a>Unix IO模型</h3><p>为了了解<code>Unix IO</code>模型，需要先理解几个概念：</p>
+<h4 id="内核空间和用户空间"><a href="#内核空间和用户空间" class="headerlink" title="内核空间和用户空间"></a>内核空间和用户空间</h4><p><code>Linux</code>系统的运行空间分为内核空间（<code>Kernel space</code>）和用户空间（<code>User space</code>），它们之间彼此隔离，因此我们遇到应用程序崩溃时也不用担心内核受损。</p>
+<p>在内核空间中可以执行任何<code>CPU</code>指令，访问底层资源；但是用户空间中只能通过系统的接口才能向内核发送指令。</p>
+<h4 id="文件描述符"><a href="#文件描述符" class="headerlink" title="文件描述符"></a>文件描述符</h4><p>文件描述符（<code>fd, File Descriptor</code>），用于描述指向文件的引用的抽象概念。文件描述符是一个非负整数索引值，指向内核为每一个进程维护的本进程打开文件的记录表。每当应用程序新建或打开一个文件时，内核都会向该进程返回一个文件描述符。文件描述符是为了内核高效管理已被打开的文件，所有执行<code>I/O</code>的系统调用都会通过文件描述符。</p>
+<p><code>Linux</code>系统打开文件描述符的数量是有限制的，可以通过<code>cat /proc/sys/fs/file-max</code>查看，在<code>/etc/sysctl.conf</code>中可以通过<code>fs.file-max=xxx</code>修改。而进程也有自己的最大打开文件描述符，通过<code>ulimit -n</code>查看。该值是<code>user limit</code>中<code>nofile</code>的<code>soft limit</code>，不能大于<code>hard limit</code>。<code>hard limt</code>可以通过<code>ulimit -Hn</code>查看。我们可以用<code>ulimit -Sn xxx</code>临时修改<code>soft limit</code>。如果想要永久设置，要在<code>/etc/security/limits.conf</code>中修改。例如对于<code>a</code>用户：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">a soft nofile xxx</span><br><span class="line">a hard nofile xxx</span><br></pre></td></tr></table></figure>
+
+<p>设置的<code>hard limit</code>不能大于<code>/proc/sys/fs/nr_open</code>的值。当然我们也可以修改<code>nr_open</code>的值：<code>echo xxx &gt; /proc/sys/fs/nr_open</code>。</p>
+<p>若要查看当前系统使用的文件描述符的数据，可以通过<code>car /proc/sys/fs/file-nr</code>查看。第一个值表示已分配使用的打开文件描述符数，第二个值表示分配后已释放的数，目前已不使用，第三个值等于<code>file-max</code>。</p>
+<h4 id="内核缓冲区"><a href="#内核缓冲区" class="headerlink" title="内核缓冲区"></a>内核缓冲区</h4><p><code>Linux</code>存在缓存<code>IO</code>的机制，当进行<code>input</code>或者<code>output</code>时，数据会被先拷贝或读取到内核空间的缓冲区中，然后才会被写入到设备中或者拷贝到用户空间的缓冲区中。</p>
+<h4 id="5种模型"><a href="#5种模型" class="headerlink" title="5种模型"></a>5种模型</h4><h5 id="阻塞式I-O"><a href="#阻塞式I-O" class="headerlink" title="阻塞式I/O"></a>阻塞式I/O</h5><p>阻塞式<code>I/O</code>简称<code>BIO(Blocking IO)</code>。</p>
+<p>如下图，从应用程序调用<code>recvfrom</code>，到数据报到达并且被复制到应用程序的缓冲区或者发生错误（例如信号中断）的过程中，如果发起调用的线程一直处于等待的状态，那么它是阻塞式<code>I/O</code>。</p>
+<p><img src="%E9%98%BB%E5%A1%9E%E5%BC%8FI/O.png" alt=""></p>
+<p><code>BIO</code>存在一个问题，如果内核的数据需要耗时比较久才能准备好，那么进程将长时间阻塞，浪费性能。</p>
+<h5 id="非阻塞式I-O"><a href="#非阻塞式I-O" class="headerlink" title="非阻塞式I/O"></a>非阻塞式I/O</h5><p>为了解决以上问题，引入了非阻塞式<code>I/O</code>，简称<code>NIO(Non-Blocking IO)</code>。</p>
+<p>如下图，应用程序调用<code>recvfrom</code>等到内核接收到请求之后就立即返回，然后通过<strong>轮询</strong>的方式反复调用，如果数据还没准备好，内核立即返回<code>EWOULDBLOCK</code>错误。直到数据报准备好了，进程阻塞，将数据从内核缓冲区拷贝到用户空间的缓冲区，然后进程继续后续的任务。应用程序发起系统调用的线程不会一直等待而是立即返回，这样的<code>IO</code>是非阻塞式<code>IO</code>。</p>
+<p><img src="%E9%9D%9E%E9%98%BB%E5%A1%9E%E5%BC%8FI/O.png" alt=""></p>
+<p><code>NIO</code>相对于<code>BIO</code>已经大幅提升了性能，但依然不是完美的，那就是因为轮询会消耗大量的<code>CPU</code>资源，而且大多数都是无效的系统调用。</p>
+<h5 id="IO多路复用"><a href="#IO多路复用" class="headerlink" title="IO多路复用"></a>IO多路复用</h5><p>非阻塞式<code>I/O</code>的最大问题就是轮询导致大量的无效系统调用，于是有了<code>IO</code>多路复用这样的解决思路。</p>
+<p><code>IO</code>多路复用是一种机制，使得内核可以监视多个描述符，一旦一个或多个<code>IO</code>条件就绪（输入已准备好被读取，或者描述符已能承接更多输出），就会通知应用程序进行相应的读写操作。</p>
+<h6 id="select-poll"><a href="#select-poll" class="headerlink" title="select/poll"></a>select/poll</h6><p><code>select</code>是内核提供的一个系统调用，监视的文件描述符有<code>writedfs</code>、<code>readfds</code>、<code>exceptfds</code>三类。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">select</span><span class="params">(<span class="keyword">int</span> n, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<p><code>timeval</code>用于指定超时时间的秒数或微秒数。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">timeval</span> &#123;</span></span><br><span class="line">    <span class="keyword">long</span> tv_sec;  <span class="comment">// 秒</span></span><br><span class="line">    <span class="keyword">long</span> tv_usec; <span class="comment">// 微秒</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>该参数有三种可能。</p>
+<ol>
+<li>永远等待，仅在有一个描述符准备好了<code>IO</code>时才返回。这时我们应该把该参数设为空指针。</li>
+<li>等待一段固定时间，在有一个描述符准备好了<code>IO</code>时返回，但是时间不超过设置的时间。</li>
+<li>不等待，检查描述符之后即刻返回，也就是轮询。这时应该把该参数设置为<code>0</code>。</li>
+</ol>
+<p>调用后<code>select</code>函数会阻塞，直到有文件描述符就绪或者超时，函数返回。当<code>select</code>返回后，内核会遍历<code>fdset</code>，找到就绪的描述符。所以<code>select</code>的时间复杂度为<code>O(n)</code>。</p>
+<p><code>select</code>的缺点是：</p>
+<ul>
+<li>单个进程可监视的文件描述符数量是有限制的。在<code>Linux</code>中要求小于<code>1024</code>。</li>
+<li>时间复杂度为<code>O(n)</code>，相当于内核采用了轮询，浪费<code>CPU</code>。</li>
+<li>需要维护一个存放文件描述符的数据结构。每次调用<code>select</code>都要把这个数据结构从用户空间拷贝到内核空间，开销很大。</li>
+</ul>
+<p><code>poll</code>的本质和<code>select</code>是一样的，只是存放文件描述符的结构不同，用的是<code>pollfd</code>。</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">poll</span><span class="params">(struct pollfd *fds, <span class="keyword">unsigned</span> <span class="keyword">int</span> nfds, <span class="keyword">int</span> timeout)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<p><code>pollfd</code>其定义如下：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">pollfd</span> &#123;</span></span><br><span class="line">	<span class="keyword">int</span>   fd;       <span class="comment">// 文件描述符</span></span><br><span class="line">	short events;   <span class="comment">// 要监视的events</span></span><br><span class="line">	short revents;  <span class="comment">// 发生的events</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>其大小没有限制。但同样的，<code>poll</code>在返回后内核同样要轮询找出就绪的描述符，并且同样有大量的拷贝操作。</p>
+<p><img src="select/poll.png" alt=""></p>
+<p>总的来说，<code>select/poll</code>减少了应用程序发起的系统调用，但内核的工作并不会减少。在高并发的场景下，内核的性能问题依然存在。所以问题就是如何减少内核重复的遍历。</p>
+<h6 id="epoll"><a href="#epoll" class="headerlink" title="epoll"></a>epoll</h6><p><code>epoll</code>是在<code>Linux 2.6</code>内核中提出的，它没有描述符的限制。<code>epoll</code>使用一个文件描述符管理多个描述符，将用户关系的文件描述符的事件存放到内核的一个事件表中。</p>
+<p><code>epoll</code>过程有三个方法：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">epoll_create</span><span class="params">(<span class="keyword">int</span> <span class="built_in">size</span>)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">epoll_ctl</span><span class="params">(<span class="keyword">int</span> epfd, <span class="keyword">int</span> op, <span class="keyword">int</span> fd, struct epoll_event *event)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">epoll_wait</span><span class="params">(<span class="keyword">int</span> epfd, struct epoll_event * events, <span class="keyword">int</span> maxevents, <span class="keyword">int</span> timeout)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li><p><code>int epoll_create(int size)</code>：建立与内核的连接。创建一个<code>epoll</code>的句柄，参数<code>size</code>用来告诉内核监听的描述符数一共多大，它并不是限制了<code>epoll</code>所能监听的最大描述符数，只是对内核初始分配内部数据结构的建议。创建好句柄之后，它会占用一个<code>fd</code>，所以使用完<code>epoll</code>要调用<code>close()</code>关闭以免<code>fd</code>被耗尽。</p>
+</li>
+<li><p><code>int epoll_ctl(int epfd, int op, int fd, struct epoll_event *event)</code>：注册事件，对指定<code>fd</code>执行操作。<code>epfd</code>是<code>epoll_create</code>的返回值，<code>op</code>则表示具体的操作，用三个宏表示：添加<code>EPOLL_CTL_ADD</code>，删除<code>EPOLL_CTL_DEL</code>，修改<code>EPOLL_CTL_MOD</code>，分别表示添加、删除和修改对<code>fd</code>的监听事件。<code>fd</code>表示监听的文件描述符。<code>epoll_event</code>表示告诉内核监听什么事，其结构如下：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">epoll_event</span> &#123;</span></span><br><span class="line">  <span class="keyword">__uint32_t</span> events;  <span class="comment">// epoll事件</span></span><br><span class="line">  <span class="keyword">epoll_data_t</span> data;  <span class="comment">// 用户数据变量</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><code>int epoll_wait(int epfd, struct epoll_event * events, int maxevents, int timeout)</code>：等待<code>IO</code>事件，最多返回<code>macevents</code>个事件。<code>events</code>从内核得到事件的集合，<code>maxevents</code>告诉内核<code>events</code>有多大，该值不能超过<code>epoll_create(int size)</code>的<code>size</code>值。<code>timeout</code>是超时时间，同<code>select</code>中的<code>timeout</code>参数类似。该函数返回需要处理的事件数目，如果为<code>0</code>表示已经超时了。</p>
+</li>
+</ol>
+<p><code>epoll</code>对文件描述符的操作有两种模式：</p>
+<ul>
+<li><code>LT(Level-Triggered)</code>模式：当<code>epoll_wait</code>检测到描述符事件发生了会将此事件告知应用程序。如果应用程序没有处理该事件，下次再调用<code>epoll_wait</code>依然会告知应用程序。该模式是<strong>默认</strong>模式。</li>
+<li><code>ET(Edge-Triggered)</code>模式：当<code>epoll_wait</code>检测到描述符事件发生了会将此事件告知应用程序，但是只会告知一次，即使应用程序没有处理它，直到下一次该描述符上有了新的<code>IO</code>事件。这种模式效率高。</li>
+</ul>
+<p>使用<code>epoll</code>，相对于<code>select/poll</code>的好处有：</p>
+<ul>
+<li>相对<code>select</code>来说，没有监听的最大文件描述符的限制，它所支持的<code>fd</code>上限是最大可以打开文件的数目。<code>Linux</code>中通过<code>cat /proc/sys/fs/file-max</code>查看。</li>
+<li>在<code>select/poll</code>中，内核需要对文件描述符进行线性扫描找出处于就绪状态的，而<code>epoll</code>通过注册文件描述符，使得一个<code>fd</code>就绪时，会自动回调，将就绪的<code>fd</code>放到<code>rdlist</code>中。当应用程序调用<code>epoll_wait</code>时会收到通知。所以<code>epoll</code>的时间复杂度是<code>O(1)</code>的。</li>
+<li>只有调用<code>epoll_ctl</code>时才会把<code>fd</code>拷贝到内核空间，使用<code>mmmap</code>加速内核空间与用户空间之间数据的传递。</li>
+</ul>
+<p><img src="epoll.png" alt=""></p>
+<p>但是<code>epoll</code>还是有缺陷的，那就是在数据准备阶段，用户进程是阻塞的。</p>
+<h5 id="信号驱动式IO"><a href="#信号驱动式IO" class="headerlink" title="信号驱动式IO"></a>信号驱动式IO</h5><p>信号驱动式<code>IO</code>与<code>BIO</code>和<code>NIO</code>的区别在于，在数据准备的阶段，用户进程不会阻塞。</p>
+<p>如下图，当应用程序发起一个<code>IO</code>请求，会给对应的<code>socket</code>注册一个信号函数，然后用户进程继续运行，不会阻塞。当内核中的数据准备好了，会发送一个<code>SIGIO</code>信号给用户线程，然后用户进程调用<code>recvfrom</code>将数据拷贝到用户空间，进行后续的操作。</p>
+<p><img src="%E4%BF%A1%E5%8F%B7%E9%A9%B1%E5%8A%A8%E5%BC%8FIO.png" alt=""></p>
+<p>相比于之前几种<code>IO</code>，信号驱动式<code>IO</code>解决了数据准备时用户进程阻塞的问题。但是最后拷贝数据时依旧是阻塞的。</p>
+<h5 id="异步IO"><a href="#异步IO" class="headerlink" title="异步IO"></a>异步IO</h5><p>异步<code>IO</code>真正实现了<code>IO</code>流程全程非阻塞。</p>
+<p>如下图，用户进程调用<code>aio_read</code>，无论内核数据有没有准备好，都会直接返回给用户进程。当<code>socket</code>数据准备好然后拷贝完成后，内核向进程发送通知。用户进程全程都是非阻塞的。</p>
+<p><img src="%E5%BC%82%E6%AD%A5IO.png" alt=""></p>
+]]></content>
+      <categories>
+        <category>Java</category>
+        <category>IO</category>
+        <category>Linux</category>
+      </categories>
+      <tags>
+        <tag>Java</tag>
+        <tag>IO</tag>
+        <tag>Linux</tag>
+      </tags>
+  </entry>
 </search>
