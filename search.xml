@@ -2013,7 +2013,7 @@
 <tr>
 <td align="center">4</td>
 <td align="center">DERIVED</td>
-<td align="center"><code>from</code>字句中包含的查询</td>
+<td align="center"><code>from</code>子句中包含的查询</td>
 </tr>
 <tr>
 <td align="center">5</td>
@@ -2056,7 +2056,7 @@
 </ol>
 <hr>
 <h4 id="大数据查询优化"><a href="#大数据查询优化" class="headerlink" title="大数据查询优化"></a>大数据查询优化</h4><ol>
-<li>优化<code>schema</code>、<code>sql语句+索引</code></li>
+<li>优化<code>schema</code>、<code>sql</code>语句+索引</li>
 <li>加缓存，例如<code>redis</code></li>
 <li>主从复制、读写分离</li>
 <li>垂直拆分</li>
@@ -2074,7 +2074,7 @@
 <li>有可能是数据量过大，可以考虑分表。</li>
 </ul>
 <hr>
-<h3 id="主从复制"><a href="#主从复制" class="headerlink" title="主从复制"></a>主从复制</h3><p>原理：将主数据库的DDL和DML操作通过二进制日志(binlog)传输到数据库上，重新执行这些日志，使得主从数据库数据一致。</p>
+<h3 id="主从复制"><a href="#主从复制" class="headerlink" title="主从复制"></a>主从复制</h3><p>原理：将主数据库的<code>DDL</code>和<code>DML</code>操作通过二进制日志<code>(binlog)</code>传输到数据库上，重新执行这些日志，使得主从数据库数据一致。</p>
 ]]></content>
       <categories>
         <category>mysql</category>
