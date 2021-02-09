@@ -4857,7 +4857,7 @@
 <p>也就是说无论有没有循环依赖的发生，<code>Spring</code>都会把<code>Bean</code>放到三级缓存中，这是因为<code>Spring</code>目前还没办法判断该<code>Bean</code>是否会出现循环依赖。</p>
 <p>如果我们不使用三级缓存，那就意味着所有的<code>Bean</code>都要在这一步创建好代理对象，并且放入二级缓存。这样做有什么不好呢？这是因为这违背了<code>Spring</code>结合<code>AOP</code>跟<code>Bean</code>的生命周期的设计。<code>Spring</code>结合<code>AOP</code>跟<code>Bean</code>的生命周期是通过<code>AnnotationAwareAspectJAutoProxyCreator</code>这个后置处理器中的<code>postProcessAfterInstantiation</code>方法来完成对初始化之后的<code>Bean</code>的代理。如果发生了循环依赖，才没有办法只能在实例化之后直接创建代理对象。如果没有发生循环依赖不应该破坏原来的生命周期。</p>
 <h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p><code>Q</code>：<code>Spring</code>如何解决循环依赖？</p>
-<p><code>A</code>：<code>Spring</code>通过三级缓存解决了循环依赖。当两个<code>Bean</code>发生了循环依赖的时候，在<code>A</code>完成了实例化之后，创建它的对象工厂，添加到三级缓存中。如果<code>A</code>被代理了，后续通过这个工厂获得的对象就是代理之后的对象，否则就获得原来的对象。当<code>A</code>进行属性注入时，会去创建<code>B</code>，创建<code>B</code>的时候又会去获取<code>A</code>，但这次是从缓存里拿了。首先获取到三级缓存中的对象工厂，然后调用<code>getObject</code>方法获取对象放到二级缓存注入到<code>B</code>，然后<code>B</code>会完成自己的生命周期，放到一级缓存中。最后<code>A</code>再注入<code>B</code>，完成自己的生命周期，也放到一级缓存中。至此，循环依赖的问题就解决了。</p>
+<p><code>A</code>：<code>Spring</code>通过三级缓存解决了循环依赖。当两个<code>Bean</code>发生了循环依赖的时候，在<code>A</code>完成了实例化之后，创建它的对象工厂，添加到三级缓存中。如果<code>A</code>被代理了，后续通过这个工厂获得的对象就是代理之后的对象，否则就获得原来的对象。当<code>A</code>进行属性注入时，会去创建<code>B</code>，创建<code>B</code>的时候又会去获取<code>A</code>，但这次是从缓存里拿了。首先获取到三级缓存中的对象工厂，然后调用<code>getObject</code>方法获取对象放到二级缓存并注入到<code>B</code>，然后<code>B</code>会完成自己的生命周期，放到一级缓存中。最后<code>A</code>再注入<code>B</code>，完成自己的生命周期，也放到一级缓存中。至此，循环依赖的问题就解决了。</p>
 <p><code>Q</code>：为什么要使用三级缓存呢？可以使用二级缓存吗？</p>
 <p><code>A</code>：可以使用二级缓存，但这样的话所有的<code>Bean</code>都要在实例化之后就直接创建<code>AOP</code>对象放入二级缓存，这违背了<code>Spring</code>对于<code>AOP</code>的设计原则。</p>
 ]]></content>
