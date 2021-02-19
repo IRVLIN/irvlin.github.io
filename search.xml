@@ -4868,4 +4868,77 @@
         <tag>Spring</tag>
       </tags>
   </entry>
+  <entry>
+    <title>SpringBoot笔记</title>
+    <url>/2021/01/17/SpringBoot%E7%AC%94%E8%AE%B0/</url>
+    <content><![CDATA[<p>SpringBoot笔记</p>
+<a id="more"></a>
+
+<h3 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h3><p><code>Spring Boot</code>是<code>Spring</code>开源组织下的一个子项目，提供了<code>Spring</code>组件的一站式解决方案，大大简化了<code>Spring</code>的开发难度，省去了大量繁重的配置，提供了各种启动器，实现了真正的开箱即用。</p>
+<hr>
+<h3 id="核心"><a href="#核心" class="headerlink" title="核心"></a>核心</h3><p><code>SpringBoot</code>启动类的注解是<code>@SpringBootApplication</code>，该注解包含了以下三个重要注解：</p>
+<ul>
+<li><code>@SpringBootConfiguration</code>：包含<code>@Configuration</code>注解，实现了配置文件的功能。</li>
+<li><code>@EnableAutoConfiguration</code>：自动配置。如果要关闭某个自动配置的选项，例如关闭数据源的自动配置：<code>@SpringBootApplication(exclude = {DataSourceAutoConfiguration.class})</code>。</li>
+<li><code>@ComponentScan</code>：组件扫描功能。</li>
+</ul>
+<hr>
+<h3 id="JavaConfig"><a href="#JavaConfig" class="headerlink" title="JavaConfig"></a>JavaConfig</h3><p><code>Spring JavaConfig</code>是<code>Spring</code>社区的产品，提供了配置<code>Spring IoC</code>容器的<code>Java</code>方法。使用<code>JavaConfig</code>有如下好处：</p>
+<ul>
+<li>面向对象的配置。因为配置被定义为<code>JavaConfig</code>的类，所以可以充分的利用<code>Java</code>中面向对象的功能。一个配置类可以继承另一个，重写<code>@Bean</code>方法等等。</li>
+<li>省去<code>XML</code>配置。<code>JavaConfig</code>提供了纯<code>Java</code>方法来配置与<code>XML</code>配置概念相似的<code>Spring</code>容器。</li>
+<li>类型安全、重构友好。<code>JavaConfig</code>提供了一种类型安全的方法来配置<code>Spring</code>容器。由于<code>Java 5.0</code>对泛型的支持，可以按照类型而不是名称检索<code>Bean</code>，不需要任何强制转换或者基于字符串的查找。</li>
+</ul>
+<hr>
+<h3 id="SpringBoot-自动配置原理"><a href="#SpringBoot-自动配置原理" class="headerlink" title="SpringBoot 自动配置原理"></a>SpringBoot 自动配置原理</h3><p><code>SpringBoot</code>关于自动配置的源码在<code>spring-boot-autoconfigure-x.x.x.x.jar</code>中。</p>
+<p>在<code>SpringBoot</code>启动类上有一个<code>@SpringBootApplication</code>注解，它是一个复合注解，其中有一个<code>@EnableAutoConfiguration</code>注解，用于开启自动配置。<code>@EnableAutoConfiguration</code>也是一个复合注解，核心功能由<code>@Import</code>提供。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Target</span>(ElementType.TYPE)</span><br><span class="line"><span class="meta">@Retention</span>(RetentionPolicy.RUNTIME)</span><br><span class="line"><span class="meta">@Documented</span></span><br><span class="line"><span class="meta">@Inherited</span></span><br><span class="line"><span class="meta">@AutoConfigurationPackage</span></span><br><span class="line"><span class="meta">@Import</span>(AutoConfigurationImportSelector<span class="class">.<span class="keyword">class</span>)</span></span><br><span class="line"><span class="class"><span class="title">public</span> @<span class="title">interface</span> <span class="title">EnableAutoConfiguration</span> </span>&#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>AutoConfigurationImportSelector</code>类中有一个方法<code>selectImports()</code>，通过<code>SpringFactoriesLoader.loadFactoryNames()</code>扫描所有具有<code>META-INF/spring.factories</code>的<code>jar</code>包。</p>
+<p><code>spring.factories</code>的格式是一组一组的<code>key=value</code>，其中有一个<code>key</code>是<code>org.springframework.boot.autoconfigure.EnableAutoConfiguration</code>，它的<code>value</code>是一个<code>xxxAutoConfiguration</code>的列表。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">org.springframework.boot.autoconfigure.EnableAutoConfiguration&#x3D;\</span><br><span class="line">org.springframework.boot.autoconfigure.admin.SpringApplicationAdminJmxAutoConfiguration,\</span><br><span class="line">org.springframework.boot.autoconfigure.aop.AopAutoConfiguration,\</span><br><span class="line">org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration,\</span><br><span class="line">org.springframework.boot.autoconfigure.batch.BatchAutoConfiguration,\</span><br><span class="line">org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration,\</span><br><span class="line">org.springframework.boot.autoconfigure.cassandra.CassandraAutoConfiguration,\</span><br><span class="line">org.springframework.boot.autoconfigure.context.ConfigurationPropertiesAutoConfiguration,\</span><br><span class="line">org.springframework.boot.autoconfigure.context.LifecycleAutoConfiguration,\</span><br><span class="line">org.springframework.boot.autoconfigure.context.MessageSourceAutoConfiguration,\</span><br><span class="line">org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration,\</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<p><code>@EnableAutoConfiguration</code>注解通过<code>@SpringBootApplication</code>被标记在了<code>SpringBoot</code>启动类上，于是<code>SpringApplication.run()</code>方法就会执行<code>selectImports()</code>方法，找到所有<code>JavaConfig</code>自动配置类的全限定名对应的<code>class</code>，将所有自动配置类加载到容器中。</p>
+<p>每个<code>xxxAutoConfiguration</code>自动配置类都是在某些条件下才生效的。常见的条件有以下几个：</p>
+<ul>
+<li><code>@ConditionalOnBean</code>：当容器内有指定的<code>Bean</code>的条件下。</li>
+<li><code>@ConditionalOnMissingBean</code>：当容器内不存在指定的<code>Bean</code>的条件下。</li>
+<li><code>@ConditionalOnClass</code>：当类路径下有指定类的条件下。</li>
+<li><code>@ConditionalOnMissingClass</code>：当类路径下不存在指定类的条件下。</li>
+<li><code>@ConditionalOnProperty</code>：指定的属性是否有指定的值。例如：<code>@ConditionalOnProperty(prefix=&quot;spring.rabbitmq&quot;, value=&quot;dynamic&quot;, matchIfMissing=true)</code>表示<code>spring.rabbitmq</code>的值为<code>dynamic</code>或者没有设置的情况下满足该条件。</li>
+</ul>
+<p>以<code>RabbitAutoConfiguration</code>为例：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Configuration</span>(proxyBeanMethods = <span class="keyword">false</span>)</span><br><span class="line"><span class="meta">@ConditionalOnClass</span>(&#123; RabbitTemplate<span class="class">.<span class="keyword">class</span>, <span class="title">Channel</span>.<span class="title">class</span> &#125;)</span></span><br><span class="line"><span class="class">@<span class="title">EnableConfigurationProperties</span>(<span class="title">RabbitProperties</span>.<span class="title">class</span>)</span></span><br><span class="line"><span class="class">@<span class="title">Import</span>(<span class="title">RabbitAnnotationDrivenConfiguration</span>.<span class="title">class</span>)</span></span><br><span class="line"><span class="class"><span class="title">public</span> <span class="title">class</span> <span class="title">RabbitAutoConfiguration</span> </span>&#123;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>@EnableConfigurationProperties</code>注解用于开启配置属性，传入了<code>RabbitProperties.class</code>：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@ConfigurationProperties</span>(prefix = <span class="string">"spring.rabbitmq"</span>)</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RabbitProperties</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> DEFAULT_PORT = <span class="number">5672</span>;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> DEFAULT_PORT_SECURE = <span class="number">5671</span>;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">private</span> String host = <span class="string">"localhost"</span>;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">private</span> Integer port;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">private</span> String username = <span class="string">"guest"</span>;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">private</span> String password = <span class="string">"guest"</span>;</span><br><span class="line">    </span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>@ConfigurationProperties</code>注解用于从配置文件中绑定属性到对应的<code>Bean</code>上。我们看到这些属性有默认的值，也就是说如果我们没有在配置文件中指定这些值，<code>Spring</code>会使用默认的值，最后通过<code>@EnableConfigurationProperties</code>将<code>Bean</code>导入到<code>Spring</code>容器中。</p>
+<p>总的来说，<code>SpringBoot</code>启动的时候会通过<code>@EnableAutoConfiguration</code>注解找到<code>META-INF/spring.factories</code>配置文件中的所有自动配置类，对它们进行加载。这些自动配置类都是以<code>AutoConfiguration</code>结尾来命名的，实际上就是一个<code>JavaConfig</code>形式的<code>Spring</code>容器配置类，它能通过以<code>Properties</code>结尾命名的类中获取全局配置文件中配置的属性，如：<code>spring.rabbitmq</code>。然后以<code>Properties</code>结尾命名的类通过<code>@ConfigurationProperties</code>注解将配置的属性绑定到相应的<code>Bean</code>上。</p>
+<hr>
+<h3 id="跨域"><a href="#跨域" class="headerlink" title="跨域"></a>跨域</h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CorsConfig</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> CorsWebFilter <span class="title">corsWebFilter</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        UrlBasedCorsConfigurationSource source = <span class="keyword">new</span> UrlBasedCorsConfigurationSource();</span><br><span class="line">        CorsConfiguration configuration = <span class="keyword">new</span> CorsConfiguration();</span><br><span class="line">        <span class="comment">// 配置跨域</span></span><br><span class="line">        configuration.addAllowedHeader(<span class="string">"*"</span>);</span><br><span class="line">        configuration.addAllowedMethod(<span class="string">"*"</span>);</span><br><span class="line">        configuration.addAllowedOrigin(<span class="string">"*"</span>);</span><br><span class="line">        <span class="comment">// 允许携带cookie</span></span><br><span class="line">        configuration.setAllowCredentials(<span class="keyword">true</span>);</span><br><span class="line">        <span class="comment">// 对所有访问路径注册跨域配置</span></span><br><span class="line">        source.registerCorsConfiguration(<span class="string">"/**"</span>, configuration);</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> CorsWebFilter(source);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h3 id="spring-boot-starter-parent"><a href="#spring-boot-starter-parent" class="headerlink" title="spring-boot-starter-parent"></a>spring-boot-starter-parent</h3><p><code>spring-boot-starter-parent</code>主要有以下作用：</p>
+<ul>
+<li>定义<code>Java</code>编译版本为<code>1.8</code>。</li>
+<li>使用<code>UTF-8</code>格式编码。</li>
+<li>继承自<code>spring-boot-dependencies</code>，定义了各种依赖的版本，所以我们在添加依赖的时候才不需要指定版本。</li>
+<li>执行打包操作的配置。</li>
+<li>自动化资源过滤。</li>
+<li>自动化插件配置。</li>
+</ul>
+<hr>
+<h3 id="SpringBoot打包的jar包和普通的有什么区别？"><a href="#SpringBoot打包的jar包和普通的有什么区别？" class="headerlink" title="SpringBoot打包的jar包和普通的有什么区别？"></a>SpringBoot打包的jar包和普通的有什么区别？</h3><p><code>SprintBoot</code>打包的<code>jar</code>包是可执行的<code>jar</code>，可以直接通过<code>java -jar xxx.jar</code>运行，而且不可以作为普通的<code>jar</code>被其他项目依赖。</p>
+<p>这是因为<code>SpringBoot</code>打包的<code>jar</code>和普通的结构不同。普通的<code>jar</code>包解压之后就是包名，里面就是代码；而<code>SpringBoot</code>打包的解压之后，代码在<code>/BOOT-INF/classes</code>目录下，所以不能直接被引用。</p>
+]]></content>
+      <categories>
+        <category>Spring</category>
+        <category>SpringBoot</category>
+      </categories>
+      <tags>
+        <tag>Spring</tag>
+        <tag>SpringBoot</tag>
+      </tags>
+  </entry>
 </search>
