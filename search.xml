@@ -4991,4 +4991,474 @@
         <tag>SpringBoot</tag>
       </tags>
   </entry>
+  <entry>
+    <title>netty学习笔记</title>
+    <url>/2021/02/20/netty%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</url>
+    <content><![CDATA[<p>netty 学习笔记</p>
+<a id="more"></a>
+
+<h3 id="NIO-基本概念"><a href="#NIO-基本概念" class="headerlink" title="NIO 基本概念"></a>NIO 基本概念</h3><h4 id="阻塞、非阻塞"><a href="#阻塞、非阻塞" class="headerlink" title="阻塞、非阻塞"></a>阻塞、非阻塞</h4><p>阻塞于非阻塞指的是进程访问数据的时候当数据没有准备就绪时的处理方式。</p>
+<ul>
+<li>阻塞：需要等到缓冲区中的数据准备好才去处理其他事情，否则一直等在原地。</li>
+<li>非阻塞：无论数据有没有准备好，都直接返回，不会等待。</li>
+</ul>
+<h4 id="同步、异步"><a href="#同步、异步" class="headerlink" title="同步、异步"></a>同步、异步</h4><p>同步和异步指的是进程和操作系统处理<code>IO</code>事件的方式。</p>
+<ul>
+<li>同步：应用程序直接参与<code>IO</code>读写的操作，必须阻塞等待<code>IO</code>事件的完成（阻塞或者轮询）。</li>
+<li>异步：把<code>IO</code>事件交给操作系统处理，应用程序等待通知。在等待的期间可以去完成其他的操作。</li>
+</ul>
+<h4 id="Java-BIO-与-NIO"><a href="#Java-BIO-与-NIO" class="headerlink" title="Java BIO 与 NIO"></a>Java BIO 与 NIO</h4><h5 id="BIO"><a href="#BIO" class="headerlink" title="BIO"></a>BIO</h5><p><code>BIO</code>是<code>Java</code>传统的<code>IO</code>模型，基于同步阻塞的<code>IO</code>模式，所以所有的交互都是同步并且阻塞的。</p>
+<h5 id="NIO"><a href="#NIO" class="headerlink" title="NIO"></a>NIO</h5><p><code>NIO</code>是<code>Java 1.4</code>引入的，基于同步非阻塞的<code>IO</code>模式，提供了<code>Channel</code>、<code>Selector</code>、<code>Buffer</code>等抽象。对于高并发的场景，应该使用<code>NIO</code>模式来开发应用。</p>
+<h5 id="对比"><a href="#对比" class="headerlink" title="对比"></a>对比</h5><table>
+<thead>
+<tr>
+<th>IO 模型</th>
+<th>通信</th>
+<th>处理</th>
+<th>触发</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>BIO</td>
+<td>面向流</td>
+<td>阻塞 IO</td>
+<td>无</td>
+</tr>
+<tr>
+<td>NIO</td>
+<td>面向缓冲</td>
+<td>非阻塞 IO</td>
+<td>选择器</td>
+</tr>
+</tbody></table>
+<hr>
+<h3 id="Netty"><a href="#Netty" class="headerlink" title="Netty"></a>Netty</h3><h4 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h4><p><code>Netty</code>是一个基于<code>NIO</code>的客户端服务器框架，用于快速开发高性能的应用程序。</p>
+<p><code>Netty</code>的主要执行流程：</p>
+<ul>
+<li>启动<code>Server</code>，<code>Netty</code>从<code>ParentGroup</code>中选出一个<code>NioEventLoop</code>监听指定的端口。</li>
+<li>启动<code>Client</code>，<code>Netty</code>从<code>EventLoopGroup</code>中选出一个<code>NioEventLoop</code>连接<code>Server</code>并处理<code>Server</code>发送的数据。</li>
+<li><code>Client</code>连接到<code>Server</code>，创建<code>Channel</code>。</li>
+<li><code>Netty</code>从<code>ChildGroup</code>中选出一个<code>NioEventLoop</code>和该<code>Channel</code>绑定，处理<code>Channel</code>中所有的操作。</li>
+<li><code>Client</code>通过<code>Channel</code>向<code>Server</code>发送数据。</li>
+<li><code>Pipeline</code>中的处理器一次对<code>Channel</code>中的数据包进行处理。</li>
+<li><code>Server</code>如果要向<code>Client</code>发送数据，要将数据经过<code>Pipeline</code>的处理器处理封装为<code>ByteBuf</code>数据包进行传输。</li>
+<li><code>Server</code>通过<code>Channel</code>将数据包发送给<code>Client</code>。</li>
+<li><code>Pipeline</code>中的处理器一次对<code>Channel</code>中的数据包进行处理。</li>
+</ul>
+<h4 id="核心组件"><a href="#核心组件" class="headerlink" title="核心组件"></a>核心组件</h4><h5 id="Channel"><a href="#Channel" class="headerlink" title="Channel"></a>Channel</h5><p><code>Channel</code>可以看作是数据传输的媒介，服务器和客户端通过<code>Channel</code>进行数据的发送和接收。因此，它可以被打开或关闭、连接或断开连接。</p>
+<h5 id="EventLoop-和-EventLoopGroup"><a href="#EventLoop-和-EventLoopGroup" class="headerlink" title="EventLoop 和 EventLoopGroup"></a>EventLoop 和 EventLoopGroup</h5><p><code>EventLoop</code>定义了<code>Netty</code>的核心抽象，用来处理连接的生命周期中发生的事件，在内部，为每一个<code>Channel</code>分配一个<code>EventLoop</code>。而<code>EventLoopGroup</code>是一个<code>EventLoop</code>池，包含很多<code>EventLoop</code>。</p>
+<p><code>Netty</code>给每个<code>Channel</code>分配一个<code>EventLoop</code>，处理用户连接请求、对用户请求进行处理。<code>EventLoop</code>只是一个线程驱动，在其生命周期内只会绑定一个线程，让该线程处理一个<code>Channel</code>的所有<code>IO</code>事件。</p>
+<p>一个<code>Channel</code>一旦和一个<code>EventLoop</code>绑定，那么整个生命周期内是不可改变的。一个<code>EventLoop</code>可以和多个<code>Channel</code>绑定。</p>
+<h5 id="ServerBootstrap-和-Bootstrap"><a href="#ServerBootstrap-和-Bootstrap" class="headerlink" title="ServerBootstrap 和 Bootstrap"></a>ServerBootstrap 和 Bootstrap</h5><p><code>ServerBootstrap</code>和<code>Bootstrap</code>被称为引导类，指对应用程序进行配置，使其运行起来的过程。<code>Netty</code>处理引导的方式是使应用程序和网络层相互隔离。</p>
+<p><code>Bootstrap</code>是客户端的引导类，在调用<code>bind()</code>（连接<code>UDP</code>）和<code>connect()</code>（连接<code>TCP</code>）时，会创建一个<code>Channel</code>，仅创建一个独立的、没有父<code>Channel</code>的<code>Channel</code>来实现网络交换。</p>
+<p><code>ServerBootstrap</code>是服务端的引导类，在调用<code>bind()</code>时会创建一个<code>ServerChannel</code>接收来自客户端的连接请求，该<code>ServerChannel</code>管理了多个子<code>Channel</code>用于和客户端之间的通信。</p>
+<h5 id="ChannelHandler-和-ChannelPipeline"><a href="#ChannelHandler-和-ChannelPipeline" class="headerlink" title="ChannelHandler 和 ChannelPipeline"></a>ChannelHandler 和 ChannelPipeline</h5><p><code>ChannelHandler</code>是对<code>Channel</code>中的数据的处理器，这些处理器可以是系统定义好的也可以是自定义的。这些处理器会被统一添加到一个<code>ChannelPipeline</code>对象中，按照添加的顺序对<code>Channel</code>中的数据依次进行处理。</p>
+<h5 id="ChannelFuture"><a href="#ChannelFuture" class="headerlink" title="ChannelFuture"></a>ChannelFuture</h5><p><code>Netty</code>中的<code>IO</code>操作是异步的，所以操作并不会立刻得到返回结果。<code>Netty</code>定义了一个<code>ChannelFuture</code>对象表示异步操作。如果想获得异步操作的返回值，可以通过这个对象的<code>addListener()</code>方法为该异步操作添加监听器，注册回调。</p>
+<p><code>Netty</code>的异步编程模型都是建立在<code>Future</code>与回调概念之上。</p>
+]]></content>
+      <categories>
+        <category>netty</category>
+      </categories>
+      <tags>
+        <tag>netty</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>tomcat笔记</title>
+    <url>/2021/02/20/tomcat%E7%AC%94%E8%AE%B0/</url>
+    <content><![CDATA[<p>tomcat 笔记</p>
+<a id="more"></a>
+
+<h3 id="Tomcat-是什么"><a href="#Tomcat-是什么" class="headerlink" title="Tomcat 是什么"></a>Tomcat 是什么</h3><p><code>Tomcat</code>是一款<code>Apache</code>开源的<code>web</code>应用服务器，属于轻量级应用服务器，提供了对<code>jsp</code>和<code>servlet</code>的支持。</p>
+<hr>
+<h3 id="Tomcat-默认端口"><a href="#Tomcat-默认端口" class="headerlink" title="Tomcat 默认端口"></a>Tomcat 默认端口</h3><p>在<code>Tomcat</code>目录下的<code>conf</code>文件夹下的<code>server.xml</code>文件：</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">Connector</span> <span class="attr">port</span>=<span class="string">"8080"</span> <span class="attr">protocol</span>=<span class="string">"HTTP/1.1"</span> <span class="attr">connectionTimeout</span>=<span class="string">"20000"</span> <span class="attr">redirectPort</span>=<span class="string">"8443"</span> /&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>默认端口为<code>8080</code>。</p>
+<hr>
+<h3 id="Connector-运行模式"><a href="#Connector-运行模式" class="headerlink" title="Connector 运行模式"></a>Connector 运行模式</h3><ul>
+<li><code>BIO</code>：同步阻塞。一个线程处理一个请求。<code>Tomcat 7</code>之前<code>Linux</code>默认使用这种模式。当并发量高的时候，线程数过多，比较浪费资源。配置：<code>protocol=&quot;HTTP/1.1&quot;</code>。</li>
+<li><code>NIO</code>：同步非阻塞。可以通过少量的线程处理大量请求，相当于复用同一个线程处理多个连接请求。<code>Tomcat 8</code>在<code>Linux</code>系统中默认使用这种模式。配置：<code>protocol=&quot;org.apache.coyote.http11.Http11NioProtocol&quot;</code>。</li>
+<li><code>APR</code>：<code>Apache Portable Runtime</code>，从操作系统层面解决<code>IO</code>阻塞问题，大幅度提高服务器的处理和响应性能，相当于异步非阻塞。配置：<code>protocol=&quot;org.apache.coyote.http11.Http11AprProtocol&quot;</code>。</li>
+</ul>
+<hr>
+<h3 id="Tomcat-如何创建-servlet-实例"><a href="#Tomcat-如何创建-servlet-实例" class="headerlink" title="Tomcat 如何创建 servlet 实例"></a>Tomcat 如何创建 servlet 实例</h3><p>当容器启动时，会读取<code>webapps</code>目录下所有的<code>web</code>应用中的<code>web.xml</code>文件，对其进行解析，读取<code>servlet</code>注册信息。然后将每个应用中注册的<code>servlet</code>类进行加载，通过反射的方式创建实例。</p>
+<p>如果<code>servlet</code>注册时设置的<code>loadOnStartup</code>小于<code>0</code>，那么<code>servlet</code>在第一次被调用的时候才会实例化。如果大于<code>0</code>，则是在<code>web</code>容器启动时候实例化，并且按照数字的大小由小到大按顺序实例化。如果等于<code>0</code>，相当于最大整数，意味着会在最后被实例化。</p>
+<hr>
+<h3 id="Tomcat-顶层架构"><a href="#Tomcat-顶层架构" class="headerlink" title="Tomcat 顶层架构"></a>Tomcat 顶层架构</h3><p><code>Tomcat</code>顶层架构图如下：</p>
+<p><img src="tomcat%E6%9E%B6%E6%9E%84.png" alt=""></p>
+<p>最顶层的是<code>Server</code>，表示服务器，每个服务器最少有一个<code>Service</code>，用于提供具体的服务。<code>Service</code>主要包含<code>Connector</code>和<code>Container</code>两个核心组件。</p>
+<ul>
+<li><code>Connector</code>：用于处理连接相关的事情，提供<code>Socket</code>与<code>Request</code>请求和<code>Response</code>响应相关的转化。</li>
+<li><code>Container</code>：用于封装、管理<code>Servlet</code>，以及具体处理<code>Request</code>请求。</li>
+</ul>
+<p>一个<code>Tomcat</code>只有一个<code>Server</code>，一个<code>Server</code>可以包含多个<code>Service</code>。而一个<code>Service</code>只有一个<code>Container</code>，但是可以有多个<code>Connector</code>，用于处理多个连接。</p>
+<p>整个结构可以在<code>server.xml</code>文件中体现出来：</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">Server</span> <span class="attr">port</span>=<span class="string">"8005"</span> <span class="attr">shutdown</span>=<span class="string">"SHUTDOWN"</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">Listener</span> <span class="attr">className</span>=<span class="string">"org.apache.catalina.startup.VersionLoggerListener"</span> /&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">Listener</span> <span class="attr">className</span>=<span class="string">"org.apache.catalina.core.AprLifecycleListener"</span> <span class="attr">SSLEngine</span>=<span class="string">"on"</span> /&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">Listener</span> <span class="attr">className</span>=<span class="string">"org.apache.catalina.core.JreMemoryLeakPreventionListener"</span> /&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">Listener</span> <span class="attr">className</span>=<span class="string">"org.apache.catalina.mbeans.GlobalResourcesLifecycleListener"</span> /&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">Listener</span> <span class="attr">className</span>=<span class="string">"org.apache.catalina.core.ThreadLocalLeakPreventionListener"</span> /&gt;</span></span><br><span class="line"></span><br><span class="line">  <span class="tag">&lt;<span class="name">GlobalNamingResources</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">Resource</span> <span class="attr">name</span>=<span class="string">"UserDatabase"</span> <span class="attr">auth</span>=<span class="string">"Container"</span></span></span><br><span class="line"><span class="tag">              <span class="attr">type</span>=<span class="string">"org.apache.catalina.UserDatabase"</span></span></span><br><span class="line"><span class="tag">              <span class="attr">description</span>=<span class="string">"User database that can be updated and saved"</span></span></span><br><span class="line"><span class="tag">              <span class="attr">factory</span>=<span class="string">"org.apache.catalina.users.MemoryUserDatabaseFactory"</span></span></span><br><span class="line"><span class="tag">              <span class="attr">pathname</span>=<span class="string">"conf/tomcat-users.xml"</span> /&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">GlobalNamingResources</span>&gt;</span></span><br><span class="line"></span><br><span class="line">  <span class="tag">&lt;<span class="name">Service</span> <span class="attr">name</span>=<span class="string">"Catalina"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">Connector</span> <span class="attr">port</span>=<span class="string">"8080"</span> <span class="attr">protocol</span>=<span class="string">"HTTP/1.1"</span></span></span><br><span class="line"><span class="tag">               <span class="attr">connectionTimeout</span>=<span class="string">"20000"</span></span></span><br><span class="line"><span class="tag">               <span class="attr">redirectPort</span>=<span class="string">"8443"</span> /&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">Engine</span> <span class="attr">name</span>=<span class="string">"Catalina"</span> <span class="attr">defaultHost</span>=<span class="string">"localhost"</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">Realm</span> <span class="attr">className</span>=<span class="string">"org.apache.catalina.realm.LockOutRealm"</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">Realm</span> <span class="attr">className</span>=<span class="string">"org.apache.catalina.realm.UserDatabaseRealm"</span></span></span><br><span class="line"><span class="tag">               <span class="attr">resourceName</span>=<span class="string">"UserDatabase"</span>/&gt;</span></span><br><span class="line">      <span class="tag">&lt;/<span class="name">Realm</span>&gt;</span></span><br><span class="line"></span><br><span class="line">      <span class="tag">&lt;<span class="name">Host</span> <span class="attr">name</span>=<span class="string">"localhost"</span>  <span class="attr">appBase</span>=<span class="string">"webapps"</span></span></span><br><span class="line"><span class="tag">            <span class="attr">unpackWARs</span>=<span class="string">"true"</span> <span class="attr">autoDeploy</span>=<span class="string">"true"</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">Valve</span> <span class="attr">className</span>=<span class="string">"org.apache.catalina.valves.AccessLogValve"</span> <span class="attr">directory</span>=<span class="string">"logs"</span></span></span><br><span class="line"><span class="tag">               <span class="attr">prefix</span>=<span class="string">"localhost_access_log"</span> <span class="attr">suffix</span>=<span class="string">".txt"</span></span></span><br><span class="line"><span class="tag">               <span class="attr">pattern</span>=<span class="string">"%h %l %u %t <span class="symbol">&amp;quot;</span>%r<span class="symbol">&amp;quot;</span> %s %b"</span> /&gt;</span></span><br><span class="line"></span><br><span class="line">      <span class="tag">&lt;/<span class="name">Host</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">Engine</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">Service</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">Server</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h4><ul>
+<li>一个<code>Tomcat</code>只有一个<code>Server</code>，一个<code>Server</code>可以有多个<code>Service</code>，一个<code>Service</code>可以有多个<code>Connector</code>和一个<code>Container</code>。</li>
+<li><code>Server</code>管理整个<code>Tomcat</code>的生命周期。</li>
+<li><code>Service</code>对外提供服务。</li>
+<li><code>Connector</code>用于接收请求并将请求封装为<code>Request</code>和<code>Response</code>进行具体的处理。</li>
+<li><code>Container</code>用于封装和管理<code>Servlet</code>，以及具体处理请求。</li>
+</ul>
+<hr>
+<h3 id="Connector-和-Container"><a href="#Connector-和-Container" class="headerlink" title="Connector 和 Container"></a>Connector 和 Container</h3><p><code>Connector</code>底层使用<code>Socket</code>进行连接，而<code>Request</code>和<code>Response</code>使用<code>HTTP</code>协议进行封装。所以<code>Connector</code>需要实现<code>TCP/IP</code>协议以及<code>HTTP</code>协议。</p>
+<p><code>Connector</code>主要作用是接收请求，封装为<code>Request</code>和<code>Response</code>然后交给<code>Container</code>处理。那么问题来了：</p>
+<ul>
+<li><code>Connector</code>如何接收请求？</li>
+<li><code>Connector</code>如何将请求封装为<code>Request</code>和<code>Response</code>？</li>
+<li><code>Connector</code>封装完之后如何交给<code>Container</code>处理？</li>
+<li><code>Container</code>处理完之后如何返回给<code>Connector</code>并返回给客户端？</li>
+</ul>
+<p>先看一下<code>Connector</code>的结构图：</p>
+<p><img src="connector%E7%BB%93%E6%9E%84.png" alt=""></p>
+<p><code>Connector</code>使用<code>ProtocolHandler</code>处理请求，不同的<code>ProtocolHandler</code>代表不同的连接类型。比如前面的<code>Http11NioProtocol</code>使用的是<code>NIOSocket</code>连接的，<code>Http11AprProtocol</code>使用的是<code>AIOSocket</code>连接的。而<code>ProtocolHandler</code>又包含了三个组件：<code>Endpoint</code>、<code>Processor</code>、<code>Adapter</code>。</p>
+<ul>
+<li><code>Endpoint</code>用于处理底层<code>Socket</code>的网络连接，<code>Processor</code>将<code>Endpoint</code>接收到的请求封装为<code>Request</code>，<code>Adapter</code>将<code>Request</code>交给<code>Container</code>进行处理。</li>
+<li><code>Endpoint</code>用于实现<code>TCP/IP</code>协议，而<code>Processor</code>实现<code>HTTP</code>协议，所以<code>Adapter</code>将请求适配到<code>Servlet</code>容器中进行处理。</li>
+<li><code>Endpoint</code>的抽象实现<code>AbstractEndpoint</code>里面定义了<code>Acceptor</code>和<code>AsyncTimeout</code>两个内部类和一个<code>Handler</code>接口。<code>Acceptor</code>监听请求，<code>AsyncTimeout</code>用于检查异步<code>Request</code>的超时，<code>Handler</code>处理接收到的<code>Socket</code>，然后调用<code>Processor</code>进行处理。</li>
+</ul>
+<p>最后，<code>Container</code>是如何处理请求并且返回给<code>Connector</code>呢？</p>
+<p>首先，<code>Container</code>结构图如下：</p>
+<p><img src="container%E7%BB%93%E6%9E%84.jpg" alt=""></p>
+<p><code>Container</code>内部包含了<code>4</code>个子容器，分别是：</p>
+<ul>
+<li><code>Engine</code>：引擎，用来管理多个站点，一个<code>Service</code>最多只能有一个<code>Engine</code>。</li>
+<li><code>Host</code>：表示一个站点，也可以叫虚拟主机，通过配置<code>Host</code>就可以添加站点。</li>
+<li><code>Context</code>：代表一个应用程序，对应平时开发的程序或者<code>WEB-INF</code>目录以及下面的<code>web.xml</code>文件。</li>
+<li><code>Wrapper</code>：每个<code>Wrapper</code>封装着一个<code>Servlet</code>。</li>
+</ul>
+<p><code>Host</code>与<code>Context</code>的区别就是<code>Context</code>表示一个应用，<code>Tomcat</code>默认配置下<code>webapps</code>目录下的每一个目录都是一个<code>Context</code>，<code>ROOT</code>目录存放主应用，其他目录存放子应用，整个<code>webapps</code>就是一个<code>Host</code>。</p>
+<p><code>Container</code>处理请求是通过<code>Pipeline-Valve</code>管道来处理的。<code>Pipeline-Valve</code>采用责任链模式，一个请求会有很多处理者依次进行处理，每个处理者负责自己的部分，处理完将结果返回，传给下一个处理者继续处理。</p>
+<p>但是<code>Pipeline-Valve</code>使用的责任链模式与普通的有些不同，主要有以下两点：</p>
+<ul>
+<li>每个<code>Pipeline</code>都有自己的<code>Valve</code>，而且是在管道的最后执行，这个<code>Valve</code>叫做<code>BaseValve</code>，不可删除。</li>
+<li>上层容器的管道的<code>BaseValve</code>会调用下层容器的管道。</li>
+</ul>
+<p><code>Container</code>包含的<code>4</code>个子容器对应的<code>BaseValve</code>是<code>StandardEngineValve</code>、<code>StandardHostValve</code>、<code>StandardContextValve</code>、<code>StandardWrapperValve</code>。所以<code>Pipeline</code>的处理流程图如下：</p>
+<p><img src="pipeline%E5%A4%84%E7%90%86%E6%B5%81%E7%A8%8B.jpg" alt=""></p>
+<ul>
+<li><code>Connector</code>接收到请求后首先调用顶层容器的<code>Pipeline</code>处理，也就是<code>EnginePipeline</code>。</li>
+<li>在<code>Engine</code>管道中会依次执行<code>EngineValve1</code>、<code>EngineValve2</code>等等，最后执行<code>StandardEngineValve</code>，调用<code>Host</code>管道。</li>
+<li>相同的步骤一直执行到<code>StandardWrapperValve</code>，会创建<code>FilterChain</code>，调用<code>doFilter</code>方法处理请求。<code>doFilter</code>包含配置的与请求相匹配的<code>Filter</code>和<code>Servlet</code>，会依次调用所有<code>Filter</code>的<code>doFilter</code>方法和<code>Servlet</code>的<code>service</code>方法，这样请求就得到了处理。</li>
+<li>当所有的<code>Pipeline-Valve</code>执行完后，<code>Container</code>处理完请求就将结果返回给<code>Connector</code>，<code>Connector</code>通过<code>Socket</code>将结果返回给客户端。</li>
+</ul>
+]]></content>
+      <categories>
+        <category>tomcat</category>
+      </categories>
+      <tags>
+        <tag>tomcat</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>全栈性能调优</title>
+    <url>/2021/02/22/%E5%85%A8%E6%A0%88%E6%80%A7%E8%83%BD%E8%B0%83%E4%BC%98/</url>
+    <content><![CDATA[<p>全栈性能调优</p>
+<a id="more"></a>
+
+<h3 id="MySQL"><a href="#MySQL" class="headerlink" title="MySQL"></a>MySQL</h3><h4 id="优化层面"><a href="#优化层面" class="headerlink" title="优化层面"></a>优化层面</h4><p><code>MySQL</code>数据库优化层面：</p>
+<ul>
+<li>商业需求：不合理需求造成资源投入产出比过低；无用功能堆积使得系统过度复杂影响整体性能。</li>
+<li>系统架构：数据库中存放的数据是否都合适在数据库中存放？是否合理利用了应用层<code>Cache</code>机制？数据层实现是否是最精简的？</li>
+<li><code>SQL</code>及索引优化：根据需求写出良好的<code>SQL</code>语句，创建有效的索引，了解<code>SQL</code>优化；优化的目的是减少中间结果集，降低物理<code>IO</code>。</li>
+<li>数据库表结构优化：根据数据库的范式，设计表结构；适当将表进行拆分，原本需要<code>join</code>查询只需要单表查询即可。</li>
+<li>系统配置优化：大多运行在<code>Linux</code>系统上，如<code>tcp</code>连接数限制、打开文件数限制、安全性的限制。</li>
+<li>硬件配置优化：数据库主机的<code>IO</code>性能是最需要优先考虑的因素；数据库主机和普通的应用程序服务器相比，资源要相对集中很多，单台主机所需要进行的计算量也大很多，所以数据库主机的<code>CPU</code>处理能力也是一个重要的因素。同时数据库主机的网络设备的性能也会成为系统的瓶颈。</li>
+</ul>
+<h4 id="SQL-慢查询"><a href="#SQL-慢查询" class="headerlink" title="SQL 慢查询"></a>SQL 慢查询</h4><p>首先我们要对对有问题的<code>SQL</code>进行筛选。</p>
+<p>查看是否开启了慢查询：<code>SHOW VARIABLES LIKE &#39;%slow_query_log%;&#39;</code>。<code>slow_query_log_file</code>为慢查询日志的位置。慢查询标准为<code>10s</code>，可以通过<code>SHOW VARIABLES LIKE &#39;%long_query%&#39;;</code>查看。</p>
+<p>开启慢查询：<code>SET GLOBAL slow_query_log=ON;</code>。模拟慢查询：<code>SELECT SLEEP(12)</code>。查看日志：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"># Time: 2021-02-23T13:50:29.748865Z</span><br><span class="line"># User@Host: root[root] @  [localhost]  Id: 21457</span><br><span class="line"># Query_time: 12.001965  Lock_time: 0.000000 Rows_sent: 1  Rows_examined: 1</span><br><span class="line">use vhr;</span><br><span class="line">SET timestamp&#x3D;1614088217;</span><br><span class="line">SELECT SLEEP(12);</span><br></pre></td></tr></table></figure>
+
+<p>来看一个实际情况。</p>
+<p>我们可以设置自定义慢查询时间：<code>SET GLOBAL long_query_time=1;</code>。</p>
+<p>创建一个数据库以及数据表。再写一个存储过程创建<code>100000</code>条数据，类似下面这样：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">drop PROCEDURE if EXISTS test;</span><br><span class="line"></span><br><span class="line">delimiter $$</span><br><span class="line"></span><br><span class="line">create PROCEDURE test()</span><br><span class="line">BEGIN</span><br><span class="line">DECLARE i int;</span><br><span class="line">set i &#x3D; 2;</span><br><span class="line">while i &lt; 100000 DO</span><br><span class="line">			INSERT INTO test(name) VALUES (CONCAT(&quot;test&quot;,i));</span><br><span class="line">			set i &#x3D; i + 1;</span><br><span class="line">end while;</span><br><span class="line">END</span><br><span class="line">$$</span><br><span class="line">delimiter ;</span><br><span class="line">CALL test();</span><br></pre></td></tr></table></figure>
+
+<p>执行<code>UPDATE test SET name=testtest;</code></p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"># Time: 2021-02-23T15:02:12.010783Z</span><br><span class="line"># User@Host: root[root] @  [localhost]  Id: 21476</span><br><span class="line"># Query_time: 1.136371  Lock_time: 0.000260 Rows_sent: 0  Rows_examined: 100000</span><br><span class="line">SET timestamp&#x3D;1614092530;</span><br><span class="line">UPDATE test SET name&#x3D;&#39;testtest&#39;;</span><br></pre></td></tr></table></figure>
+
+<p>查询的时间是<code>1.136371s</code>，锁定时间仅为<code>0.000260s</code>，一共检测了<code>100000</code>条数据，发送<code>0</code>条数据。</p>
+<p>在实际生产环境中，可能会产生大量的慢查询日志。这时我们可以通过对日志的分析生成报表，通过报表进行优化。</p>
+<h5 id="mysqldumpslow"><a href="#mysqldumpslow" class="headerlink" title="mysqldumpslow"></a>mysqldumpslow</h5><p><code>mysqldumpslow</code>是<code>mysql</code>自带的用来分析慢查询的工具。主要有以下参数：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">Usage: mysqldumpslow [ OPTS... ] [ LOGS... ]</span><br><span class="line"></span><br><span class="line">Parse and summarize the MySQL slow query log. Options are</span><br><span class="line"></span><br><span class="line">  --verbose    verbose</span><br><span class="line">  --debug      debug</span><br><span class="line">  --help       write this text to standard output</span><br><span class="line"></span><br><span class="line">  -v           verbose</span><br><span class="line">  -d           debug</span><br><span class="line">  -s ORDER     what to sort by (al, at, ar, c, l, r, t), &#39;at&#39; is default</span><br><span class="line">                al: average lock time</span><br><span class="line">                ar: average rows sent</span><br><span class="line">                at: average query time</span><br><span class="line">                 c: count</span><br><span class="line">                 l: lock time</span><br><span class="line">                 r: rows sent</span><br><span class="line">                 t: query time  </span><br><span class="line">  -r           reverse the sort order (largest last instead of first)</span><br><span class="line">  -t NUM       just show the top n queries</span><br><span class="line">  -a           don&#39;t abstract all numbers to N and strings to &#39;S&#39;</span><br><span class="line">  -n NUM       abstract numbers with at least n digits within names</span><br><span class="line">  -g PATTERN   grep: only consider stmts that include this string</span><br><span class="line">  -h HOSTNAME  hostname of db server for *-slow.log filename (can be wildcard),</span><br><span class="line">               default is &#39;*&#39;, i.e. match all</span><br><span class="line">  -i NAME      name of server instance (if using mysql.server startup script)</span><br><span class="line">  -l           don&#39;t subtract lock time from total time</span><br></pre></td></tr></table></figure>
+
+<p>命令行输入<code>mysqldumpslow --verbose 日志路径</code>可以看到类似的输出：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">Reading mysql slow query log from &#x2F;var&#x2F;lib&#x2F;mysql&#x2F;11e359f0dd39-slow.log</span><br><span class="line">Count: 1  Time&#x3D;803.70s (803s)  Lock&#x3D;0.00s (0s)  Rows&#x3D;0.0 (0), root[root]@[localhost]</span><br><span class="line">  CALL test()</span><br><span class="line"></span><br><span class="line">Count: 1  Time&#x3D;12.00s (12s)  Lock&#x3D;0.00s (0s)  Rows&#x3D;1.0 (1), root[root]@[localhost]</span><br><span class="line">  select SLEEP(N)</span><br><span class="line"></span><br><span class="line">Count: 1  Time&#x3D;1.02s (1s)  Lock&#x3D;0.01s (0s)  Rows&#x3D;0.0 (0), root[root]@[localhost]</span><br><span class="line">  update test set name &#x3D; &#39;S&#39;</span><br></pre></td></tr></table></figure>
+
+<p>默认按照执行时间排序。</p>
+<p><code>mysqldumpslow</code>使用很方便，但是提供的信息较少，比如<code>CPU</code>、<code>IO</code>等信息都没有。</p>
+<h5 id="pt-query-digest"><a href="#pt-query-digest" class="headerlink" title="pt-query-digest"></a>pt-query-digest</h5><p><code>pt-query-digest</code>是用于分析慢查询的一个第三方工具。</p>
+<p><code>pt-summary</code>可以获得服务器相关的数据，包括<code>CPU</code>、网卡、内存、硬盘等信息。</p>
+<p><code>pt-diskstats</code>输出的是磁盘的<code>IO</code>数据。</p>
+<p><code>pt-mysql-summary</code>可以输出数据库的相关数据。</p>
+<h6 id="pt-query-digest-1"><a href="#pt-query-digest-1" class="headerlink" title="pt-query-digest"></a>pt-query-digest</h6><p>执行<code>pt-query-digest XXX.log</code>会有和下面类似的输出：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line"># 140ms user time, 20ms system time, 25.94M rss, 220.49M vsz</span><br><span class="line"># Current date: Wed Feb 24 01:51:42 2021</span><br><span class="line"># Hostname: irvlin</span><br><span class="line"># Files: 11e359f0dd39-slow.log</span><br><span class="line"># Overall: 4 total, 4 unique, 0.00 QPS, 0.15x concurrency ________________</span><br><span class="line"># Time range: 2021-02-23T13:50:29 to 2021-02-23T15:23:45</span><br><span class="line"># Attribute          total     min     max     avg     95%  stddev  median</span><br><span class="line"># &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;     &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D; &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D; &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D; &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D; &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D; &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D; &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;</span><br><span class="line"># Exec time           818s      1s    804s    204s    793s    342s    403s</span><br><span class="line"># Lock time           12ms       0    11ms     3ms    11ms     5ms     6ms</span><br><span class="line"># Rows sent              1       0       1    0.25    0.99    0.43       0</span><br><span class="line"># Rows examine     195.31k       0  97.66k  48.83k  97.04k  48.52k  97.04k</span><br><span class="line"># Query size            85      11      29   21.25   28.75    8.01   28.75</span><br><span class="line"></span><br><span class="line"># Profile</span><br><span class="line"># Rank Query ID                            Response time  Calls R&#x2F;Call   V</span><br><span class="line"># &#x3D;&#x3D;&#x3D;&#x3D; &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D; &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D; &#x3D;&#x3D;&#x3D;&#x3D;&#x3D; &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D; &#x3D;</span><br><span class="line">#    1 0x7370C957789053F565147B44C0D599A5  803.6994 98.3%     1 803.6994  0.00 CALL test</span><br><span class="line"># MISC 0xMISC                               14.1655  1.7%     3   4.7218   0.0 &lt;3 ITEMS&gt;</span><br><span class="line"></span><br><span class="line"># Query 1: 0 QPS, 0x concurrency, ID 0x7370C957789053F565147B44C0D599A5 at byte 400</span><br><span class="line"># This item is included in the report because it matches --limit.</span><br><span class="line"># Scores: V&#x2F;M &#x3D; 0.00</span><br><span class="line"># Time range: all events occurred at 2021-02-23T14:42:01</span><br><span class="line">#    属性      百分比  总数      最小     最大    平均           标准差   中位数</span><br><span class="line"># Attribute    pct   total     min     max     avg     95%  stddev  median</span><br><span class="line"># &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D; &#x3D;&#x3D;&#x3D; &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D; &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D; &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D; &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D; &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D; &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D; &#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;</span><br><span class="line"># Count         25       1</span><br><span class="line"># Exec time     98    804s    804s    804s    804s    804s       0    804s</span><br><span class="line"># Lock time      1   149us   149us   149us   149us   149us       0   149us</span><br><span class="line"># Rows sent      0       0       0       0       0       0       0       0</span><br><span class="line"># Rows examine   0       0       0       0       0       0       0       0</span><br><span class="line"># Query size    12      11      11      11      11      11       0      11</span><br><span class="line"># String:</span><br><span class="line"># Databases    test</span><br><span class="line"># Hosts        localhost</span><br><span class="line"># Users        root</span><br><span class="line"># Query_time distribution                                      执行时间分布</span><br><span class="line">#   1us</span><br><span class="line">#  10us</span><br><span class="line"># 100us</span><br><span class="line">#   1ms</span><br><span class="line">#  10ms</span><br><span class="line"># 100ms</span><br><span class="line">#    1s</span><br><span class="line">#  10s+  ################################################################</span><br><span class="line">CALL test()\G</span><br></pre></td></tr></table></figure>
+
+<p>以上输出分为两部分，前面是总的执行数据，后面是具体每一次的数据。如果要全部显示可以添加参数<code>--limit=100%</code>。</p>
+<h6 id="pt-index-usage"><a href="#pt-index-usage" class="headerlink" title="pt-index-usage"></a>pt-index-usage</h6><p><code>pt-index-usage</code>用于分析索引的使用情况。</p>
+<h6 id="pt-duplicate-key-checker"><a href="#pt-duplicate-key-checker" class="headerlink" title="pt-duplicate-key-checker"></a>pt-duplicate-key-checker</h6><p><code>pt-duplicate-key-checker</code>用于检查重复索引。</p>
+<h6 id="pt-ioprofile"><a href="#pt-ioprofile" class="headerlink" title="pt-ioprofile"></a>pt-ioprofile</h6><p><code>pt-ioprofile</code>用于观察特定进程的<code>IO</code>信息，其原理是对某个<code>PID</code>加一个<code>strace</code>进程进行<code>IO</code>分析。</p>
+<h6 id="pt-config-diff"><a href="#pt-config-diff" class="headerlink" title="pt-config-diff"></a>pt-config-diff</h6><p><code>pt-config-diff</code>用于比较两个配置文件的差异。</p>
+<h6 id="pt-find"><a href="#pt-find" class="headerlink" title="pt-find"></a>pt-find</h6><p><code>pt-find</code>用于查找表和执行命令。例如<code>pt-find --user=root --password=123 --tablesize +1M</code>可以找出数据库中大于<code>1M</code>的表。</p>
+<h6 id="pt-kill"><a href="#pt-kill" class="headerlink" title="pt-kill"></a>pt-kill</h6><p><code>pt-kill</code>可以杀死符合标准的<code>mysql</code>进程。例如<code>pt-kill --user=root --password=123 --busy-time 3 --kill</code>可以杀死大于<code>3</code>秒的查询。</p>
+<h6 id="pt-show-grants"><a href="#pt-show-grants" class="headerlink" title="pt-show-grants"></a>pt-show-grants</h6><p><code>pt-show-grants</code>用于查看<code>mysql</code>授权（集群常用，授权复制）。</p>
+<h6 id="pt-table-checksum"><a href="#pt-table-checksum" class="headerlink" title="pt-table-checksum"></a>pt-table-checksum</h6><p><code>pt-table-checksum</code>用于验证数据库复制的完整性（集群常用，主从复制后检验）。</p>
+<h5 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h5><p>三大类有问题的<code>SQL</code>语句：</p>
+<ul>
+<li>查询次数多且每次查询耗时长的<code>sql</code>。通过<code>pt-query-digest</code>命令可以查看。</li>
+<li><code>IO</code>大的<code>sql</code>。检测的数据量越大，<code>IO</code>量也就越大。</li>
+<li>未命中索引的<code>sql</code>。如果<code>Rows examine</code>与<code>Rows Sent</code>数量差距过大，说明该<code>sql</code>索引的命中率不高，应该调整索引。</li>
+</ul>
+<h4 id="explain-分析-SQL-执行计划"><a href="#explain-分析-SQL-执行计划" class="headerlink" title="explain 分析 SQL 执行计划"></a>explain 分析 SQL 执行计划</h4><p>前面我们通过慢查询找出了有问题的<code>sql</code>，现在我们可以使用<code>explain</code>分析<code>sql</code>的执行效率。</p>
+<p>在<code>sql</code>语句前面加上<code>explain</code>即可，例如：<code>EXPLAIN SELECT * FROM test</code>。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">*************************** 1. row ***************************</span><br><span class="line">           id: 1</span><br><span class="line">  select_type: SIMPLE</span><br><span class="line">        table: test</span><br><span class="line">   partitions: NULL</span><br><span class="line">         type: ALL</span><br><span class="line">possible_keys: NULL</span><br><span class="line">          key: NULL</span><br><span class="line">      key_len: NULL</span><br><span class="line">          ref: NULL</span><br><span class="line">         rows: 100241</span><br><span class="line">     filtered: 100.00</span><br><span class="line">        Extra: NULL</span><br><span class="line">1 row in set, 1 warning (0.00 sec)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p><code>id</code>：数字越大越先执行，如果数字一样大，就从上往下依次执行。如果该列为<code>null</code>表示这是一个结果集，不需要使用它进行查询。</p>
+</li>
+<li><p><code>select_type</code>：</p>
+<ul>
+<li><code>SIMPLE</code>：表示没有<code>UNION</code>操作或者不包含子查询的简单<code>SELECT</code>查询。有连接查询时，最外层的查询为<code>SIMPLE</code>。</li>
+<li><code>PRIMARY</code>：需要<code>UNION</code>操作或者包含子查询的<code>SELECT</code>查询，位于最外层的查询为<code>PRIMARY</code>。</li>
+<li><code>UNION</code>：<code>UNION</code>连接的两个<code>SELECT</code>查询，第一个查询是<code>DERVIED</code>派生表，除了第一个表外，第二个以后的表都是<code>UNION</code>。</li>
+<li><code>UNION RESULT</code>：包含<code>UNION</code>的结果集，在<code>UNION</code>和<code>UNION ALL</code>语句中，因为不需要参与查询，所以<code>id</code>为<code>null</code>。</li>
+<li><code>DEPENDENT RESULT</code>：和<code>UNION</code>一样，出现在<code>UNION</code>和<code>UNION ALL</code>语句中，但是这个查询受到外部查询的影响。</li>
+<li><code>SUBQUERY</code>：除了<code>FROM</code>中包含的子查询外，其他地方出现的子查询都可能是<code>SUBQUERY</code>。</li>
+<li><code>DEPENDENT SUBQUERY</code>：表示这个<code>SUBQUERY</code>的查询受到外部表查询的影响。</li>
+<li><code>DERIVED</code>：<code>FROM</code>中出现的子查询，也叫做派生表。</li>
+<li><code>MATERIALIZATION</code>：物化通过将子查询结果作为一个临时表来加快查询执行的速度，正常来说是常驻内存，下次查询会再次引用临时表。</li>
+</ul>
+</li>
+<li><p><code>table</code>：显示查询的表名，如果查询使用了别名，这里显示的是别名；如果不涉及对数据表的操作，显示<code>null</code>；如果显示的是尖括号<code>&lt;derived N&gt;</code>就表示这个是临时表，<code>N</code>是执行计划中的<code>id</code>，表示结果来自于这个查询产生。</p>
+</li>
+<li><p><code>type</code>：</p>
+<ul>
+<li><code>SYSTEM</code>：表中只有一行数据或者是空表，且只能用于<code>myisam</code>和<code>memory</code>表，如果是<code>InnoDB</code>表，显示的是<code>ALL</code>或<code>INDEX</code>。</li>
+<li><code>CONST</code>：使用唯一索引或主键，返回的记录一定是<code>1</code>行的等值<code>WHERE</code>条件时，<code>type</code>为<code>CONST</code>。</li>
+<li><code>EQ_REF</code>：出现在连接多表的查询计划中，驱动表循环获取数据，这行数据是第二个表的主键或者唯一索引，作为条件查询只能返回一条数据，且必须为<code>null</code>。唯一索引和主键是多列时，只有所有的列都用作比较时才会出现<code>eq_ref</code>。</li>
+<li><code>REF</code>：不要求连接顺序，也没有主键和唯一索引的要求，只要使用相等条件检索时就可能出现。</li>
+<li><code>FULLTEXT</code>：全文索引检索。全文索引的优先级高，如果全文索引和普通索引同时存在，<code>MySQL</code>会优先使用全文索引。</li>
+<li><code>REF_OR_NULL</code>：和<code>ref</code>类似，只是增加了<code>null</code>值的比较，实际用的不多。</li>
+<li><code>UNIQUE_SUBQUERY</code>：用于<code>WHERE</code>中的<code>IN</code>子查询，子查询返回不重复唯一值。</li>
+<li><code>INDEX_SUBQUERY</code>：用于<code>IN</code>子查询使用到了辅助索引或者<code>IN</code>常数列表，子查询可能返回重复值，可以使用索引将子查询去重。</li>
+<li><code>RANGE</code>：索引返回扫描，常见于使用<code>&gt;, &lt;, is null, between, in, like</code>等运算符的查询中。</li>
+<li><code>INDEX_MERGE</code>：表示查询使用了两个以上的索引，最后取交集或并集，常见<code>AND</code>、<code>OR</code>的条件使用了不同的索引。</li>
+<li><code>INDEX</code>：索引全表扫描。把索引从头到尾扫描一遍，常见于使用索引列就可以处理不需要读取数据文件的查询，可以使用索引排序或分组的查询。</li>
+<li><code>ALL</code>：扫描全表，然后在<code>server</code>层进行过滤返回符合要求的记录。</li>
+</ul>
+<p>以上几种<code>type</code>的效率由高到低，也就是说<code>ALL</code>的性能是最差的。一般达到<code>RANGE</code>的语句性能是比较好的。</p>
+</li>
+<li><p><code>possible_keys</code>：查询可能使用到的索引。</p>
+</li>
+<li><p><code>key</code>：查询实际使用到的索引。</p>
+</li>
+<li><p><code>key_len</code>：用于处理查询的索引长度，如果是单列索引，那就是整个索引的长度；如果是多列索引，那么查询不一定都能使用到所有的列，具体使用了哪些列就会计算进去。另外，<code>key_len</code>只计算<code>WHERE</code>条件用到的索引长度。</p>
+</li>
+<li><p><code>ref</code>：如果使用的常数等值查询，会显示<code>CONST</code>，如果是连接查询，被驱动表的执行计划会显示驱动表的关联字段；如果是条件使用了表达式或函数，或者条件列发生了内部隐式转换，这里可能显示为<code>FUNC</code>。</p>
+</li>
+<li><p><code>rows</code>：估算的扫描行数。</p>
+</li>
+<li><p><code>extra</code>：</p>
+<ul>
+<li><code>No tables used</code>：不带<code>FROM</code>的查询或者<code>FROM dual</code>查询。</li>
+<li><code>NULL</code>：查询的列没有被索引覆盖，并且<code>WHERE</code>筛选条件是索引的前导列。意味着使用了索引，带式部分字段未被索引覆盖。</li>
+<li><code>Using index</code>：查询时直接通过索引就可以获取数据。</li>
+<li><code>Using where</code>：查询的列没有被索引覆盖，<code>WHERE</code>筛选条件非索引的前导列。</li>
+<li><code>Using where; Using index</code>：查询的列被索引覆盖，并且<code>WHERE</code>筛选条件是索引列之一但不是索引的前导列。</li>
+<li><code>Using index condition</code>：查询的列不完全被索引覆盖，<code>WHERE</code>条件是一个前导列的范围。</li>
+<li><code>Using temporary</code>：使用临时表存储中间结果。</li>
+<li><code>Using filesort</code>：对结果使用一个外部索引排序。</li>
+<li><code>Using intersect</code>：使用<code>AND</code>的各个索引的条件时，该信息表示从处理结果中获取交集。</li>
+<li><code>Using union</code>：使用<code>OR</code>连接各个使用索引的条件时，该信息表示从处理结果中获取并集。</li>
+<li><code>Using sort_union</code>、<code>Using_sort_intersection</code>：用<code>AND</code>和<code>OR</code>查询信息量大时，先查询主键，然后进行排序合并后返回结果。</li>
+</ul>
+</li>
+</ul>
+<h4 id="慢查询优化思路"><a href="#慢查询优化思路" class="headerlink" title="慢查询优化思路"></a>慢查询优化思路</h4><ul>
+<li>优化更需要优化的<code>sql</code>，比如那些高并发的<code>sql</code>。</li>
+<li>定位优化对象的性能瓶颈。</li>
+<li>明确的优化目标。</li>
+<li>从执行计划入手。</li>
+<li>永远用小结果集驱动大结果集。</li>
+<li>尽可能在索引中完成排序。</li>
+<li>只取出自己需要的列，不要用<code>SELECT *</code>。</li>
+<li>仅使用最有效的过滤条件。</li>
+<li>尽可能避免复杂的<code>JOIN</code>和子查询。</li>
+<li>小心使用<code>ORDER BY</code>、<code>GROUP BY</code>、<code>DISTINCT</code>，尽量使用索引。</li>
+<li>合理设计并使用索引。</li>
+</ul>
+<h5 id="join-语句优化"><a href="#join-语句优化" class="headerlink" title="join 语句优化"></a>join 语句优化</h5><p><code>mysql</code>关联查询使用的算法是<code>Nested-Loop Join</code>，通过驱动表的结果集作为循环的基础数据，然后一条一条地通过该结果集中的数据作为过滤条件到下一个表中查询数据，最后合并结果。所以我们要尽量减少<code>Nested-Loop</code>的次数。</p>
+<p><code>Nested-Loop Join</code>有三种变种：</p>
+<ul>
+<li><code>Simple Nested-Loop Join</code>：简单嵌套循环连接，非常暴力，效率差。</li>
+<li><code>Index Nested-Loop Join</code>：索引嵌套循环连接。当被驱动表<code>JOIN</code>的列有索引时，可以减少被驱动表的匹配次数，提升性能。但如果索引是辅助索引且返回的数据还包含其他数据，则会回表查询数据，增加了一些<code>IO</code>。</li>
+<li><code>Block Nested-Loop Join</code>：块嵌套循环连接。是对简单嵌套循环连接的优化，相当于加了一块缓冲区，把参与查询的列缓存到缓冲区中，然后拿缓冲区中的数据批量与被驱动表的数据进行匹配，减少了被驱动表循环的次数。缓冲区默认的大小是<code>256K</code>。</li>
+</ul>
+<p>综上，对于<code>JOIN</code>语句的优化思路有以下几个：</p>
+<ul>
+<li>尽可能减少<code>Nested-Loop</code>的次数。</li>
+<li>优先优化<code>Nested-Loop</code>的内层循环。</li>
+<li>保证<code>JOIN</code>语句中被驱动表的<code>JOIN</code>字段已加索引。</li>
+<li>如果无法加索引就使用块嵌套循环连接，减少内层循环次数。</li>
+<li>并发量大时，尽量不使用<code>JOIN</code>，<code>JOIN</code>语句锁定的资源过多，会阻塞其他线程。</li>
+<li>复杂的<code>QUERY</code>语句可以拆分成多个简单的<code>QUERY</code>语句分步执行。</li>
+</ul>
+<h5 id="order-by-语句优化"><a href="#order-by-语句优化" class="headerlink" title="order by 语句优化"></a>order by 语句优化</h5><ul>
+<li><code>ORDER BY</code>排序可以使用索引进行优化，只要是索引的前导列都可以使索引生效，这样就不需要在额外的内存或文件中排序。</li>
+<li>对于不能利用索引避免排序的<code>SQL</code>语句，数据库有自己的排序功能满足需求，这时执行计划是<code>Using filesort</code>。<code>MySQL</code>有一个参数<code>sort_buffer_size</code>，默认值为<code>256K</code>，如果要排序的数据小于这个值，就可以在缓冲区中排序，否则就要使用额外的内存或文件了。</li>
+<li>分别在查询字段、<code>WHERE</code>条件、排序字段上做出各种可能的组合，主要就是看有没有索引，索引在以上三个关注点上的生效情况。</li>
+</ul>
+<h5 id="group-by-语句优化"><a href="#group-by-语句优化" class="headerlink" title="group by 语句优化"></a>group by 语句优化</h5><p><code>GROUP BY</code>语句本质上也进行了排序操作（<code>mysql 8</code>优化了，默认不进行排序）。</p>
+<p><code>GROUP BY</code>一共有三种类型：</p>
+<ul>
+<li><code>Loose Index Scan</code>：先执行<code>GROUP BY</code>，再执行<code>WHERE</code>条件。仅读取<code>GROUP BY</code>条件中有的索引键，再根据<code>WHERE</code>条件进行筛选。</li>
+<li><code>Tight Index Scan</code>：先执行<code>WHERE</code>条件，再执行<code>GROUP BY</code>。读取所有满足条件的索引键，然后再根据读取的数据完成<code>GROUP BY</code>操作。</li>
+<li><code>Using temporary</code>：当<code>MySQL</code>找不到索引完成<code>GROUP BY</code>操作时，会使用临时表来完成。效率低下。</li>
+</ul>
+<h5 id="distinct-语句优化"><a href="#distinct-语句优化" class="headerlink" title="distinct 语句优化"></a>distinct 语句优化</h5><p><code>DISTINCT</code>和<code>GROUP BY</code>的操作很相似，就是分组后在每组只取出一条记录，达到去重的目的。</p>
+<h4 id="索引种类"><a href="#索引种类" class="headerlink" title="索引种类"></a>索引种类</h4><ul>
+<li><code>B-Tree</code>索引，使用最频繁。</li>
+<li><code>Hash</code>索引，效率高。</li>
+<li><code>Fulltext</code>索引，目前只有<code>char</code>、<code>varchar</code>、<code>text</code>类型可以。</li>
+<li><code>R-Tree</code>索引，比较少见，主要用于空间数据检索。</li>
+</ul>
+<h4 id="判断是否需要创建索引"><a href="#判断是否需要创建索引" class="headerlink" title="判断是否需要创建索引"></a>判断是否需要创建索引</h4><ul>
+<li>较频繁的作为查询条件的字段应该创建索引。</li>
+<li>唯一性太差的字段不应单独创建索引，可以作为复合索引。</li>
+<li>更新频繁的字段不应创建索引。</li>
+<li>不会在<code>WHERE</code>子句中出现的字段不应创建索引。</li>
+</ul>
+<h4 id="索引失效"><a href="#索引失效" class="headerlink" title="索引失效"></a>索引失效</h4><ul>
+<li>复合索引尽量全匹配</li>
+<li>最左匹配原则（带头索引不能死，中间索引不能断）</li>
+<li>不要在索引上做任何操作，比如计算、函数等等。</li>
+<li>不使用范围条件。</li>
+<li>只查询需要查询的列。减少<code>SELECT *</code>。</li>
+<li>使用<code>!=</code>、<code>&lt;</code>、<code>&gt;</code>、<code>IS NULL</code>、<code>IS NOT NULL</code>判断时会导致索引失效。</li>
+<li>索引字段使用<code>LIKE</code>以通配符开头匹配时，会导致索引失效。</li>
+<li>索引字段是字符串，但查询时不加单引号，会导致索引失效。</li>
+<li>索引字段使用<code>OR</code>时，会导致索引失效。</li>
+</ul>
+<h4 id="数据量大时的优化思路"><a href="#数据量大时的优化思路" class="headerlink" title="数据量大时的优化思路"></a>数据量大时的优化思路</h4><ul>
+<li>当数据量大时，比如已经达到了百万级别，应该放弃在<code>MySQL</code>中做<code>JOIN</code>操作，那样会锁住大量资源。建议根据索引单表取出数据，然后在程序里进行逻辑处理。</li>
+<li>使用<code>nosql</code>，例如<code>redis</code>进行缓存数据，减轻<code>MySQL</code>的压力。</li>
+</ul>
+<h4 id="其他优化原则"><a href="#其他优化原则" class="headerlink" title="其他优化原则"></a>其他优化原则</h4><ul>
+<li>不在数据库做运算。</li>
+<li>控制列的数量。</li>
+<li>平衡范式和冗余。</li>
+<li>拒绝大<code>SQL</code>、事务、批量。</li>
+<li>用合适的字段节约空间。</li>
+<li>避免使用<code>NULL</code>字段。</li>
+<li>少用<code>text</code>类型。</li>
+<li>分页<code>LIMIT</code>优化（偏移量越大，执行越慢）。</li>
+</ul>
+<h4 id="数据库结构优化"><a href="#数据库结构优化" class="headerlink" title="数据库结构优化"></a>数据库结构优化</h4><ul>
+<li>表范式化原则。一般情况下设计表要符合三大范式。</li>
+<li>反范式化原则。当数据量大或者并发高的时候，可以适当给数据表添加一些冗余字段，减少数据库的<code>JOIN</code>等操作。</li>
+<li>垂直拆分原则。不常用的字段单独放到一个表中。大字段单独放到一个表中。经常使用的字段放到一起。</li>
+<li>水平拆分原则。水平拆分是为了解决单表的数据量过大的问题。通常是对<code>id</code>列进行<code>hash</code>运算，如果要分成<code>5</code>个表就对<code>5</code>取模。</li>
+</ul>
+<hr>
+<h3 id="Tomcat"><a href="#Tomcat" class="headerlink" title="Tomcat"></a>Tomcat</h3><p><code>Tomcat</code>是经常使用的<code>Servlet</code>容器之一，很多线上产品都使用<code>Tomcat</code>充当服务器，所以<code>Tomcat</code>的优化也尤为重要。</p>
+<p>首先进入<code>Tomcat conf</code>目录下的<code>tomcat-users.xml</code>文件，添加配置：</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">role</span> <span class="attr">rolename</span>=<span class="string">"manager"</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">role</span> <span class="attr">rolename</span>=<span class="string">"manager-gui"</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">role</span> <span class="attr">rolename</span>=<span class="string">"admin"</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">role</span> <span class="attr">rolename</span>=<span class="string">"admin-gui"</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">user</span> <span class="attr">username</span>=<span class="string">"tomcat"</span> <span class="attr">password</span>=<span class="string">"tomcat"</span> <span class="attr">roles</span>=<span class="string">"admin-gui,admin,manager-gui,manager"</span>/&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>启动<code>Tomcat</code>，访问<code>localhost:8080/manager/status</code>输入上面配置的用户名和密码，就可以看到页面了。里面包含<code>JVM</code>、线程、以及服务器的一些状态。</p>
+<h4 id="执行器（线程池）"><a href="#执行器（线程池）" class="headerlink" title="执行器（线程池）"></a>执行器（线程池）</h4><ul>
+<li>每个请求都是一个线程，我们可以打开线程池提高性能。在<code>conf</code>目录中的<code>server.xml</code>文件中，去掉注释：</li>
+</ul>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">Executor</span> <span class="attr">name</span>=<span class="string">"tomcatThreadPool"</span> <span class="attr">namePrefix</span>=<span class="string">"catalina-exec-"</span></span></span><br><span class="line"><span class="tag">    <span class="attr">maxThreads</span>=<span class="string">"150"</span> <span class="attr">minSpareThreads</span>=<span class="string">"4"</span>/&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>然后将之前的<code>Connector</code>注释掉，打开带线程池的<code>Connector</code>。</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="comment">&lt;!--</span></span><br><span class="line"><span class="comment">&lt;Connector port="8080" protocol="HTTP/1.1"</span></span><br><span class="line"><span class="comment">           connectionTimeout="20000"</span></span><br><span class="line"><span class="comment">           redirectPort="8443" /&gt;</span></span><br><span class="line"><span class="comment">--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">Connector</span> <span class="attr">executor</span>=<span class="string">"tomcatThreadPool"</span></span></span><br><span class="line"><span class="tag">           <span class="attr">port</span>=<span class="string">"8080"</span> <span class="attr">protocol</span>=<span class="string">"HTTP/1.1"</span></span></span><br><span class="line"><span class="tag">           <span class="attr">connectionTimeout</span>=<span class="string">"20000"</span></span></span><br><span class="line"><span class="tag">           <span class="attr">redirectPort</span>=<span class="string">"8443"</span> /&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>重启<code>Tomcat</code>访问<code>localhost:8080/manager/status</code>：</p>
+<p><img src="tomcat%E7%BA%BF%E7%A8%8B%E6%B1%A0.png" alt=""></p>
+<p>可以看到当前线程数是我们设置的<code>minSpareThreads</code>。</p>
+<h4 id="运行模式"><a href="#运行模式" class="headerlink" title="运行模式"></a>运行模式</h4><ul>
+<li><code>BIO</code>：<code>Tomcat 7</code>之前的默认的阻塞模式，性能低下，之后的版本已经抛弃了这种模式。</li>
+<li><code>NIO</code>：同步非阻塞模式，<code>Tomcat</code>内部实现了<code>reactor</code>线程模型，性能较高。</li>
+<li><code>NIO2</code>：纯异步模式，<code>Tomcat</code>内部实现了<code>preactor</code>线程模型。</li>
+<li><code>APR</code>：从操作系统层面解决了异步<code>IO</code>问题，大幅提升性能。</li>
+</ul>
+<h5 id="BIO、NIO"><a href="#BIO、NIO" class="headerlink" title="BIO、NIO"></a>BIO、NIO</h5><p>我们使用<code>Tomcat 7</code>测试<code>BIO</code>运行模式。</p>
+<p>启动<code>Tomcat 7</code>，访问<code>localhost:8080/manager/status</code>可以看到默认是<code>BIO</code>模型。使用<code>jmeter</code>进行压测，一秒内发送给<code>localhost:8080</code>根路径<code>10000</code>个请求，循环<code>10</code>次。</p>
+<p><img src="%E7%BA%BF%E7%A8%8B%E7%BB%84.png" alt=""></p>
+<p><img src="http%E8%AF%B7%E6%B1%82.png" alt=""></p>
+<p><img src="BIO.png" alt=""></p>
+<p>可以看到吞吐量大概是<code>2900</code>左右。</p>
+<p>然后我们再使用<code>Tomcat 9</code>进行压测。</p>
+<p><img src="NIO.png" alt=""></p>
+<p>使用<code>NIO</code>的吞吐量达到了<code>7500</code>。</p>
+<h5 id="NIO2"><a href="#NIO2" class="headerlink" title="NIO2"></a>NIO2</h5><p>在<code>server.xml</code>中修改配置：</p>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">Connector</span> <span class="attr">port</span>=<span class="string">"8080"</span> <span class="attr">protocol</span>=<span class="string">"org.apache.coyote.http11.Http11Nio2Protocol"</span></span></span><br><span class="line"><span class="tag">           <span class="attr">connectionTimeout</span>=<span class="string">"20000"</span></span></span><br><span class="line"><span class="tag">           <span class="attr">redirectPort</span>=<span class="string">"8443"</span> /&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="线程"><a href="#线程" class="headerlink" title="线程"></a>线程</h4><h5 id="main-线程"><a href="#main-线程" class="headerlink" title="main 线程"></a>main 线程</h5><ul>
+<li><code>main</code>线程是<code>Tomcat</code>主要线程，主要作用是通过启动包来对容器进行点火。</li>
+<li><code>main</code>的作用是把容器组件拉起来，然后阻塞在<code>8005</code>端口，等待关闭。</li>
+</ul>
+<h5 id="startStop-线程"><a href="#startStop-线程" class="headerlink" title="startStop 线程"></a>startStop 线程</h5><ul>
+<li><code>Tomcat 9</code>中已经没有<code>startStop</code>线程了。</li>
+<li><code>Tomcat</code>按照层级进行异步启动，对于每一层级的组件都是采用<code>startStop</code>线程进行启动。</li>
+<li>当组件启动完成后，该线程就退出了，生命周期仅限于此。</li>
+</ul>
+<h5 id="AsyncFileHandlerWriter-线程"><a href="#AsyncFileHandlerWriter-线程" class="headerlink" title="AsyncFileHandlerWriter 线程"></a>AsyncFileHandlerWriter 线程</h5><p>专门用于处理日志的线程。</p>
+<h5 id="ContainerBackgroundProcessor-线程"><a href="#ContainerBackgroundProcessor-线程" class="headerlink" title="ContainerBackgroundProcessor 线程"></a>ContainerBackgroundProcessor 线程</h5><ul>
+<li><code>Tomcat 9</code>中已经没有<code>ContainerBackgroundProcessor</code>线程了。</li>
+<li>主要负责实时扫描<code>Tomcat</code>容器的变化，在一些时刻触发某些事件，例如在热部署开启时<code>reload</code>工程等。</li>
+</ul>
+<h5 id="Catalina-Utility-线程"><a href="#Catalina-Utility-线程" class="headerlink" title="Catalina-Utility 线程"></a>Catalina-Utility 线程</h5><ul>
+<li>将<code>Tomcat 8</code>中的<code>startStop</code>线程和<code>ContainerBackgroundProcessor</code>线程合并了。</li>
+</ul>
+<h5 id="Acceptor-线程"><a href="#Acceptor-线程" class="headerlink" title="Acceptor 线程"></a>Acceptor 线程</h5><ul>
+<li><code>Tomcat</code>前端最外层的线程，负责统一接受<code>socket</code>请求。</li>
+<li><code>Acceptor</code>处理完之后的连接线程在<code>BIO</code>和<code>NIO</code>模式中略有差异。<code>BIO</code>模式下，<code>Acceptor</code>直接把任务丢给工作线程处理，所以会阻塞；而<code>NIO</code>模式下，<code>Acceptor</code>线程会把任务交给<code>poller</code>线程，<code>poller</code>线程调用底层的<code>epoll()</code>进行轮询，把准备就绪的事件丢给工作线程进行处理，所以是非阻塞的。</li>
+</ul>
+<h5 id="ClientPoller-线程"><a href="#ClientPoller-线程" class="headerlink" title="ClientPoller 线程"></a>ClientPoller 线程</h5><ul>
+<li><code>NIO</code>模式特有的线程，<code>reactor</code>模式的实现者。</li>
+<li>具体负责接收<code>acceptor</code>线程交接过来的事件，对事件轮询后交给工作线程处理。</li>
+</ul>
+<h5 id="Exec-线程"><a href="#Exec-线程" class="headerlink" title="Exec 线程"></a>Exec 线程</h5><ul>
+<li><code>Tomcat</code>的主要工作线程，默认开启<code>10</code>个，接收<code>poller</code>线程丢过来的事件。</li>
+<li>主要工作是<code>HTTP</code>协议解析，攒出<code>request</code>和<code>response</code>，然后调用后端的容器。</li>
+</ul>
+<h5 id="BlockPoller-线程"><a href="#BlockPoller-线程" class="headerlink" title="BlockPoller 线程"></a>BlockPoller 线程</h5><ul>
+<li>负责<code>Servlet</code>的输入和输出。</li>
+</ul>
+<h5 id="AsyncTimeout-线程"><a href="#AsyncTimeout-线程" class="headerlink" title="AsyncTimeout 线程"></a>AsyncTimeout 线程</h5><ul>
+<li>主要检测异步<code>request</code>请求时，触发超时，并将该请求再转发到工作线程池处理。</li>
+</ul>
+<h4 id="NIO-总体流程"><a href="#NIO-总体流程" class="headerlink" title="NIO 总体流程"></a>NIO 总体流程</h4><p><code>NIO</code>前端框架主要由三个不同的线程依次分工协作：</p>
+<ul>
+<li><code>Acceptor</code>线程将<code>SocketChannel</code>取出，传给<code>Poller</code>线程（会产生阻塞，所以包装成<code>PollEvent</code>加入缓存队列）。</li>
+<li><code>Poller</code>线程轮询从通道中拿到感兴趣的事件，然后把感兴趣的<code>key</code>和<code>attachment</code>传递给<code>Exec</code>线程处理。</li>
+<li><code>Exec</code>线程调用<code>http11ConnectionHandler</code>解析<code>HTTP</code>协议，将解析出来的内容包装成<code>request</code>和<code>response</code>，传递给<code>CoyoteAdapter</code>，最终执行到业务中。</li>
+<li>执行完业务后需要进行<code>Servlet</code>回写。第一次使用的是<code>NioSelectorPool</code>内部的<code>sharedSelector</code>，执行的是非阻塞写，如果没有写成功，则会使用<code>NioBlockingSelector</code>的<code>BlockPoller</code>重新进行阻塞写。</li>
+</ul>
+<p><img src="nio_connector%E7%BB%93%E6%9E%84.png" alt=""></p>
+<h4 id="BIO-总体流程"><a href="#BIO-总体流程" class="headerlink" title="BIO 总体流程"></a>BIO 总体流程</h4><p>相比于<code>NIO</code>，<code>BIO</code>的<code>Connector</code>少了很重要的<code>Poller</code>线程，使得工作效率低下。</p>
+<p><code>BIO</code>流程和<code>NIO</code>大致一样，整体使用<code>ServerSocket</code>进行通信，一个请求一个线程。但由于缺少了<code>Selector</code>和轮询，导致效率低下，<code>Tomcat</code>在<code>8.5</code>版本后抛弃了<code>BIO</code>通道。</p>
+<p><img src="bio_connector%E7%BB%93%E6%9E%84.png" alt=""></p>
+<h4 id="NIO2-总体流程"><a href="#NIO2-总体流程" class="headerlink" title="NIO2 总体流程"></a>NIO2 总体流程</h4><p><code>NIO2</code>相比于<code>NIO</code>，少了<code>Poller</code>线程，多了<code>completionHandler</code>，实现了真正的异步操作，不用再轮询，而是给操作系统一个回调方法，操作系统准备好数据会主动将数据拷贝至用户空间，调用方法执行业务逻辑。</p>
+<hr>
+<h3 id="JVM"><a href="#JVM" class="headerlink" title="JVM"></a>JVM</h3><h4 id="JVM-运行参数"><a href="#JVM-运行参数" class="headerlink" title="JVM 运行参数"></a>JVM 运行参数</h4><ul>
+<li>标准参数：<code>-help</code>、<code>-version</code></li>
+<li><code>-X</code>参数（非标准参数）：<code>-Xint</code>、<code>-Xcomp</code></li>
+<li><code>-XX</code>参数（使用率高）：<code>-XX:newSize</code>、<code>-XX:+UseSerialGC</code></li>
+</ul>
+<h4 id="内存模型"><a href="#内存模型" class="headerlink" title="内存模型"></a>内存模型</h4><h5 id="JDK1-7-的堆内存模型"><a href="#JDK1-7-的堆内存模型" class="headerlink" title="JDK1.7 的堆内存模型"></a>JDK1.7 的堆内存模型</h5>]]></content>
+      <categories>
+        <category>MySQL</category>
+        <category>JVM</category>
+      </categories>
+      <tags>
+        <tag>JVM</tag>
+        <tag>MySQL</tag>
+      </tags>
+  </entry>
 </search>
