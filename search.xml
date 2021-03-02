@@ -5635,4 +5635,114 @@
         <tag>MySQL</tag>
       </tags>
   </entry>
+  <entry>
+    <title>细说Linux零拷贝</title>
+    <url>/2021/03/02/%E7%BB%86%E8%AF%B4Linux%E9%9B%B6%E6%8B%B7%E8%B4%9D/</url>
+    <content><![CDATA[<p>细说Linux零拷贝</p>
+<a id="more"></a>
+
+<h3 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h3><p>磁盘可以说是计算机系统最慢的硬件之一，读写速度和内存相差了<code>10</code>倍以上，所以针对磁盘读写的优化非常多，比如零拷贝、异步<code>IO</code>等等，目的就是提高系统的吞吐量，减少磁盘的访问次数。</p>
+<hr>
+<h3 id="DMA"><a href="#DMA" class="headerlink" title="DMA"></a>DMA</h3><p><code>DMA</code>是什么？在没有<code>DMA</code>之前，磁盘的<code>IO</code>过程是这样的：</p>
+<ul>
+<li><code>CPU</code>发送指令给磁盘的控制器。</li>
+<li>磁盘控制器收到指令后，开始准备数据，把数据放到磁盘控制器的缓冲区中，然后产生一个中断。</li>
+<li><code>CPU</code>收到中断后，会停止当前的工作，把磁盘控制器的缓冲区中的数据拷贝到自己的寄存器中，再把寄存器中的数据拷贝到内存中。这期间<code>CPU</code>是无法执行其他任何指令的。</li>
+</ul>
+<p>用图来描述大概是这样：</p>
+<p><img src="IO.png" alt=""></p>
+<p>可以看到，整个数据传输过程<code>CPU</code>都要亲自参与，如果数据量大的话，那将耗费大量<code>CPU</code>的资源。所以后来就发明了<code>DMA</code>技术，也就是直接内存访问（<code>Direct Memory Access</code>）。简单来说就是，数据传输的工作全部交给<code>DMA</code>来管理，<code>CPU</code>可以去处理其他事情。如下图所示：</p>
+<p><img src="DMA_IO.png" alt=""></p>
+<p>具体过程是这样的：</p>
+<ul>
+<li>用户进程调用<code>read</code>方法，向操作系统发起<code>IO</code>请求，进程进入阻塞状态。</li>
+<li>操作系统收到请求后，进一步把这个请求发送给<code>DMA</code>，然后<code>CPU</code>就去处理其他事情了。</li>
+<li><code>DMA</code>收到请求后，把请求发送给磁盘。</li>
+<li>磁盘收到请求后，把数据读取到磁盘控制器的缓冲区中。当缓冲区空间满了，磁盘向<code>DMA</code>发送中断信号。</li>
+<li><code>DMA</code>收到信号，将磁盘控制器缓冲区中的数据拷贝到内核缓冲区中。当内核缓冲区读取了足够的数据，向<code>CPU</code>发送中断信号。</li>
+<li><code>CPU</code>收到信号，将数据从内核缓冲区拷贝到用户空间的缓冲区中，<code>read</code>方法返回。</li>
+</ul>
+<p>整个过程不再需要<code>CPU</code>亲力亲为。</p>
+<hr>
+<h3 id="传统的文件传输"><a href="#传统的文件传输" class="headerlink" title="传统的文件传输"></a>传统的文件传输</h3><p>如果服务端要传输文件，最简单的方式就是：将磁盘上的文件读取出来，然后通过网络协议传输给客户端。</p>
+<p>对于传统<code>IO</code>，数据的读写都通过从用户空间到内核空间的来回拷贝，而内核空间的数据则通过操作系统层面的<code>IO</code>接口从磁盘进行读写。整个过程如下图：</p>
+<p><img src="%E4%BC%A0%E7%BB%9FIO.png" alt=""></p>
+<p>这期间一共发生了<code>4</code>次用户态和内核态的上下文切换。因为发生了<code>read</code>和<code>write</code>两次系统调用，每次都要先从用户态切换到内核态，等内核执行完任务后再切换到用户态中。上下文切换的成本并不小，平均一次切换大概要几十纳秒到几微秒。在高并发的场景下，会影响系统的性能。</p>
+<p>其次，该过程还发生了<code>4</code>次数据的拷贝。其中两次是<code>DMA</code>的拷贝，另外两次是<code>CPU</code>的拷贝。</p>
+<ul>
+<li>首先，<code>DMA</code>会将磁盘上的数据拷贝到内核缓冲区。</li>
+<li>然后<code>CPU</code>将内核缓冲区的数据拷贝到用户缓冲区。</li>
+<li><code>CPU</code>再把用户缓冲区的数据拷贝到<code>socket</code>缓冲区。</li>
+<li>最后<code>DMA</code>把<code>socket</code>缓冲区中的数据拷贝到网卡缓冲区中。</li>
+</ul>
+<p>这种简单的数据传输方式效率低下，存在冗余的上下文切换和数据拷贝。针对这两点，可以进行优化。</p>
+<hr>
+<h3 id="优化文件传输"><a href="#优化文件传输" class="headerlink" title="优化文件传输"></a>优化文件传输</h3><p>首先来看，怎样才能减少上下文的切换呢？</p>
+<p>读取磁盘数据的时候，之所以要发生上下文的切换，是因为用户空间没有权限操作磁盘或者网卡，所以只能调用操作系统提供的接口，由内核完成相关的任务。一次这样的调用就要发生两次上下文的切换，首先从用户态切换到内核态，当内核执行完任务后，再切换回用户态交由进程代码执行。</p>
+<p>也就是说，想要减少上下文的切换，就需要减少系统的调用。</p>
+<p>那么如何减少数据拷贝的次数呢？</p>
+<p>传统的数据传输要经历四次数据拷贝，在这个过程中从内核缓冲区拷贝到用户缓冲区，再从用户缓冲区拷贝到<code>socket</code>缓冲区这一过程其实是没有必要的。因为数据传输的场景中，在用户空间我们并不会对数据进行修改，所以数据没有必要经过用户空间。</p>
+<hr>
+<h3 id="零拷贝"><a href="#零拷贝" class="headerlink" title="零拷贝"></a>零拷贝</h3><p>零拷贝的技术实现方式有两种：</p>
+<h4 id="mmap-write"><a href="#mmap-write" class="headerlink" title="mmap + write"></a>mmap + write</h4><p>前面说到<code>read()</code>函数调用会把内核缓冲区的数据拷贝到用户缓冲区，为了减少这一步的开销，我们使用<code>mmap()</code>替换<code>read()</code>函数。<code>mmap()</code>会直接把内核缓冲区之中的数据<strong>映射</strong>到用户空间。这样，内核空间和用户空间就不再需要数据的拷贝了，类似下图：</p>
+<p><img src="mmap+write%E9%9B%B6%E6%8B%B7%E8%B4%9D.png" alt=""></p>
+<p>具体过程如下：</p>
+<ul>
+<li>用户进程调用<code>mmap()</code>，<code>DMA</code>把磁盘的数据拷贝到内核缓冲区中，然后用户空间和内核空间会共享该缓冲区。</li>
+<li>用户进程再调用<code>write()</code>，操作系统直接将内核缓冲区的数据拷贝到<code>socket</code>缓冲区，这一切都发生在内核态，由<code>CPU</code>完成。</li>
+<li>最后<code>DMA</code>再把<code>socket</code>缓冲区中的数据拷贝到网卡缓冲区。</li>
+</ul>
+<p>所以通过<code>mmap + write</code>实现的零拷贝仍然需要四次上下文切换，但减少了一次数据的拷贝。</p>
+<h4 id="sendfile"><a href="#sendfile" class="headerlink" title="sendfile"></a>sendfile</h4><p><code>Linux 2.1</code>提供了一个专门用于发送文件的系统调用函数<code>sendfile()</code>，其函数如下：</p>
+<figure class="highlight c"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">ssize_t</span> <span class="title">sendfile</span><span class="params">(<span class="keyword">int</span> out_fd, <span class="keyword">int</span> in_fd, <span class="keyword">off_t</span> *offset, <span class="keyword">size_t</span> count)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<p>前两个参数是目的端和源端的文件描述符，后两个参数是源端的偏移量和复制数据的长度，返回值是实际复制数据的长度。</p>
+<p>这个函数直接替代了<code>read()</code>和<code>write()</code>，所以减少了两次上下文的切换。其次我们不再需要把数据拷贝到用户态，这样就只有三次数据的拷贝。</p>
+<p><img src="sendfile%E9%9B%B6%E6%8B%B7%E8%B4%9D.png" alt=""></p>
+<p>但这还不是最高效的零拷贝技术。如果网卡支持<code>SG-DMA</code>技术，则可以进一步减少通过<code>CPU</code>把内核缓冲区中的数据拷贝到<code>socket</code>缓冲区这一步骤。</p>
+<p>如果是<code>Linux</code>系统，可以通过<code>ethtool -k eth0 | grep scatter-gather</code>命令查看网卡是否支持<code>SG-DMA</code>技术。</p>
+<p>从<code>Linux 2.4</code>版本开始，如果网卡支持<code>SG-DMA</code>技术，<code>sendfile</code>函数底层的调用会发生变化：</p>
+<ul>
+<li>首先，<code>DMA</code>将磁盘上的数据拷贝到内核缓冲区。</li>
+<li>缓冲区描述符和数据长度传到<code>socket</code>缓冲区中，这样网卡的<code>SG-DMA</code>控制器可以直接将内核缓冲区中的数据拷贝到网卡缓冲区中，不再需要经过<code>socket</code>缓冲区。于是又减少了一次数据的拷贝，现在只需要两次数据拷贝就可以完成整个过程。</li>
+</ul>
+<p><img src="SG-DMA%E9%9B%B6%E6%8B%B7%E8%B4%9D.png" alt=""></p>
+<p>这就是所谓的零拷贝技术。现在我们不用再使用<code>CPU</code>来拷贝数据，全程通过<code>DMA</code>进行传输。</p>
+<hr>
+<h3 id="PageCache"><a href="#PageCache" class="headerlink" title="PageCache"></a>PageCache</h3><p>前面的提到的数据传输过程，第一步都是要把数据从磁盘中拷贝到内核缓冲区中。这里的内核缓冲区就是<strong>磁盘高速缓存</strong>（<code>PageCache</code>）。</p>
+<p>由于读写磁盘比读写内存的速度慢多了，所以我们使用<code>DMA</code>把磁盘中的数据拷贝到内存中进行操作。但是，内存的空间远远小于磁盘，所以内存每次只能拷贝一部分的数据。那么内存是如何选择的呢？</p>
+<p>我们运行程序的时候，具有局部性，就是说刚才被访问到的数据很有可能在短时间内再次被访问，于是我们可以使用<code>PageCache</code>来缓存最近被访问到的数据，当空间不足时就淘汰最久没有被访问过的缓存，也就是使用了<strong>最近最少使用</strong>算法。</p>
+<p>所以读取磁盘数据的时候，会优先在<code>PageCache</code>找，如果有数据就直接返回；否则再从磁盘中获取，然后缓存到<code>PageCache</code>中。</p>
+<p>还有一点，读取磁盘数据的时候，磁头会先旋转到数据所在的扇区，然后再开始顺序读取，这个物理动作是十分耗时的。为了降低这个影响，<code>PageCache</code>使用了预读的功能。</p>
+<p>比如，<code>read()</code>方法每次只读取<code>32KB</code>的数据，那么一开始<code>read()</code>读取<code>0-32KB</code>的数据，内核会把后面的数据也预先读取到内核缓冲区中。这样<code>read()</code>读取后面的数据时成本就降低了。</p>
+<p>所以总的来说，<code>PageCache</code>主要有缓存最近使用的数据和预读这两个功能。</p>
+<p>但是，如果读取的是<code>GB</code>级别的大文件，就不应该使用<code>PageCache</code>，也就是说不应该使用零拷贝技术。这是因为如果把这些大文件拷贝到内存中，内存很快就被占满了，其余的热点小文件就不能使用到<code>PageCache</code>了，这样反而会导致读写数据的性能降低。</p>
+<hr>
+<h3 id="大文件的读写"><a href="#大文件的读写" class="headerlink" title="大文件的读写"></a>大文件的读写</h3><p>那么针对大文件应该使用什么方式读写呢？</p>
+<p>首先回到最初，我们调用<code>read()</code>读取文件时，进程会阻塞于<code>read()</code>方法，对于阻塞的问题，我们可以使用异步<code>IO</code>来解决。</p>
+<p><img src="%E5%BC%82%E6%AD%A5IO.png" alt=""></p>
+<p>具体流程如下：</p>
+<ul>
+<li>首先应用进程向内核发起读请求，但是可以直接返回，不用等待数据返回。</li>
+<li>内核向磁盘发起请求，磁盘把数据拷贝到磁盘控制器缓冲区后，产生一个中断给内核。</li>
+<li>内核把磁盘控制器缓冲区中的数据拷贝到用户缓冲区后，用户进程收到通知，进行后续的处理。</li>
+</ul>
+<p>也就是说异步<code>IO</code>全程没有涉及到内核缓冲区，这样的<code>IO</code>也叫做直接<code>IO</code>。所以，针对高并发以及大文件传输的场景，应该使用这样的异步<code>IO</code>来代替零拷贝技术。</p>
+<p>最后，针对整个业务场景，我们在传输文件的时候，可以根据文件的大小选择传输的方式：</p>
+<ul>
+<li>传输大文件时，使用异步<code>IO</code>。</li>
+<li>传输小文件的时候，使用零拷贝的方式。</li>
+</ul>
+<p>在<code>nginx</code>中，我们可以通过配置实现这个功能：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">location &#x2F; &#123;</span><br><span class="line">    sendfile on;</span><br><span class="line">    aio on;</span><br><span class="line">    directio 1024m;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>当文件大小小于<code>1024m</code>，使用异步<code>IO</code>；否则使用零拷贝。</p>
+]]></content>
+      <categories>
+        <category>Linux</category>
+      </categories>
+      <tags>
+        <tag>Linux</tag>
+      </tags>
+  </entry>
 </search>
