@@ -5628,11 +5628,13 @@
 ]]></content>
       <categories>
         <category>MySQL</category>
+        <category>Tomcat</category>
         <category>JVM</category>
       </categories>
       <tags>
         <tag>JVM</tag>
         <tag>MySQL</tag>
+        <tag>Tomcat</tag>
       </tags>
   </entry>
   <entry>
