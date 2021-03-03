@@ -1749,6 +1749,21 @@
 <li><code>row</code>模式，不记录<code>sql</code>的上下文，仅保存哪条记录被修改。记录单元为每一行的改动。</li>
 <li><code>mixed</code>模式，普通操作使用<code>statement</code>模式，<code>statement</code>无法完成主从复制的操作，则使用<code>row</code>格式保存<code>binlog</code>。</li>
 </ul>
+<p><code>binlog</code>主要有两个作用：复制和恢复数据。<code>MySQL</code>在实际生产环境中往往采用一主多从的架构，服务器之间的数据要保持一致，就是通过<code>binlog</code>实现的。</p>
+<hr>
+<h4 id="MySQL的redo-log"><a href="#MySQL的redo-log" class="headerlink" title="MySQL的redo log"></a>MySQL的redo log</h4><p>假设有这样一条<code>sql</code>：<code>UPDATE user SET name = &quot;test&quot; WHERE id = 1</code>。<code>MysQL</code>执行的时候首先会找到<code>id = 1</code>这条记录所在的页查出来，把该页的内容加载到内存，然后对对应的数据进行更改。那么问题来了，如果在内存中把数据更改了还没来得及写到磁盘上，这时候数据库挂了咋办？<code>MySQL</code>引入了<code>redo log</code>，内存中的数据修改了，就会写一份<code>redo log</code>，这份<code>redo log</code>记载了本次在哪页做了什么修改。</p>
+<p>其实写<code>redo log</code>的时候，也会有<code>buffer</code>，先写到<code>buffer</code>，再写到磁盘上。至于<code>buffer</code>什么时候写到磁盘，是可以配置的。</p>
+<p>所以，<code>redo log</code>主要是针对修改数据的时候还未落磁盘时数据库挂了的场景。我们可以使用<code>redo log</code>对数据进行恢复。因为<code>redo log</code>是顺序<code>IO</code>，所以写入的顺序很快。</p>
+<p>这样看来<code>binlog</code>和<code>redo log</code>好像很相似，都是为了恢复数据。但其实是有很大不同的：</p>
+<ul>
+<li>首先存储的内容不同。<code>binlog</code>记载的是修改语句（<code>INSERT</code>、<code>UPDATE</code>、<code>DELETE</code>），而<code>redo log</code>记载的是物理修改的内容（某页修改了某内容）。</li>
+<li><code>redo log</code>主要是为了持久化而生的；而<code>binlog</code>是为了复制和恢复而生的。</li>
+</ul>
+<hr>
+<h4 id="MySQL的undo-log"><a href="#MySQL的undo-log" class="headerlink" title="MySQL的undo log"></a>MySQL的undo log</h4><p><code>undo log</code>主要有两个作用：回滚以及多版本控制（<code>MVCC</code>）。</p>
+<p>在进行数据修改时，不仅记录了<code>redo log</code>，还记录了<code>undo log</code>，如果因为某些原因导致事务失败或者回滚了，就可以用<code>undo log</code>进行回滚。</p>
+<p><code>undo log</code>存储的也是逻辑变化，比如我们要插入一条数据，那么<code>undo log</code>就会记录一条对应的<code>DELETE</code>日志；我们要<code>UPDATE</code>一条数据，它就会记录一条相反的<code>UPDATE</code>记录。</p>
+<p>因为<code>undo log</code>存储的是修改之前的数据，相当于前一个版本，<code>MVCC</code>实现的事读写不阻塞，读的时候只要返回前一个版本的数据就行了。</p>
 <hr>
 <h4 id="数据类型"><a href="#数据类型" class="headerlink" title="数据类型"></a>数据类型</h4><ol>
 <li><p>整数类型</p>
