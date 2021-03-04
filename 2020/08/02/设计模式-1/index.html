@@ -32,10 +32,9 @@
 <meta property="og:image" content="http://irvlin.xyz/2020/08/02/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-1/%E5%B7%A5%E5%8E%82%E6%A8%A1%E5%BC%8F.gif">
 <meta property="og:image" content="http://irvlin.xyz/2020/08/02/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-1/%E5%8E%9F%E5%9E%8B%E6%A8%A1%E5%BC%8F.jpg">
 <meta property="og:image" content="http://irvlin.xyz/2020/08/02/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-1/%E6%A8%A1%E6%9D%BF%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8F.jpg">
-<meta property="og:image" content="https://zh.wikipedia.org/wiki/%E5%BC%80%E9%97%AD%E5%8E%9F%E5%88%99">
 <meta property="og:image" content="http://irvlin.xyz/2020/08/02/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-1/%E8%A7%82%E5%AF%9F%E8%80%85%E6%A8%A1%E5%BC%8F.jpg">
 <meta property="article:published_time" content="2020-08-02T15:09:30.000Z">
-<meta property="article:modified_time" content="2021-02-07T05:40:30.125Z">
+<meta property="article:modified_time" content="2021-03-04T15:37:54.845Z">
 <meta property="article:author" content="Charispsychoma">
 <meta property="article:tag" content="设计模式">
 <meta name="twitter:card" content="summary">
@@ -231,7 +230,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-02-07 13:40:30" itemprop="dateModified" datetime="2021-02-07T13:40:30+08:00">2021-02-07</time>
+                <time title="修改时间：2021-03-04 23:37:54" itemprop="dateModified" datetime="2021-03-04T23:37:54+08:00">2021-03-04</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -325,7 +324,7 @@
 <li>模板方法：由抽象类声明并加以实现。一般来说，模板方法调用抽象方法来完成主要的逻辑功能，并且，模板方法大多会定义为final类型，指明<strong>主要的逻辑功能在子类中不能被重写</strong>。</li>
 <li>钩子方法：由抽象类声明并加以实现。但是子类可以去扩展，子类可以通过扩展钩子方法来影响模板方法的逻辑。</li>
 <li>抽象类的任务是搭建逻辑的框架，通常由经验丰富的人员编写，因为抽象类的好坏直接决定了程序是否稳定性。实现类用来实现细节。抽象类中的模板方法正是通过实现类扩展的方法来完成业务逻辑。只要实现类中的扩展方法通过了单元测试，在模板方法正确的前提下，整体功能一般不会出现大的错误。<h4 id="优点及适用场景"><a href="#优点及适用场景" class="headerlink" title="优点及适用场景"></a>优点及适用场景</h4></li>
-<li>容易扩展。一般来说，抽象类中的模板方法是不易反生改变的部分，而抽象方法是容易反生变化的部分，因此通过增加实现类一般可以很容易实现功能的扩展，符合<img src="https://zh.wikipedia.org/wiki/%E5%BC%80%E9%97%AD%E5%8E%9F%E5%88%99" alt="开闭原则">。</li>
+<li>容易扩展。一般来说，抽象类中的模板方法是不易反生改变的部分，而抽象方法是容易反生变化的部分，因此通过增加实现类一般可以很容易实现功能的扩展，符合<a href="https://zh.wikipedia.org/wiki/%E5%BC%80%E9%97%AD%E5%8E%9F%E5%88%99" target="_blank" rel="noopener">开闭原则</a>。</li>
 <li>便于维护。对于模板方法模式来说，正是由于他们的主要逻辑相同，才使用了模板方法，假如不使用模板方法，任由这些相同的代码散乱的分布在不同的类中，维护起来是非常不方便的。</li>
 <li>比较灵活。因为有钩子方法，因此，子类的实现也可以影响父类中主逻辑的运行。但是，在灵活的同时，由于子类影响到了父类，违反了里氏替换原则，也会给程序带来风险。这就对抽象类的设计有了更高的要求。</li>
 <li>在多个子类拥有相同的方法，并且这些方法逻辑相同时，可以考虑使用模板方法模式。在程序的主框架相同，细节不同的场合下，也比较适合使用这种模式。</li>
