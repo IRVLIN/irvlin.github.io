@@ -4424,11 +4424,11 @@
 <h4 id="内核缓冲区"><a href="#内核缓冲区" class="headerlink" title="内核缓冲区"></a>内核缓冲区</h4><p><code>Linux</code>存在缓存<code>IO</code>的机制，当进行<code>input</code>或者<code>output</code>时，数据会被先拷贝或读取到内核空间的缓冲区中，然后才会被写入到设备中或者拷贝到用户空间的缓冲区中。</p>
 <h4 id="5种模型"><a href="#5种模型" class="headerlink" title="5种模型"></a>5种模型</h4><h5 id="阻塞式I-O"><a href="#阻塞式I-O" class="headerlink" title="阻塞式I/O"></a>阻塞式I/O</h5><p>阻塞式<code>I/O</code>简称<code>BIO(Blocking IO)</code>。</p>
 <p>如下图，从应用程序调用<code>recvfrom</code>，到数据报到达并且被复制到应用程序的缓冲区或者发生错误（例如信号中断）的过程中，如果发起调用的线程一直处于等待的状态，那么它是阻塞式<code>I/O</code>。</p>
-<p><img src="%E9%98%BB%E5%A1%9E%E5%BC%8FI/O.png" alt=""></p>
+<p><img src="%E9%98%BB%E5%A1%9E%E5%BC%8FIO.png" alt=""></p>
 <p><code>BIO</code>存在一个问题，如果内核的数据需要耗时比较久才能准备好，那么进程将长时间阻塞，浪费性能。</p>
 <h5 id="非阻塞式I-O"><a href="#非阻塞式I-O" class="headerlink" title="非阻塞式I/O"></a>非阻塞式I/O</h5><p>为了解决以上问题，引入了非阻塞式<code>I/O</code>，简称<code>NIO(Non-Blocking IO)</code>。</p>
 <p>如下图，应用程序调用<code>recvfrom</code>等到内核接收到请求之后就立即返回，然后通过<strong>轮询</strong>的方式反复调用，如果数据还没准备好，内核立即返回<code>EWOULDBLOCK</code>错误。直到数据报准备好了，进程阻塞，将数据从内核缓冲区拷贝到用户空间的缓冲区，然后进程继续后续的任务。应用程序发起系统调用的线程不会一直等待而是立即返回，这样的<code>IO</code>是非阻塞式<code>IO</code>。</p>
-<p><img src="%E9%9D%9E%E9%98%BB%E5%A1%9E%E5%BC%8FI/O.png" alt=""></p>
+<p><img src="%E9%9D%9E%E9%98%BB%E5%A1%9E%E5%BC%8FIO.png" alt=""></p>
 <p><code>NIO</code>相对于<code>BIO</code>已经大幅提升了性能，但依然不是完美的，那就是因为轮询会消耗大量的<code>CPU</code>资源，而且大多数都是无效的系统调用。</p>
 <h5 id="IO多路复用"><a href="#IO多路复用" class="headerlink" title="IO多路复用"></a>IO多路复用</h5><p>非阻塞式<code>I/O</code>的最大问题就是轮询导致大量的无效系统调用，于是有了<code>IO</code>多路复用这样的解决思路。</p>
 <p><code>IO</code>多路复用是一种机制，使得内核可以监视多个描述符，一旦一个或多个<code>IO</code>条件就绪（输入已准备好被读取，或者描述符已能承接更多输出），就会通知应用程序进行相应的读写操作。</p>
