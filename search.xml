@@ -23,7 +23,7 @@
 <li>size: 实际存储的元素个数。</li>
 </ol>
 <hr>
-<h3 id="put以及resize流程"><a href="#put以及resize流程" class="headerlink" title="put以及resize流程"></a>put以及resize流程</h3><h4 id="put"><a href="#put" class="headerlink" title="put"></a>put</h4><p>![](HashMap put流程.png)<br>这里有两个参数</p>
+<h3 id="put以及resize流程"><a href="#put以及resize流程" class="headerlink" title="put以及resize流程"></a>put以及resize流程</h3><h4 id="put"><a href="#put" class="headerlink" title="put"></a>put</h4><p><img src="HashMap_put%E6%B5%81%E7%A8%8B.png" alt=""><br>这里有两个参数</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> TREEIFY_THRESHOLD = <span class="number">8</span>;</span><br><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">int</span> UNTREEIFY_THRESHOLD = <span class="number">6</span>;</span><br></pre></td></tr></table></figure>
 <p>JDK 1.8对HashMap进行了优化，如果碰撞的次数大于8次，此时数组的长度如果小于64，会进行扩容；否则数组元素上的链表会转变为红黑树，提高查询的效率。而碰撞次数减少到6次时，红黑树将会重新变为链表。</p>
 <p>红黑树具有以下几个性质：</p>
@@ -35,7 +35,7 @@
 <li>任意一结点到每个叶子结点都包含相同数量的黑结点。</li>
 </ol>
 <p><img src="%E7%BA%A2%E9%BB%91%E6%A0%91.jpg" alt=""></p>
-<h4 id="resize"><a href="#resize" class="headerlink" title="resize"></a>resize</h4><p>当需要存储的元素大于<code>threshold</code>时，数组会进行扩容，扩大为原来的两倍，此时数组中的元素需要重新计算下标。这里JDK 1.8进行了优化，不再需要重新计算hash值，而是，数组元素的链表中的第一个值的下标不发生变化，其它的通过<code>e.hash &amp; oldCap != 0</code>将其放到<code>[原始下标+原始数组长度]</code>的下标。<br>![](HashMap resize流程.png)</p>
+<h4 id="resize"><a href="#resize" class="headerlink" title="resize"></a>resize</h4><p>当需要存储的元素大于<code>threshold</code>时，数组会进行扩容，扩大为原来的两倍，此时数组中的元素需要重新计算下标。这里JDK 1.8进行了优化，不再需要重新计算hash值，而是，数组元素的链表中的第一个值的下标不发生变化，其它的通过<code>e.hash &amp; oldCap != 0</code>将其放到<code>[原始下标+原始数组长度]</code>的下标。<br><img src="HashMap_resize%E6%B5%81%E7%A8%8B.png" alt=""></p>
 <hr>
 <h3 id="线程安全问题以及Fail-Fast机制"><a href="#线程安全问题以及Fail-Fast机制" class="headerlink" title="线程安全问题以及Fail-Fast机制"></a>线程安全问题以及Fail-Fast机制</h3><p>HashMap是非线程安全的，如果在访问元素的过程中修改了HashMap，将会抛出<code>ConcurrentModificationException</code>异常，也就是所谓的Fail-Fast机制。<br>此机制是通过<code>modCount</code>参量实现的。<code>modCount</code>在源码中声明为<code>volatile</code>，保证了线程之间的可见性。通过检测<code>modCount</code>是否与预期值相等，如果不等说明在访问的过程中修改了HashMap中的值，则会抛出异常。<br>然而此机制只能检测却不能解决线程安全问题。想要保证线程安全需要用到<code>ConcurrentHashMap</code>。</p>
 ]]></content>
