@@ -4773,7 +4773,7 @@
 <li><code>Propagation.NOT_SUPPORTED</code>：以非事务的方式执行。如果当前存在事务，将其挂起。</li>
 <li><code>Propagation.NEVER</code>：以非事务的方式执行。如果当前存在事务，抛出异常。</li>
 </ul>
-<p>还有一种<code>Propagation.NESTED</code>：如果当前存在事务，就创建一个事务作为当前事务的嵌套事务运行；如果没有，该配置等价于</p>
+<p>还有一种<code>Propagation.NESTED</code>：如果当前存在事务，就创建一个事务作为当前事务的嵌套事务运行；如果没有，该配置等价于<code>Propagation.REQUIRED</code>。</p>
 <hr>
 <h3 id="生命周期"><a href="#生命周期" class="headerlink" title="生命周期"></a>生命周期</h3><p><code>Spring</code>中<code>Bean</code>的生命周期如下：</p>
 <ul>
