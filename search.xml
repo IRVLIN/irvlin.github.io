@@ -2951,7 +2951,7 @@
 <li>结果集的处理十分麻烦，如果映射为 Java 对象会比较好处理。</li>
 </ul>
 <h4 id="MyBatis如何解决这些问题"><a href="#MyBatis如何解决这些问题" class="headerlink" title="MyBatis如何解决这些问题"></a>MyBatis如何解决这些问题</h4><ul>
-<li>使用数据库连接池可以解决频繁创建、释放数据库连接的问题，在 MyBatis 中可以通过<code>mybtais-config.xml</code>配置连接池，很方便。</li>
+<li>使用数据库连接池可以解决频繁创建、释放数据库连接的问题，在 MyBatis 中可以通过<code>mybatis-config.xml</code>配置连接池，很方便。</li>
 <li>SQL 语句写在代码中不易维护，在 MyBatis 中将 SQL 语句写在<code>XXXMapper.xml</code> 中与 Java 代码分离易于维护。</li>
 <li>SQL 语句传参麻烦，因为条件不一定，使用 MyBatis 可以自动将 Java 对象映射到 SQL 语句。</li>
 <li>结果集的处理很麻烦，使用 MyBatis 可以自动将 SQL 语句执行的结果映射到 Java 对象方便后续的处理。</li>
