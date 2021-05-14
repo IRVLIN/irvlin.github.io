@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-128x128.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-64x64.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-center-simple.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"irvlin.xyz","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"default"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="记录Java线程池相关知识。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java线程池">
+<meta property="og:url" content="http://irvlin.xyz/2020/08/09/Java%E7%BA%BF%E7%A8%8B%E6%B1%A0/index.html">
+<meta property="og:site_name" content="IRvLin的博客">
+<meta property="og:description" content="记录Java线程池相关知识。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://irvlin.xyz/2020/08/09/Java%E7%BA%BF%E7%A8%8B%E6%B1%A0/ThreadPoolExecutor%E7%B1%BB%E5%9B%BE.png">
+<meta property="og:image" content="http://irvlin.xyz/2020/08/09/Java%E7%BA%BF%E7%A8%8B%E6%B1%A0/ThreadPoolExecutor%E8%BF%90%E8%A1%8C%E6%B5%81%E7%A8%8B.png">
+<meta property="og:image" content="http://irvlin.xyz/2020/08/09/Java%E7%BA%BF%E7%A8%8B%E6%B1%A0/ThreadPoolExecutor%E8%BF%90%E8%A1%8C%E7%8A%B6%E6%80%81.png">
+<meta property="og:image" content="http://irvlin.xyz/2020/08/09/Java%E7%BA%BF%E7%A8%8B%E6%B1%A0/%E7%BA%BF%E7%A8%8B%E6%B1%A0%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F.png">
+<meta property="og:image" content="http://irvlin.xyz/2020/08/09/Java%E7%BA%BF%E7%A8%8B%E6%B1%A0/%E4%BB%BB%E5%8A%A1%E6%89%A7%E8%A1%8C%E6%9C%BA%E5%88%B6.png">
+<meta property="og:image" content="http://irvlin.xyz/2020/08/09/Java%E7%BA%BF%E7%A8%8B%E6%B1%A0/%E9%98%BB%E5%A1%9E%E9%98%9F%E5%88%97%E6%88%90%E5%91%98.png">
+<meta property="og:image" content="http://irvlin.xyz/2020/08/09/Java%E7%BA%BF%E7%A8%8B%E6%B1%A0/%E8%8E%B7%E5%8F%96%E4%BB%BB%E5%8A%A1%E6%B5%81%E7%A8%8B.png">
+<meta property="og:image" content="http://irvlin.xyz/2020/08/09/Java%E7%BA%BF%E7%A8%8B%E6%B1%A0/%E6%8B%92%E7%BB%9D%E7%AD%96%E7%95%A5.png">
+<meta property="article:published_time" content="2020-08-09T10:15:04.000Z">
+<meta property="article:modified_time" content="2021-05-14T07:24:15.000Z">
+<meta property="article:author" content="Charispsychoma">
+<meta property="article:tag" content="线程池">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://irvlin.xyz/2020/08/09/Java%E7%BA%BF%E7%A8%8B%E6%B1%A0/ThreadPoolExecutor%E7%B1%BB%E5%9B%BE.png">
+
+<link rel="canonical" href="http://irvlin.xyz/2020/08/09/Java%E7%BA%BF%E7%A8%8B%E6%B1%A0/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Java线程池 | IRvLin的博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">IRvLin的博客</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger">
+            <i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+  <a href="https://github.com/irvlin" class="github-corner" title="Fork me on GitHub" aria-label="Fork me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://irvlin.xyz/2020/08/09/Java%E7%BA%BF%E7%A8%8B%E6%B1%A0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Charispsychoma">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="IRvLin的博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Java线程池
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-08-09 18:15:04" itemprop="dateCreated datePublished" datetime="2020-08-09T18:15:04+08:00">2020-08-09</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-05-14 15:24:15" itemprop="dateModified" datetime="2021-05-14T15:24:15+08:00">2021-05-14</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%A4%9A%E7%BA%BF%E7%A8%8B/" itemprop="url" rel="index"><span itemprop="name">多线程</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2020/08/09/Java%E7%BA%BF%E7%A8%8B%E6%B1%A0/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2020/08/09/Java%E7%BA%BF%E7%A8%8B%E6%B1%A0/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>记录Java线程池相关知识。</p>
+<a id="more"></a>
+<h3 id="什么是线程池"><a href="#什么是线程池" class="headerlink" title="什么是线程池"></a>什么是线程池</h3><p>随着计算机行业的飞速发展，多核CPU逐渐成为主流。多线程成为了提升服务器性能的必备武器。<br>线程池是一种<code>池化技术</code>，用于管理多线程，经常出现在多线程服务器中，例如MySQL。</p>
+<hr>
+<h3 id="为什么需要线程池"><a href="#为什么需要线程池" class="headerlink" title="为什么需要线程池"></a>为什么需要线程池</h3><p>线程过多会带来额外的开销，包括线程的创建和调度以及销毁，导致系统性能的降低，最终有可能导致系统内存耗尽。而使用线程池则可以避免这些问题：</p>
+<ol>
+<li><strong>降低资源消耗</strong>：通过池化技术重复利用已创建的线程，降低线程创建和销毁造成的损耗。</li>
+<li><strong>提高响应速度</strong>：无需等待创建线程即可立即执行任务。</li>
+<li><strong>提高线程的可管理性</strong>：对线程进行进行统一的分配、调优和监控。</li>
+<li><strong>提供额外功能</strong>：线程池还有许多拓展的功能，例如延时定时线程池，可对任务延期执行或者定期执行。</li>
+</ol>
+<hr>
+<h3 id="线程池核心设计"><a href="#线程池核心设计" class="headerlink" title="线程池核心设计"></a>线程池核心设计</h3><p>Java线程池的核心实现类是<code>ThreadPoolExecutor</code>，其类图如下:<br><img src="ThreadPoolExecutor%E7%B1%BB%E5%9B%BE.png" alt=""><br>ThreadPoolExecutor的顶层接口是<code>Executor</code>，它提供了一种思想，将任务提交和任务执行进行解耦。用户无需关注如何创建线程，如何调度线程来执行任务，只需提供<code>Runnable</code>对象，将任务的运行逻辑提交到执行器(Executor)中，由Executor框架完成线程的调配和任务的执行部分。<br>而<code>ExecutorService</code>接口则拓展了一些功能：</p>
+<ol>
+<li>扩充执行任务的能力，补充可以为一个或一批异步任务生成Future的方法。</li>
+<li>提供了管控线程池的方法，比如停止线程池的运行。</li>
+</ol>
+<p><code>AbstractExecutorService</code>则是上层的抽象类，将执行任务的流程串联了起来，保证下层的实现只需关注一个执行任务的方法即可。<br>最下层的实现类<code>ThreadPoolExecutor</code>实现最复杂的运行部分。一方面维护自身的生命周期，另一方面管理线程和任务，使两者良好的结合从而执行并行任务。<br><code>ThreadPoolExecutor</code>运行流程如下：<br><img src="ThreadPoolExecutor%E8%BF%90%E8%A1%8C%E6%B5%81%E7%A8%8B.png" alt=""><br>线程池内部构建了一个生产者消费者模型，将线程与任务解耦，并不直接关联，从而良好的缓冲任务，复用线程。<br>任务管理充当生产者，任务提交后，线程池会进行后续的判断：是直接申请线程执行任务，还是将其加入到阻塞队列进行等待，亦或是直接拒绝该任务。<br>线程管理则充当消费者，根据任务的请求进行线程的分配，执行完任务又会继续获取新的任务，直到任务全部获取完成，对线程进行回收。</p>
+<hr>
+<h3 id="线程池生命周期"><a href="#线程池生命周期" class="headerlink" title="线程池生命周期"></a>线程池生命周期</h3><p><code>ThreadPoolExecutor</code>的运行状态有5种：<br><img src="ThreadPoolExecutor%E8%BF%90%E8%A1%8C%E7%8A%B6%E6%80%81.png" alt=""><br>生命周期转换图如下：<br><img src="%E7%BA%BF%E7%A8%8B%E6%B1%A0%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F.png" alt=""></p>
+<hr>
+<h3 id="任务执行机制"><a href="#任务执行机制" class="headerlink" title="任务执行机制"></a>任务执行机制</h3><p>前面提到了任务提交后线程会进行判断如何处理任务，其主要执行机制如下：</p>
+<ol>
+<li>首先检测线程池运行状态，如果不是<code>RUNNING</code>，则直接拒绝，线程池要保证在<code>RUNNING</code>的状态下执行任务。</li>
+<li>如果<code>workerCount &lt; corePoolSize</code>，则创建并启动一个线程来执行新提交的任务。</li>
+<li>如果<code>workerCount &gt;= corePoolSize</code>，且线程池内的阻塞队列未满，则将任务添加到该阻塞队列中，该任务会等到线程空闲时执行。</li>
+<li>如果<code>workerCount &gt;= corePoolSize &amp;&amp; workerCount &lt; maximumPoolSize</code>，且线程池内的阻塞队列已满，则创建并启动一个线程来执行新提交的任务。</li>
+<li>如果<code>workerCount &gt;= maximumPoolSize</code>，并且线程池内的阻塞队列已满, 则根据<strong>拒绝策略</strong>来处理该任务, 默认的处理方式是直接抛异常。</li>
+</ol>
+<p>流程图如下：<br><img src="%E4%BB%BB%E5%8A%A1%E6%89%A7%E8%A1%8C%E6%9C%BA%E5%88%B6.png" alt=""></p>
+<hr>
+<h3 id="任务缓冲"><a href="#任务缓冲" class="headerlink" title="任务缓冲"></a>任务缓冲</h3><p>任务缓冲模块是线程池管理任务的核心部分。线程池的作用是将任务与线程解耦，再对任务进行分配。线程池是通过<strong>阻塞队列</strong>来实现的。阻塞队列对任务进行缓存，线程则从阻塞队列取出任务执行。<br>阻塞队列是一个双端队列，生产者往队列添加元素，消费者从队列取出元素。使用不同的队列可以实现不同的任务存取策略：<br><img src="%E9%98%BB%E5%A1%9E%E9%98%9F%E5%88%97%E6%88%90%E5%91%98.png" alt=""></p>
+<hr>
+<h3 id="任务申请"><a href="#任务申请" class="headerlink" title="任务申请"></a>任务申请</h3><p>任务进行提交后，执行的情况有两种：一种是线程池直接创建一个线程执行该任务，另一个是从阻塞队列中获取任务并执行，该线程执行完任务会继续从阻塞队列中获取任务执行。前者这种情况仅出现在线程初始创建的时候，后者是大多数情况。<br>这部分策略由<code>getTask</code>方法实现，其执行流程如下图：<br><img src="%E8%8E%B7%E5%8F%96%E4%BB%BB%E5%8A%A1%E6%B5%81%E7%A8%8B.png" alt=""></p>
+<hr>
+<h3 id="任务拒绝"><a href="#任务拒绝" class="headerlink" title="任务拒绝"></a>任务拒绝</h3><p>任务拒绝模块是线程池的保护策略，当阻塞队列已满，且线程池中的线程数目已达到<code>maximumPoolSize</code>时，线程池就会根据拒绝策略处理新的任务。<br>用户可以自定义拒绝策略，也可以选择JDK提供的4中拒绝策略：<br><img src="%E6%8B%92%E7%BB%9D%E7%AD%96%E7%95%A5.png" alt=""></p>
+<hr>
+<h3 id="worker线程"><a href="#worker线程" class="headerlink" title="worker线程"></a>worker线程</h3><p>…</p>
+<hr>
+<h3 id="线程池几个重要的方法"><a href="#线程池几个重要的方法" class="headerlink" title="线程池几个重要的方法"></a>线程池几个重要的方法</h3><ul>
+<li>execute()</li>
+<li>submit()</li>
+<li>shutdown()</li>
+<li>shutdownNow()<h4 id="execute-和-submit-区别"><a href="#execute-和-submit-区别" class="headerlink" title="execute() 和 submit() 区别"></a>execute() 和 submit() 区别</h4><code>submit()</code>有返回值，<code>execute()</code>无返回值。<h4 id="shutdown-和-shutdownNow-区别"><a href="#shutdown-和-shutdownNow-区别" class="headerlink" title="shutdown() 和 shutdownNow() 区别"></a>shutdown() 和 shutdownNow() 区别</h4><code>shutdown()</code>和<code>shutdownNow()</code>是用来关闭线程池的。<br><code>shutdown()</code>: 此方法执行后不得向线程池再提交任务，如果有空闲线程则销毁空闲线程，等待所有正在执行的任务及位于阻塞队列中的任务执行结束，然后销毁所有线程。<br><code>shutdownNow()</code>: 此方法执行后不得向线程池再提交任务，如果有空闲线程则销毁空闲线程，取消所有位于阻塞队列中的任务，并将其放入List容器，作为返回值。取消正在执行的线程(设置正在执行线程的中断标志位,调用线程的<code>interrupt</code>方法来中断线程)。</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E7%BA%BF%E7%A8%8B%E6%B1%A0/" rel="tag"># 线程池</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/08/06/Java%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86%E7%82%B9/" rel="prev" title="Java基础知识点">
+      <i class="fa fa-chevron-left"></i> Java基础知识点
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/08/13/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F-2/" rel="next" title="设计模式(2)">
+      设计模式(2) <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#什么是线程池"><span class="nav-number">1.</span> <span class="nav-text">什么是线程池</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#为什么需要线程池"><span class="nav-number">2.</span> <span class="nav-text">为什么需要线程池</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#线程池核心设计"><span class="nav-number">3.</span> <span class="nav-text">线程池核心设计</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#线程池生命周期"><span class="nav-number">4.</span> <span class="nav-text">线程池生命周期</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#任务执行机制"><span class="nav-number">5.</span> <span class="nav-text">任务执行机制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#任务缓冲"><span class="nav-number">6.</span> <span class="nav-text">任务缓冲</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#任务申请"><span class="nav-number">7.</span> <span class="nav-text">任务申请</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#任务拒绝"><span class="nav-number">8.</span> <span class="nav-text">任务拒绝</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#worker线程"><span class="nav-number">9.</span> <span class="nav-text">worker线程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#线程池几个重要的方法"><span class="nav-number">10.</span> <span class="nav-text">线程池几个重要的方法</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#execute-和-submit-区别"><span class="nav-number">10.1.</span> <span class="nav-text">execute() 和 submit() 区别</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#shutdown-和-shutdownNow-区别"><span class="nav-number">10.2.</span> <span class="nav-text">shutdown() 和 shutdownNow() 区别</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <a href="/">
+      <img class="site-author-image" itemprop="image" alt="Charispsychoma"
+        src="/images/avatar.jpg">
+    </a>
+  <p class="site-author-name" itemprop="name">Charispsychoma</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">46</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">34</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">39</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/IRVLIN" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;IRVLIN" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:irvlin0404@gmail.com" title="E-Mail → mailto:irvlin0404@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://www.zhihu.com/people/charispsychoma" title="Zhihu → https:&#x2F;&#x2F;www.zhihu.com&#x2F;people&#x2F;charispsychoma" rel="noopener" target="_blank"><i class="fab fa-zhihu fa-fw"></i>Zhihu</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://www.instagram.com/irv.lin/" title="Instagram → https:&#x2F;&#x2F;www.instagram.com&#x2F;irv.lin&#x2F;" rel="noopener" target="_blank"><i class="fab fa-instagram fa-fw"></i>Instagram</a>
+      </span>
+  </div>
+
+
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<span id="timeDate">载入天数...</span><span id="times">载入时分秒...</span>
+<script>
+    var now = new Date(); 
+    function createtime() { 
+        var grt= new Date("05/11/2020 14:44:44");//在此处修改你的建站时间
+        now.setTime(now.getTime()+250); 
+        days = (now - grt ) / 1000 / 60 / 60 / 24; dnum = Math.floor(days); 
+        hours = (now - grt ) / 1000 / 60 / 60 - (24 * dnum); hnum = Math.floor(hours); 
+        if(String(hnum).length ==1 ){hnum = "0" + hnum;} minutes = (now - grt ) / 1000 /60 - (24 * 60 * dnum) - (60 * hnum); 
+        mnum = Math.floor(minutes); if(String(mnum).length ==1 ){mnum = "0" + mnum;} 
+        seconds = (now - grt ) / 1000 - (24 * 60 * 60 * dnum) - (60 * 60 * hnum) - (60 * mnum); 
+        snum = Math.round(seconds); if(String(snum).length ==1 ){snum = "0" + snum;} 
+        document.getElementById("timeDate").innerHTML = "已存活 "+dnum+" 天 "; 
+        document.getElementById("times").innerHTML = hnum + " 小时 " + mnum + " 分 " + snum + " 秒"; 
+    } 
+setInterval("createtime()",250);
+</script>
+
+<div class="copyright">
+  
+  &copy; 2020 – 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Charispsychoma</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script data-pjax async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+         访客数: <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        访问量: <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '.languages',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[data-pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.dataset.pjax !== undefined) {
+      script.dataset.pjax = '';
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.subMenu)
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div id="pjax">
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('//unpkg.com/valine/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : false,
+      appId      : 'BTYxjkQrcW0LVlgoggIJ2kD4-gzGzoHsz',
+      appKey     : 'JJRnAk74iYw1AJ5GBVnXaT6b',
+      placeholder: "欢迎评论～",
+      avatar     : 'retro',
+      meta       : guest,
+      pageSize   : '10' || 10,
+      visitor    : false,
+      lang       : 'zh-cn' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : false,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+    </div>
+
+  <!-- require APlayer -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script>
+  <!-- require MetingJS -->
+  <script src="https://cdn.jsdelivr.net/npm/meting@2/dist/Meting.min.js"></script>
+
+  <meting-js
+    server="netease" type="playlist" id="574119204" order="random" volume=0.5 fixed=true theme="#333">
+  </meting-js>
+
+  <script type="text/javascript" src="/js/clicklove.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/irvlin/CDN/js/jquery-3.4.1.min.js"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/00years/ribbon@v1.0/ribbon.min.js"></script>
+  <script src="/live2d-widget/autoload.js"></script>
+</body>
+</html>
