@@ -8560,13 +8560,13 @@
 <li><strong>弱一致性</strong>：这种一致性级别约束了系统在写入成功后，不承诺立即可以读到写入的值，也不承诺多久之后数据能够达到一致，但会尽可能地保证到某个时间级别（比如秒级别）后，数据能够达到一致状态</li>
 <li><strong>最终一致性</strong>：最终一致性是弱一致性的一个特例，系统会保证在一定时间内，能够达到一个数据一致的状态。这里之所以将最终一致性单独提出来，是因为它是弱一致性中非常推崇的一种一致性模型，也是业界在大型分布式系统的数据一致性上比较推崇的模型</li>
 </ul>
-<h3 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h3><p>缓存可以提升性能、缓解数据库压力，但是使用缓存也会导致数据<strong>不一致性</strong>的问题。一般我们是如何使用缓存呢？有三种经典的缓存模式：</p>
+<h4 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h4><p>缓存可以提升性能、缓解数据库压力，但是使用缓存也会导致数据<strong>不一致性</strong>的问题。一般我们是如何使用缓存呢？有三种经典的缓存模式：</p>
 <ul>
 <li>Cache-Aside Pattern</li>
 <li>Read-Through/Write through</li>
 <li>Write behind</li>
 </ul>
-<h4 id="Cache-Aside-Pattern"><a href="#Cache-Aside-Pattern" class="headerlink" title="Cache-Aside Pattern"></a>Cache-Aside Pattern</h4><p>Cache-Aside Pattern，即<strong>旁路缓存模式</strong>，它的提出是为了尽可能地解决缓存与数据库的数据不一致问题。</p>
+<h5 id="Cache-Aside-Pattern"><a href="#Cache-Aside-Pattern" class="headerlink" title="Cache-Aside Pattern"></a>Cache-Aside Pattern</h5><p>Cache-Aside Pattern，即<strong>旁路缓存模式</strong>，它的提出是为了尽可能地解决缓存与数据库的数据不一致问题。</p>
 <p><strong>Cache-Aside Pattern</strong>的读请求流程如下：</p>
 <p><img src="cache-aside.png" alt="cache-aside"></p>
 <ol>
@@ -8576,7 +8576,7 @@
 <p><strong>Cache-Aside Pattern</strong>的写请求流程如下：</p>
 <p><img src="cache-aside2.png" alt="cache-aside"></p>
 <p>更新的时候，先<strong>更新数据库，然后再删除缓存</strong>。</p>
-<h4 id="Read-Through-Write-Through（读写穿透）"><a href="#Read-Through-Write-Through（读写穿透）" class="headerlink" title="Read-Through/Write-Through（读写穿透）"></a>Read-Through/Write-Through（读写穿透）</h4><p><strong>Read/Write Through</strong>模式中，服务端把缓存作为主要数据存储。应用程序跟数据库缓存交互，都是通过<strong>抽象缓存层</strong>完成的。</p>
+<h5 id="Read-Through-Write-Through（读写穿透）"><a href="#Read-Through-Write-Through（读写穿透）" class="headerlink" title="Read-Through/Write-Through（读写穿透）"></a>Read-Through/Write-Through（读写穿透）</h5><p><strong>Read/Write Through</strong>模式中，服务端把缓存作为主要数据存储。应用程序跟数据库缓存交互，都是通过<strong>抽象缓存层</strong>完成的。</p>
 <p><strong>Read-Through</strong>的简要流程如下：</p>
 <p><img src="read-through.png" alt="read-through"></p>
 <ol>
@@ -8588,10 +8588,10 @@
 <p>Read-Through实际只是在<strong>Cache-Aside</strong>之上进行了一层封装，它会让程序代码变得更简洁，同时也减少数据源上的负载。</p>
 <p><strong>Write-Through</strong>模式下，当发生写请求时，也是由<strong>缓存抽象层</strong>完成数据源和缓存数据的更新,流程如下：</p>
 <p><img src="write-through.png" alt="write-through"></p>
-<h4 id="Write-behind-（异步缓存写入）"><a href="#Write-behind-（异步缓存写入）" class="headerlink" title="Write behind （异步缓存写入）"></a>Write behind （异步缓存写入）</h4><p><strong>Write behind</strong>跟<strong>Read-Through/Write-Through</strong>有相似的地方，都是由<code>Cache Provider</code>来负责缓存和数据库的读写。它两又有个很大的不同：<strong>Read/Write Through</strong>是同步更新缓存和数据的，<strong>Write Behind</strong>则是只更新缓存，不直接更新数据库，通过<strong>批量异步</strong>的方式来更新数据库。</p>
+<h5 id="Write-behind-（异步缓存写入）"><a href="#Write-behind-（异步缓存写入）" class="headerlink" title="Write behind （异步缓存写入）"></a>Write behind （异步缓存写入）</h5><p><strong>Write behind</strong>跟<strong>Read-Through/Write-Through</strong>有相似的地方，都是由<code>Cache Provider</code>来负责缓存和数据库的读写。它两又有个很大的不同：<strong>Read/Write Through</strong>是同步更新缓存和数据的，<strong>Write Behind</strong>则是只更新缓存，不直接更新数据库，通过<strong>批量异步</strong>的方式来更新数据库。</p>
 <p><img src="write-behind.png" alt="write-behind"></p>
 <p>这种方式下，缓存和数据库的一致性不强，<strong>对一致性要求高的系统要谨慎使用</strong>。但是它适合频繁写的场景，MySQL的<strong>InnoDB Buffer Pool机制</strong>就使用到这种模式。</p>
-<h3 id="操作缓存的时候，删除缓存呢，还是更新缓存？"><a href="#操作缓存的时候，删除缓存呢，还是更新缓存？" class="headerlink" title="操作缓存的时候，删除缓存呢，还是更新缓存？"></a>操作缓存的时候，删除缓存呢，还是更新缓存？</h3><p>一般业务场景，我们使用的就是<strong>Cache-Aside</strong>模式。 有些小伙伴可能会问， <strong>Cache-Aside</strong>在写入请求的时候，为什么是<strong>删除缓存而不是更新缓存</strong>呢？</p>
+<h4 id="操作缓存的时候，删除缓存呢，还是更新缓存？"><a href="#操作缓存的时候，删除缓存呢，还是更新缓存？" class="headerlink" title="操作缓存的时候，删除缓存呢，还是更新缓存？"></a>操作缓存的时候，删除缓存呢，还是更新缓存？</h4><p>一般业务场景，我们使用的就是<strong>Cache-Aside</strong>模式。 有些小伙伴可能会问， <strong>Cache-Aside</strong>在写入请求的时候，为什么是<strong>删除缓存而不是更新缓存</strong>呢？</p>
 <p>看个例子：</p>
 <p><img src="cache.png" alt="cache"></p>
 <ol>
@@ -8606,7 +8606,7 @@
 <li>如果你写入的缓存值，是经过复杂计算才得到的话。更新缓存频率高的话，就浪费性能啦。</li>
 <li>在写数据库场景多，读数据场景少的情况下，数据很多时候还没被读取到，又被更新了，这也浪费了性能呢(实际上，写多的场景，用缓存也不是很划算了)</li>
 </ul>
-<h3 id="双写的情况下，先操作数据库还是先操作缓存？"><a href="#双写的情况下，先操作数据库还是先操作缓存？" class="headerlink" title="双写的情况下，先操作数据库还是先操作缓存？"></a>双写的情况下，先操作数据库还是先操作缓存？</h3><p><code>Cache-Aside</code>缓存模式中，在写入请求的时候，为什么是<strong>先操作数据库呢</strong>？为什么<strong>不先操作缓存</strong>呢？</p>
+<h4 id="双写的情况下，先操作数据库还是先操作缓存？"><a href="#双写的情况下，先操作数据库还是先操作缓存？" class="headerlink" title="双写的情况下，先操作数据库还是先操作缓存？"></a>双写的情况下，先操作数据库还是先操作缓存？</h4><p><code>Cache-Aside</code>缓存模式中，在写入请求的时候，为什么是<strong>先操作数据库呢</strong>？为什么<strong>不先操作缓存</strong>呢？</p>
 <p>假设有A、B两个请求，请求A做更新操作，请求B做查询读取操作。</p>
 <p><img src="cache2.png" alt="cache"></p>
 <ol>
@@ -8617,7 +8617,7 @@
 <li>线程A写入DB最新的数据</li>
 </ol>
 <p>酱紫就有问题啦，<strong>缓存和数据库的数据不一致了。缓存保存的是老数据，数据库保存的是新数据</strong>。因此，<code>Cache-Aside</code>缓存模式，选择了先操作数据库而不是先操作缓存。</p>
-<h3 id="缓存延时双删"><a href="#缓存延时双删" class="headerlink" title="缓存延时双删"></a>缓存延时双删</h3><p>有些小伙伴可能会说，不一定要先操作数据库呀，采用<strong>缓存延时双删</strong>策略就好啦？什么是延时双删呢？</p>
+<h4 id="缓存延时双删"><a href="#缓存延时双删" class="headerlink" title="缓存延时双删"></a>缓存延时双删</h4><p>有些小伙伴可能会说，不一定要先操作数据库呀，采用<strong>缓存延时双删</strong>策略就好啦？什么是延时双删呢？</p>
 <p><img src="%E7%BC%93%E5%AD%98%E5%BB%B6%E6%97%B6%E5%8F%8C%E5%88%A0.png" alt="缓存延时双删"></p>
 <ol>
 <li>先删除缓存</li>
@@ -8628,7 +8628,7 @@
 <blockquote>
 <p>这个休眠时间 = 读业务逻辑数据的耗时 + 几百毫秒。 为了确保读请求结束，写请求可以删除读请求可能带来的缓存脏数据。</p>
 </blockquote>
-<h3 id="删除缓存重试机制"><a href="#删除缓存重试机制" class="headerlink" title="删除缓存重试机制"></a>删除缓存重试机制</h3><p>不管是<strong>延时双删</strong>还是<strong>Cache-Aside的先操作数据库再删除缓存</strong>，如果第二步的删除缓存失败呢，删除失败会导致脏数据哦</p>
+<h4 id="删除缓存重试机制"><a href="#删除缓存重试机制" class="headerlink" title="删除缓存重试机制"></a>删除缓存重试机制</h4><p>不管是<strong>延时双删</strong>还是<strong>Cache-Aside的先操作数据库再删除缓存</strong>，如果第二步的删除缓存失败呢，删除失败会导致脏数据哦</p>
 <blockquote>
 <p>删除失败就多删除几次呀,保证删除缓存成功呀~ 所以可以引入<strong>删除缓存重试机制</strong></p>
 </blockquote>
@@ -8640,7 +8640,7 @@
 <li>消费消息队列的消息，获取要删除的key</li>
 <li>重试删除缓存操作</li>
 </ol>
-<h3 id="读取binlog异步删除缓存"><a href="#读取binlog异步删除缓存" class="headerlink" title="读取binlog异步删除缓存"></a>读取binlog异步删除缓存</h3><p>重试删除缓存机制还可以，就是会造成好多业务代码入侵。其实，还可以通过<strong>数据库的binlog来异步淘汰key</strong>。</p>
+<h4 id="读取binlog异步删除缓存"><a href="#读取binlog异步删除缓存" class="headerlink" title="读取binlog异步删除缓存"></a>读取binlog异步删除缓存</h4><p>重试删除缓存机制还可以，就是会造成好多业务代码入侵。其实，还可以通过<strong>数据库的binlog来异步淘汰key</strong>。</p>
 <p><img src="binlog.png" alt="binlog"></p>
 <p>以mysql为例 可以使用阿里的canal将binlog日志采集发送到MQ队列里面，然后通过ACK机制确认处理这条更新消息，删除缓存，保证数据缓存一致性。</p>
 ]]></content>
