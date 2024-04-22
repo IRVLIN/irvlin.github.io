@@ -6013,7 +6013,10 @@
   <entry>
     <title>MySQL详解</title>
     <url>/2024/04/22/MySQL%E8%AF%A6%E8%A7%A3/</url>
-    <content><![CDATA[<h1 id="MySQL"><a href="#MySQL" class="headerlink" title="MySQL"></a>MySQL</h1><h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>MySQL是一个关系型数据库管理系统，由瑞典MySQL AB 公司开发，属于 Oracle 旗下产品。MySQL 是最流行的关系型数据库管理系统之一，在 WEB 应用方面，MySQL是最好的 RDBMS (Relational Database Management System，关系数据库管理系统) 应用软件之一。</p>
+    <content><![CDATA[<p>MySQL详解</p>
+<a id="more"></a>
+
+<h1 id="MySQL"><a href="#MySQL" class="headerlink" title="MySQL"></a>MySQL</h1><h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>MySQL是一个关系型数据库管理系统，由瑞典MySQL AB 公司开发，属于 Oracle 旗下产品。MySQL 是最流行的关系型数据库管理系统之一，在 WEB 应用方面，MySQL是最好的 RDBMS (Relational Database Management System，关系数据库管理系统) 应用软件之一。</p>
 <h2 id="非关系型数据库和关系型数据库"><a href="#非关系型数据库和关系型数据库" class="headerlink" title="非关系型数据库和关系型数据库"></a>非关系型数据库和关系型数据库</h2><p>关系型数据库的优点</p>
 <ul>
 <li>容易理解，因为它采用了关系模型来组织数据。</li>
@@ -7671,5 +7674,11 @@
 <p><img src="binlog.png" alt="binlog"></p>
 <p>以mysql为例 可以使用阿里的canal将binlog日志采集发送到MQ队列里面，然后通过ACK机制确认处理这条更新消息，删除缓存，保证数据缓存一致性。</p>
 ]]></content>
+      <categories>
+        <category>mysql</category>
+      </categories>
+      <tags>
+        <tag>mysql</tag>
+      </tags>
   </entry>
 </search>
