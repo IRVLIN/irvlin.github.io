@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-128x128.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-64x64.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-center-simple.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"irvlin.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"default"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="Raft详解">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Raft">
+<meta property="og:url" content="https://irvlin.github.io/2024/04/22/Raft/index.html">
+<meta property="og:site_name" content="IRvLin的博客">
+<meta property="og:description" content="Raft详解">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://irvlin.github.io/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/Raft/%E8%8A%82%E7%82%B9%E7%8A%B6%E6%80%81%E8%BD%AC%E6%8D%A2.png">
+<meta property="og:image" content="https://irvlin.github.io/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/Raft/%E9%80%89%E4%B8%BE%E6%88%90%E5%8A%9F.png">
+<meta property="og:image" content="https://irvlin.github.io/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/Raft/%E9%80%89%E4%B8%BE%E6%88%90%E5%8A%9F2.png">
+<meta property="og:image" content="https://irvlin.github.io/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/Raft/%E9%80%89%E4%B8%BE%E5%A4%B1%E8%B4%A5.png">
+<meta property="og:image" content="https://irvlin.github.io/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/Raft/%E9%80%89%E4%B8%BE%E5%A4%B1%E8%B4%A52.png">
+<meta property="og:image" content="https://irvlin.github.io/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/Raft/%E9%80%89%E4%B8%BE%E8%B6%85%E6%97%B6.png">
+<meta property="og:image" content="https://irvlin.github.io/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/Raft/%E9%80%89%E4%B8%BE%E8%B6%85%E6%97%B62.png">
+<meta property="og:image" content="https://irvlin.github.io/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/Raft/%E9%80%89%E4%B8%BE%E8%B6%85%E6%97%B63.png">
+<meta property="og:image" content="https://irvlin.github.io/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/Raft/%E6%97%A5%E5%BF%97%E5%A4%8D%E5%88%B6.png">
+<meta property="og:image" content="https://irvlin.github.io/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/Raft/%E6%B5%81%E7%A8%8B%E5%9B%BE%E8%A7%A3.png">
+<meta property="og:image" content="https://irvlin.github.io/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/Raft/%E6%B5%81%E7%A8%8B%E5%9B%BE%E8%A7%A32.png">
+<meta property="og:image" content="https://irvlin.github.io/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/Raft/%E6%B5%81%E7%A8%8B%E5%9B%BE%E8%A7%A33.png">
+<meta property="og:image" content="https://irvlin.github.io/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/Raft/%E6%B5%81%E7%A8%8B%E5%9B%BE%E8%A7%A34.png">
+<meta property="og:image" content="https://irvlin.github.io/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/Raft/%E6%B5%81%E7%A8%8B%E5%9B%BE%E8%A7%A35.png">
+<meta property="og:image" content="https://irvlin.github.io/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/Raft/%E6%B5%81%E7%A8%8B%E5%9B%BE%E8%A7%A36.png">
+<meta property="og:image" content="https://irvlin.github.io/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/Raft/%E6%B5%81%E7%A8%8B%E5%9B%BE%E8%A7%A37.png">
+<meta property="og:image" content="https://irvlin.github.io/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/Raft/%E4%B8%8D%E4%B8%80%E8%87%B4.png">
+<meta property="og:image" content="https://irvlin.github.io/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/Raft/%E6%8F%90%E4%BA%A4%E9%99%90%E5%88%B6.png">
+<meta property="og:image" content="https://irvlin.github.io/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/Raft/%E7%9B%B4%E6%8E%A5%E5%88%87%E6%8D%A2%E9%9B%86%E7%BE%A4%E6%88%90%E5%91%98%E9%85%8D%E7%BD%AE.png">
+<meta property="og:image" content="https://irvlin.github.io/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/Raft/%E6%97%A5%E5%BF%97%E5%8E%8B%E7%BC%A9.png">
+<meta property="article:published_time" content="2024-04-21T16:30:30.000Z">
+<meta property="article:modified_time" content="2024-04-22T06:24:42.884Z">
+<meta property="article:author" content="Charispsychoma">
+<meta property="article:tag" content="分布式">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://irvlin.github.io/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/Raft/%E8%8A%82%E7%82%B9%E7%8A%B6%E6%80%81%E8%BD%AC%E6%8D%A2.png">
+
+<link rel="canonical" href="https://irvlin.github.io/2024/04/22/Raft/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Raft | IRvLin的博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">IRvLin的博客</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger">
+            <i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+  <a href="https://github.com/irvlin" class="github-corner" title="Fork me on GitHub" aria-label="Fork me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://irvlin.github.io/2024/04/22/Raft/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Charispsychoma">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="IRvLin的博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Raft
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2024-04-22 00:30:30 / 修改时间：14:24:42" itemprop="dateCreated datePublished" datetime="2024-04-22T00:30:30+08:00">2024-04-22</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%88%86%E5%B8%83%E5%BC%8F/" itemprop="url" rel="index"><span itemprop="name">分布式</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2024/04/22/Raft/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2024/04/22/Raft/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>Raft详解</p>
+<a id="more"></a>
+
+<h1 id="Raft"><a href="#Raft" class="headerlink" title="Raft"></a>Raft</h1><h2 id="Raft是什么"><a href="#Raft是什么" class="headerlink" title="Raft是什么"></a>Raft是什么</h2><p>在分布式系统中，为了消除单点提高系统可用性，通常会使用副本来进行容错，但这会带来另一个问题，即如何保证多个副本之间的一致性？这里我们只讨论强一致性，即线性一致性。弱一致性涵盖的范围较广，涉及根据实际场景进行诸多取舍，不在 Raft 系列的讨论目标范围内。</p>
+<p>所谓的强一致性（线性一致性）并不是指集群中所有节点在任一时刻的状态必须完全一致，而是指一个目标，即让一个分布式系统看起来只有一个数据副本，并且读写操作都是原子的，这样应用层就可以忽略系统底层多个数据副本间的同步问题。也就是说，我们可以将一个强一致性分布式系统当成一个整体，一旦某个客户端成功的执行了写操作，那么所有客户端都一定能读出刚刚写入的值。即使发生网络分区故障，或者少部分节点发生异常，整个集群依然能够像单机一样提供服务。</p>
+<p>共识算法（Consensus Algorithm）就是用来做这个事情的，它保证即使在小部分（≤ (N-1)/2）节点故障的情况下，系统仍然能正常对外提供服务。共识算法通常基于状态复制机（Replicated State Machine）模型，也就是所有节点从同一个 state 出发，经过同样的操作 log，最终达到一致的 state。</p>
+<p>共识算法是构建强一致性分布式系统的基石，Paxos 是共识算法的代表，而 Raft 则是其作者在博士期间研究 Paxos 时提出的一个变种，主要优点是容易理解、易于实现，甚至关键的部分都在论文中给出了伪代码实现。</p>
+<h2 id="Raft基本概念"><a href="#Raft基本概念" class="headerlink" title="Raft基本概念"></a>Raft基本概念</h2><p>Raft 使用 Quorum 机制来实现共识和容错，我们将对 Raft 集群的操作称为提案，每当发起一个提案，必须得到大多数（&gt; N/2）节点的同意才能提交。</p>
+<p>首先，Raft 集群必须存在一个主节点（leader），我们作为客户端向集群发起的所有操作都必须经由主节点处理。所以 Raft 核心算法中的第一部分就是<strong>选主</strong>（<strong>Leader election</strong>）——没有主节点集群就无法工作，先票选出一个主节点，再考虑其它事情。</p>
+<p>其次，主节点需要承载什么工作呢？它会负责接收客户端发过来的操作请求，将操作包装为<strong>日志</strong>同步给其它节点，在保证<strong>大部分</strong>节点都同步了本次操作后，就可以安全地给客户端回应响应了。这一部分工作在 Raft 核心算法中叫<strong>日志复制</strong>（<strong>Log replication</strong>）。</p>
+<p>然后，因为主节点的责任是如此之大，所以节点们在选主的时候一定要谨慎，只有<strong>符合条件</strong>的节点才可以当选主节点。此外主节点在处理操作日志的时候也一定要谨慎，为了保证集群对外展现的一致性，不可以<strong>覆盖或删除</strong>前任主节点已经处理成功的操作日志。所谓的“谨慎处理”，其实就是在选主和提交日志的时候进行一些限制，这一部分在 Raft 核心算法中叫<strong>安全性</strong>（<strong>Safety</strong>）。</p>
+<p><strong>Raft 核心算法其实就是由这三个子问题组成的：选主（Leader election）、日志复制（Log replication）、安全性（Safety）。这三部分共同实现了 Raft 核心的共识和容错机制。</strong></p>
+<p>除了核心算法外，Raft 也提供了几个工程实践中必须面对问题的解决方案。</p>
+<p>第一个是关于日志无限增长的问题。Raft 将操作包装成为了日志，集群每个节点都维护了一个不断增长的日志序列，状态机只有通过重放日志序列来得到。但由于这个日志序列可能会随着时间流逝不断增长，因此我们必须有一些办法来避免无休止的磁盘占用和过久的日志重放。这一部分叫<strong>日志压缩</strong>（<strong>Log compaction</strong>）。</p>
+<p>第二个是关于集群成员变更的问题。一个 Raft 集群不太可能永远是固定几个节点，总有扩缩容的需求，或是节点宕机需要替换的时候。直接更换集群成员可能会导致严重的<strong>脑裂</strong>问题。Raft 给出了一种安全变更集群成员的方式。这一部分叫<strong>集群成员变更</strong>（<strong>Cluster membership change</strong>）。</p>
+<p>此外，我们还会额外讨论<strong>线性一致性</strong>的定义、为什么 <strong>Raft 不能与线性一致划等号</strong>、如何<strong>基于 Raft 实现线性一致</strong>，以及在如何<strong>保证线性一致的前提下进行读性能优化</strong>。</p>
+<p>以上便是理论篇内将会讨论到的大部分内容的概要介绍，这里我们对 Raft 已经有了一个宏观上的认识，知道了各个部分大概是什么内容，以及它们之间的关系。</p>
+<p>接下来我们将会详细讨论 Raft 算法的每个部分。让我们先从第一部分<strong>选主</strong>开始。</p>
+<h2 id="选主"><a href="#选主" class="headerlink" title="选主"></a>选主</h2><h3 id="什么是选主"><a href="#什么是选主" class="headerlink" title="什么是选主"></a>什么是选主</h3><p>选主（Leader election）就是在分布式系统内抉择出一个主节点来负责一些特定的工作。在执行了选主过程后，集群中每个节点都会识别出一个特定的、唯一的节点作为 leader。</p>
+<p>我们开发的系统如果遇到选主的需求，通常会直接基于 zookeeper 或 etcd 来做，把这部分的复杂性收敛到第三方系统。然而作为 etcd 基础的 Raft 自身也存在“选主”的概念，这是两个层面的事情：基于 etcd 的选主指的是利用第三方 etcd 让集群对谁做主节点的决策达成一致，技术上来说利用的是 etcd 的一致性状态机、lease 以及 watch 机制，这个事情也可以改用单节点的 MySQL/Redis 来做，只是无法获得高可用性；而 Raft 本身的选主则指的是在 Raft 集群自身内部通过票选、心跳等机制来协调出一个大多数节点认可的主节点作为集群的 leader 去协调所有决策。</p>
+<p><strong>当你的系统利用 etcd 来写入谁是主节点的时候，这个决策也在 etcd 内部被它自己集群选出的主节点处理并同步给其它节点。</strong></p>
+<h3 id="为什么要选主"><a href="#为什么要选主" class="headerlink" title="为什么要选主"></a>为什么要选主</h3><p>按照论文所述，原生的 Paxos 算法使用了一种点对点（peer-to-peer）的方式，所有节点地位是平等的。在理想情况下，算法的目的是制定<strong>一个决策</strong>，这对于简化的模型比较有意义。但在工业界很少会有系统会使用这种方式，当有一系列的决策需要被制定的时候，先选出一个 leader 节点然后让它去协调所有的决策，这样算法会更加简单快速。</p>
+<p>此外，和其它一致性算法相比，Raft 赋予了 leader 节点更强的领导力，称之为 <strong>Strong Leader</strong>。比如说日志条目只能从 leader 节点发送给其它节点而不能反着来，这种方式简化了日志复制的逻辑，使 Raft 变得更加简单易懂。</p>
+<h3 id="过程"><a href="#过程" class="headerlink" title="过程"></a>过程</h3><h4 id="角色"><a href="#角色" class="headerlink" title="角色"></a>角色</h4><p>Raft 集群中每个节点都处于以下三种角色之一：</p>
+<ul>
+<li><strong>Leader</strong>: 所有请求的处理者，接收客户端发起的操作请求，写入本地日志后同步至集群其它节点。</li>
+<li><strong>Follower</strong>: 请求的被动更新者，从 leader 接收更新请求，写入本地文件。如果客户端的操作请求发送给了 follower，会首先由 follower 重定向给 leader。</li>
+<li><strong>Candidate</strong>: 如果 follower 在一定时间内没有收到 leader 的心跳，则判断 leader 可能已经故障，此时启动 leader election 过程，本节点切换为 candidate 直到选主结束。</li>
+</ul>
+<h4 id="任期"><a href="#任期" class="headerlink" title="任期"></a>任期</h4><p>每开始一次新的选举，称为一个<strong>任期</strong>（<strong>term</strong>），每个 term 都有一个严格递增的整数与之关联。</p>
+<p>每当 candidate 触发 leader election 时都会增加 term，如果一个 candidate 赢得选举，他将在本 term 中担任 leader 的角色。但并不是每个 term 都一定对应一个 leader，有时候某个 term 内会由于选举超时导致选不出 leader，这时 candicate 会递增 term 号并开始新一轮选举。</p>
+<p>Term 更像是一个<strong>逻辑时钟</strong>（<strong>logic clock</strong>）的作用，有了它，就可以发现哪些节点的状态已经过期。每一个节点都保存一个 current term，在通信时带上这个 term 号。</p>
+<p>节点间通过 RPC 来通信，主要有两类 RPC 请求：</p>
+<ul>
+<li><strong>RequestVote RPCs</strong>: 用于 candidate 拉票选举。</li>
+<li><strong>AppendEntries RPCs</strong>: 用于 leader 向其它节点复制日志以及同步心跳。</li>
+</ul>
+<h4 id="节点状态转换"><a href="#节点状态转换" class="headerlink" title="节点状态转换"></a>节点状态转换</h4><p>我们知道集群每个节点的状态都只能是 leader、follower 或 candidate，那么节点什么时候会处于哪种状态呢？下图展示了一个节点可能发生的状态转换：</p>
+<p><img src="/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/Raft/%E8%8A%82%E7%82%B9%E7%8A%B6%E6%80%81%E8%BD%AC%E6%8D%A2.png" alt="节点状态转换"></p>
+<p>详细讨论下每个转换所发生的场景：</p>
+<h5 id="Follower-状态转换过程"><a href="#Follower-状态转换过程" class="headerlink" title="Follower 状态转换过程"></a>Follower 状态转换过程</h5><p>Raft 的选主基于一种心跳机制，集群中每个节点刚启动时都是 follower 身份（Step: starts up），leader 会周期性的向所有节点发送心跳包来维持自己的权威，那么首个 leader 是如何被选举出来的呢？方法是如果一个 follower 在一段时间内没有收到任何心跳，也就是选举超时，那么它就会主观认为系统中没有可用的 leader，并发起新的选举（Step: times out, starts election）。<br>这里有一个问题，即这个“选举超时时间”该如何制定？如果所有节点在同一时刻启动，经过同样的超时时间后同时发起选举，整个集群会变得低效不堪，极端情况下甚至会一直选不出一个主节点。Raft 巧妙的使用了一个随机化的定时器，让每个节点的“超时时间”在一定范围内随机生成，这样就大大的降低了多个节点同时发起选举的可能性。</p>
+<p>若 follower 想发起一次选举，follower 需要先增加自己的当前 term，并将身份切换为 candidate。然后它会向集群其它节点发送“请给自己投票”的消息（RequestVote RPC）。</p>
+<h5 id="Candicate-状态转换过程"><a href="#Candicate-状态转换过程" class="headerlink" title="Candicate 状态转换过程"></a>Candicate 状态转换过程</h5><p>Follower 切换为 candidate 并向集群其他节点发送“请给自己投票”的消息后，接下来会有三种可能的结果，也即上面<strong>节点状态图中 candidate 状态向外伸出的三条线</strong>。</p>
+<ol>
+<li><strong>选举成功（Step: receives votes from majority of servers）</strong></li>
+</ol>
+<p>当candicate从整个集群的<strong>大多数</strong>（N/2+1）节点获得了针对同一 term 的选票时，它就赢得了这次选举，立刻将自己的身份转变为 leader 并开始向其它节点发送心跳来维持自己的权威。</p>
+<p><img src="/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/Raft/%E9%80%89%E4%B8%BE%E6%88%90%E5%8A%9F.png" alt="选举成功"></p>
+<p><img src="/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/Raft/%E9%80%89%E4%B8%BE%E6%88%90%E5%8A%9F2.png" alt="选举成功"></p>
+<p>每个节点针对每个 term 只能投出一张票，并且按照先到先得的原则。这个规则确保只有一个 candidate 会成为 leader。</p>
+<ol start="2">
+<li><strong>选举失败（Step: discovers current leader or new term）</strong></li>
+</ol>
+<p>Candidate 在等待投票回复的时候，可能会突然收到其它自称是 leader 的节点发送的心跳包，如果这个心跳包里携带的 term <strong>不小于</strong> candidate 当前的 term，那么 candidate 会承认这个 leader，并将身份切回 follower。这说明其它节点已经成功赢得了选举，我们只需立刻跟随即可。但如果心跳包中的 term 比自己小，candidate 会拒绝这次请求并保持选举状态。</p>
+<p><img src="/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/Raft/%E9%80%89%E4%B8%BE%E5%A4%B1%E8%B4%A5.png" alt="选举失败"></p>
+<p><img src="/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/Raft/%E9%80%89%E4%B8%BE%E5%A4%B1%E8%B4%A52.png" alt="选举失败"></p>
+<p>S4 成为 leader，S2 在收到 S4 的心跳包后，由于 term 不小于自己当前的 term，因此会立刻切为 follower 跟随 S4。</p>
+<ol start="3">
+<li><strong>选举超时（Step: times out, new election）</strong></li>
+</ol>
+<p>第三种可能的结果是 candidate 既没有赢也没有输。如果有多个 follower 同时成为 candidate，选票是可能被瓜分的，如果没有任何一个 candidate 能得到大多数节点的支持，那么每一个 candidate 都会超时。此时 candidate 需要增加自己的 term，然后发起新一轮选举。如果这里不做一些特殊处理，选票可能会一直被瓜分，导致选不出 leader 来。这里的“特殊处理”指的就是前文所述的<strong>随机化选举超时时间</strong>。</p>
+<p><img src="/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/Raft/%E9%80%89%E4%B8%BE%E8%B6%85%E6%97%B6.png" alt="选举超时"></p>
+<p><img src="/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/Raft/%E9%80%89%E4%B8%BE%E8%B6%85%E6%97%B62.png" alt="选举超时"></p>
+<p><img src="/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/Raft/%E9%80%89%E4%B8%BE%E8%B6%85%E6%97%B63.png" alt="选举超时"></p>
+<p>如果没有随机化超时时间，所有节点将会继续同时发起选举。</p>
+<p>以上是 candidate 三种可能的选举结果。</p>
+<h5 id="Leader-状态转换过程"><a href="#Leader-状态转换过程" class="headerlink" title="Leader 状态转换过程"></a>Leader 状态转换过程</h5><p>节点状态图中的最后一条线是：<strong>discovers server with higher term</strong>。想象一个场景：当 leader 节点发生了宕机或网络断连，此时其它 follower 会收不到 leader 心跳，首个触发超时的节点会变为 candidate 并开始拉票（由于随机化各个 follower 超时时间不同），由于该 candidate 的 term 大于原 leader 的 term，因此所有 follower 都会投票给它，这名 candidate 会变为新的 leader。一段时间后原 leader 恢复了，收到了来自新leader 的心跳包，发现心跳中的 term 大于自己的 term，此时该节点会立刻切换为 follower 并跟随的新 leader。</p>
+<p>以上就是 Raft 的选主逻辑，但还有一些细节（譬如是否给该 candidate 投票还有一些其它条件）依赖算法的其它部分基础，我们会在后续“安全性”一章描述。</p>
+<p>当票选出 leader 后，leader 也该承担起相应的责任了，这个责任是什么？就是下一章将介绍的“日志复制”。</p>
+<h2 id="日志复制"><a href="#日志复制" class="headerlink" title="日志复制"></a>日志复制</h2><h3 id="什么是日志复制"><a href="#什么是日志复制" class="headerlink" title="什么是日志复制"></a>什么是日志复制</h3><p>在前文中我们讲过：共识算法通常基于<strong>状态复制机</strong>（<strong>Replicated State Machine</strong>）模型，所有节点从<strong>同一个 state</strong> 出发，经过一系列<strong>同样操作 log</strong> 的步骤，最终也必将达到<strong>一致的 state</strong>。也就是说，只要我们保证集群中所有节点的 log 一致，那么经过一系列应用（apply）后最终得到的状态机也就是一致的。</p>
+<p>Raft 负责保证集群中所有节点 <strong>log 的一致性</strong>。</p>
+<p>此外我们还提到过：Raft 赋予了 leader 节点更强的领导力（<strong>Strong Leader</strong>）。那么 Raft 保证 log 一致的方式就很容易理解了，即所有 log 都必须交给 leader 节点处理，并由 leader 节点复制给其它节点。</p>
+<p>这个过程，就叫做<strong>日志复制</strong>（<strong>Log replication</strong>）。</p>
+<h3 id="日志复制机制"><a href="#日志复制机制" class="headerlink" title="日志复制机制"></a>日志复制机制</h3><h4 id="流程解析"><a href="#流程解析" class="headerlink" title="流程解析"></a>流程解析</h4><p>一旦 leader 被票选出来，它就承担起领导整个集群的责任了，开始接收客户端请求，并将操作包装成日志，并复制到其它节点上去。</p>
+<p>整体流程如下：</p>
+<ul>
+<li>Leader 为客户端提供服务，客户端的每个请求都包含一条即将被状态复制机执行的指令。</li>
+<li>Leader 把该指令作为一条新的日志附加到自身的日志集合，然后向其它节点发起<strong>附加条目请求</strong>（<strong>AppendEntries RPC</strong>），来要求它们将这条日志附加到各自本地的日志集合。</li>
+<li>当这条日志已经确保被<strong>安全的复制</strong>，即大多数（N/2+1）节点都已经复制后，leader 会将该日志 <strong>apply</strong> 到它本地的状态机中，然后把操作成功的结果返回给客户端。</li>
+</ul>
+<p>整个集群的日志模型可以宏观表示为下图（x ← 3 代表 x 赋值为 3）：</p>
+<p><img src="/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/Raft/%E6%97%A5%E5%BF%97%E5%A4%8D%E5%88%B6.png" alt="日志复制"></p>
+<p>每条日志除了存储状态机的操作指令外，还会拥有一个<strong>唯一的整数索引值</strong>（<strong>log index</strong>）来表明它在日志集合中的位置。此外，每条日志还会存储一个 <strong>term</strong> 号（日志条目方块最上方的数字，相同颜色 term 号相同），该 term 表示 leader 收到这条指令时的当前任期，term 相同的 log 是由同一个 leader 在其任期内发送的。</p>
+<p>当一条日志被 leader 节点认为可以安全的 apply 到状态机时，称这条日志是 <strong>committed</strong>（上图中的 <strong>committed entries</strong>）。那么什么样的日志可以被 commit 呢？答案是：<strong>当 leader 得知这条日志被集群过半的节点复制成功时</strong>。因此在上图中我们可以看到 (term3, index7) 这条日志以及之前的日志都是 committed，尽管有两个节点拥有的日志并不完整。</p>
+<p>Raft 保证所有 committed 日志都已经被<strong>持久化</strong>，且“<strong>最终</strong>”一定会被状态机apply。</p>
+<p>这里的“最终”用词很微妙，它表明了一个特点：Raft 保证的只是集群内日志的一致性，而我们真正期望的集群对外的状态机一致性需要我们做一些额外工作。</p>
+<h4 id="流程图解"><a href="#流程图解" class="headerlink" title="流程图解"></a>流程图解</h4><p><img src="/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/Raft/%E6%B5%81%E7%A8%8B%E5%9B%BE%E8%A7%A3.png" alt="流程图解"></p>
+<p>如上图，S1 当选 leader，此时还没有任何日志。我们模拟客户端向 S1 发起一个请求。</p>
+<p><img src="/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/Raft/%E6%B5%81%E7%A8%8B%E5%9B%BE%E8%A7%A32.png" alt="流程图解"></p>
+<p>S1 收到客户端请求后新增了一条日志 (term2, index1)，然后并行地向其它节点发起 AppendEntries RPC。</p>
+<p><img src="/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/Raft/%E6%B5%81%E7%A8%8B%E5%9B%BE%E8%A7%A33.png" alt="流程图解"></p>
+<p>S2、S4 率先收到了请求，各自附加了该日志，并向 S1 回应响应。</p>
+<p><img src="/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/Raft/%E6%B5%81%E7%A8%8B%E5%9B%BE%E8%A7%A34.png" alt="流程图解"></p>
+<p>所有节点都附加了该日志，但由于 leader 尚未收到任何响应，因此暂时还不清楚该日志到底是否被成功复制。</p>
+<p><img src="/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/Raft/%E6%B5%81%E7%A8%8B%E5%9B%BE%E8%A7%A35.png" alt="流程图解"></p>
+<p>当 S1 收到<strong>2个节点</strong>的响应时，该日志条目的边框就已经变为实线，表示该日志已经<strong>安全的复制</strong>，因为在5节点集群中，2个 follower 节点加上 leader 节点自身，副本数已经确保过半，此时 <strong>S1 将响应客户端的请求</strong>。</p>
+<p><img src="/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/Raft/%E6%B5%81%E7%A8%8B%E5%9B%BE%E8%A7%A36.png" alt="流程图解"></p>
+<p>leader 后续会持续发送心跳包给 followers，心跳包中会携带当前<strong>已经安全复制（我们称之为 committed）的日志索引</strong>，此处为 (term2, index1)。</p>
+<p><img src="/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/Raft/%E6%B5%81%E7%A8%8B%E5%9B%BE%E8%A7%A37.png" alt="流程图解"></p>
+<p>所有 follower 都通过心跳包得知 (term2, index1) 的 log 已经成功复制 （committed），因此所有节点中该日志条目的边框均变为实线。</p>
+<h4 id="对日志一致性的保证"><a href="#对日志一致性的保证" class="headerlink" title="对日志一致性的保证"></a>对日志一致性的保证</h4><p>前边我们使用了 (term2, index1) 这种方式来表示一条日志条目，这里为什么要带上 term，而不仅仅是使用 index？原因是 term 可以用来检查不同节点间日志是否存在不一致的情况，阅读下一节后会更容易理解这句话。</p>
+<p>Raft 保证：<strong>如果不同的节点日志集合中的两个日志条目拥有相同的 term 和 index，那么它们一定存储了相同的指令。</strong></p>
+<p>为什么可以作出这种保证？因为 Raft 要求 leader 在一个 term 内针对同一个 index 只能创建一条日志，并且永远不会修改它。</p>
+<p>同时 Raft 也保证：<strong>如果不同的节点日志集合中的两个日志条目拥有相同的 term 和 index，那么它们之前的所有日志条目也全部相同。</strong></p>
+<p>这是因为 leader 发出的 AppendEntries RPC 中会额外携带<strong>上一条</strong>日志的 (term, index)，如果 follower 在本地找不到相同的 (term, index) 日志，则<strong>拒绝接收这次新的日志</strong>。</p>
+<p>所以，只要 follower 持续正常地接收来自 leader 的日志，那么就可以通过归纳法验证上述结论。</p>
+<h4 id="可能出现的日志不一致场景"><a href="#可能出现的日志不一致场景" class="headerlink" title="可能出现的日志不一致场景"></a>可能出现的日志不一致场景</h4><p>在所有节点正常工作的时候，leader 和 follower的日志总是保持一致，AppendEntries RPC 也永远不会失败。然而我们总要面对任意节点随时可能宕机的风险，如何在这种情况下继续保持集群日志的一致性才是我们真正要解决的问题。</p>
+<p><img src="/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/Raft/%E4%B8%8D%E4%B8%80%E8%87%B4.png" alt="不一致"></p>
+<p>上图展示了一个 term8 的 leader 刚上任时，集群中日志可能存在的混乱情况。例如 follower 可能缺少一些日志（a ~ b），可能多了一些未提交的日志（c ~ d），也可能既缺少日志又多了一些未提交日志（e ~ f）。</p>
+<h4 id="如何处理日志不一致"><a href="#如何处理日志不一致" class="headerlink" title="如何处理日志不一致"></a>如何处理日志不一致</h4><p>通过上述场景我们可以看到，真实世界的集群情况很复杂，那么 Raft 是如何应对这么多不一致场景的呢？其实方式很简单暴力，想想 <strong>Strong Leader</strong> 这个词。</p>
+<p><strong>Raft 强制要求 follower 必须复制 leader 的日志集合来解决不一致问题。</strong></p>
+<p>也就是说，follower 节点上任何与 leader 不一致的日志，都会被 leader 节点上的日志所覆盖。这并不会产生什么问题，因为某些选举上的限制，如果 follower 上的日志与 leader 不一致，那么该日志在 follower 上<strong>一定是未提交的</strong>。未提交的日志并不会应用到状态机，也不会被外部的客户端感知到。</p>
+<p>要使得 follower 的日志集合跟自己保持完全一致，leader 必须先找到二者间<strong>最后一次</strong>达成一致的地方。因为一旦这条日志达成一致，在这之前的日志一定也都一致（回忆下前文）。这个确认操作是在 AppendEntries RPC 的一致性检查步骤完成的。</p>
+<p>Leader 针对每个 follower 都维护一个 <strong>next index</strong>，表示下一条需要发送给该follower 的日志索引。当一个 leader 刚刚上任时，它初始化所有 next index 值为自己最后一条日志的 index+1。但凡某个 follower 的日志跟 leader 不一致，那么下次 AppendEntries RPC 的一致性检查就会失败。在被 follower 拒绝这次 Append Entries RPC 后，leader 会减少 next index 的值并进行重试。</p>
+<p>最终一定会存在一个 next index 使得 leader 和 follower 在这之前的日志都保持一致。极端情况下 next index 为1，表示 follower 没有任何日志与 leader 一致，leader 必须从第一条日志开始同步。</p>
+<p>针对每个 follower，一旦确定了 next index 的值，leader 便开始从该 index 同步日志，follower 会删除掉现存的不一致的日志，保留 leader 最新同步过来的。</p>
+<p>整个集群的日志会在这个简单的机制下自动趋于一致。此外要注意，<strong>leader 从来不会覆盖或者删除自己的日志</strong>，而是强制 follower 与它保持一致。</p>
+<p>这就要求集群票选出的 leader 一定要具备“日志的正确性”，这也就关联到了前文提到的：选举上的限制。</p>
+<p>下一章我们将对此详细讨论。</p>
+<h2 id="安全性以及正确性"><a href="#安全性以及正确性" class="headerlink" title="安全性以及正确性"></a>安全性以及正确性</h2><p>前面的章节我们讲述了 Raft 算法是如何选主和复制日志的，然而到目前为止我们描述的<strong>这套机制还不能保证每个节点的状态机会严格按照相同的顺序 apply 日志</strong>。想象以下场景：</p>
+<ol>
+<li>Leader 将一些日志复制到了大多数节点上，进行 commit 后发生了宕机。</li>
+<li>某个 follower 并没有被复制到这些日志，但它参与选举并当选了下一任 leader。</li>
+<li>新的 leader 又同步并 commit 了一些日志，这些日志覆盖掉了其它节点上的上一任 committed 日志。</li>
+<li>各个节点的状态机可能 apply 了不同的日志序列，出现了不一致的情况。</li>
+</ol>
+<p>因此我们需要对“选主+日志复制”这套机制加上一些额外的限制，来保证<strong>状态机的安全性</strong>，也就是 Raft 算法的正确性。</p>
+<h3 id="选举限制"><a href="#选举限制" class="headerlink" title="选举限制"></a>选举限制</h3><p>我们再来分析下前文所述的 committed 日志被覆盖的场景，根本问题其实发生在第2步。Candidate 必须有足够的资格才能当选集群 leader，否则它就会给集群带来不可预料的错误。Candidate 是否具备这个资格可以在选举时添加一个小小的条件来判断，即：</p>
+<p><strong>每个 candidate 必须在 RequestVote RPC 中携带自己本地日志的最新 (term, index)，如果 follower 发现这个 candidate 的日志还没有自己的新，则拒绝投票给该 candidate。</strong></p>
+<p>Candidate 想要赢得选举成为 leader，必须得到集群大多数节点的投票，那么<strong>它的日志就一定至少不落后于大多数节点</strong>。又因为一条日志只有复制到了大多数节点才能被 commit，因此<strong>能赢得选举的 candidate 一定拥有所有 committed 日志</strong>。</p>
+<p>因此前一篇文章我们才会断定地说：Follower 不可能比 leader 多出一些 committed 日志。</p>
+<p>比较两个 (term, index) 的逻辑非常简单：如果 term 不同 term 更大的日志更新，否则 index 大的日志更新。</p>
+<h3 id="提交限制"><a href="#提交限制" class="headerlink" title="提交限制"></a>提交限制</h3><p>当 leader 得知某条日志被集群过半的节点复制成功时，就可以进行 commit，committed 日志一定最终会被状态机 apply。</p>
+<p>所谓 commit 其实就是对日志简单进行一个标记，表明其可以被 apply 到状态机，并针对相应的客户端请求进行响应。</p>
+<p>然而 leader 并不能在任何时候都随意 commit 旧任期留下的日志，即使它已经被复制到了大多数节点。Raft 论文给出了一个经典场景：</p>
+<p><img src="/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/Raft/%E6%8F%90%E4%BA%A4%E9%99%90%E5%88%B6.png" alt="提交限制"></p>
+<p>上图从左到右按时间顺序模拟了问题场景。</p>
+<p><strong>阶段a</strong>：S1 是 leader，收到请求后将 (term2, index2) 只复制给了 S2，尚未复制给 S3 ~ S5。</p>
+<p><strong>阶段b</strong>：S1 宕机，S5 当选 term3 的 leader（S3、S4、S5 三票），收到请求后保存了 (term3, index2)，尚未复制给任何节点。</p>
+<p><strong>阶段c</strong>：S5 宕机，S1 恢复，S1 重新当选 term4 的 leader，继续将 (term2, index2) 复制给了 S3，已经满足大多数节点，我们将其 commit。</p>
+<p><strong>阶段d</strong>：S1 又宕机，S5 恢复，S5 重新当选 leader（S2、S3、S4 三票），将 (term3, inde2) 复制给了所有节点并 commit。注意，此时发生了致命错误，已经 committed 的 (term2, index2) 被 (term3, index2) 覆盖了。</p>
+<p>为了避免这种错误，我们需要添加一个额外的限制：</p>
+<p><strong>Leader 只允许 commit 包含当前 term 的日志。</strong></p>
+<p>针对上述场景，问题发生在阶段c，即使作为 term4 leader 的 S1 将 (term2, index2) 复制给了大多数节点，它也不能直接将其 commit，而是必须等待 term4 的日志到来并成功复制后，一并进行 commit。</p>
+<p><strong>阶段e</strong>：在添加了这个限制后，要么 (term2, index2) 始终没有被 commit，这样 S5 在阶段d将其覆盖就是安全的；要么 (term2, index2) 同 (term4, index3) 一起被 commit，这样 S5 根本就无法当选 leader，因为大多数节点的日志都比它新，也就不存在前边的问题了。</p>
+<p>以上便是对算法增加的两个小限制，它们对确保状态机的安全性起到了至关重要的作用。</p>
+<p>至此我们对 Raft 算法的核心部分，已经介绍完毕。下一章我们会介绍两个同样描述于论文内的辅助技术：集群成员变更和日志压缩，它们都是在 Raft 工程实践中必不可少的部分。</p>
+<h2 id="集群成员变更"><a href="#集群成员变更" class="headerlink" title="集群成员变更"></a>集群成员变更</h2><p>在前文的理论描述中我们都假设了集群成员是不变的，然而在实践中有时会需要替换宕机机器或者改变复制级别（即增减节点）。一种最简单暴力达成目的的方式就是：停止集群、改变成员、启动集群。这种方式在执行时会导致集群整体不可用，此外还存在手工操作带来的风险。</p>
+<p>为了避免这样的问题，Raft 论文中给出了一种无需停机的、自动化的改变集群成员的方式，其实本质上还是利用了 Raft 的核心算法，将集群成员配置作为一个特殊日志从 leader 节点同步到其它节点去。</p>
+<h3 id="直接切换集群成员配置"><a href="#直接切换集群成员配置" class="headerlink" title="直接切换集群成员配置"></a>直接切换集群成员配置</h3><p>先说结论：<strong>所有将集群从旧配置直接完全切换到新配置的方案都是不安全的</strong>。</p>
+<p>因此我们不能想当然的将新配置直接作为日志同步给集群并 apply。因为我们不可能让集群中的全部节点在“<strong>同一时刻</strong>”<strong>原子地</strong>切换其集群成员配置，所以在切换期间不同的节点看到的集群视图可能存在不同，最终可能导致集群存在多个 leader。</p>
+<p>为了理解上述结论，我们来看一个实际出现问题的场景，下图对其进行了展现。</p>
+<p><img src="/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/Raft/%E7%9B%B4%E6%8E%A5%E5%88%87%E6%8D%A2%E9%9B%86%E7%BE%A4%E6%88%90%E5%91%98%E9%85%8D%E7%BD%AE.png" alt="直接切换集群成员配置"></p>
+<p><strong>阶段a.</strong> 集群存在 S1 ~ S3 三个节点，我们将该成员配置表示为 C-old，绿色表示该节点当前视图（成员配置）为 C-old，其中红边的 S3 为 leader。</p>
+<p><strong>阶段b.</strong> 集群新增了 S4、S5 两个节点，该变更从 leader 写入，我们将 S1 ~ S5 的五节点新成员配置表示为 C-new，蓝色表示该节点当前视图为 C-new。</p>
+<p><strong>阶段c.</strong> 假设 S3 短暂宕机触发了 S1 与 S5 的超时选主。</p>
+<p><strong>阶段d.</strong> S1 向 S2、S3 拉票，S5 向其它全部四个节点拉票。由于 S2 的日志并没有比 S1 更新，因此 S2 可能会将选票投给 S1，S1 两票当选（因为 S1 认为集群只有三个节点）。而 S5 肯定会得到 S3、S4 的选票，因为 S1 感知不到 S4，没有向它发送 RequestVote RPC，并且 S1 的日志落后于 S3，S3 也一定不会投给 S1，结果 S5 三票当选。最终集群出现了多个主节点的致命错误，也就是所谓的脑裂。</p>
+<h3 id="两阶段切换集群成员配置"><a href="#两阶段切换集群成员配置" class="headerlink" title="两阶段切换集群成员配置"></a>两阶段切换集群成员配置</h3><p>…</p>
+<h2 id="日志压缩"><a href="#日志压缩" class="headerlink" title="日志压缩"></a>日志压缩</h2><p>我们知道 Raft 核心算法维护了日志的一致性，通过 apply 日志我们也就得到了一致的状态机，客户端的操作命令会被包装成日志交给 Raft 处理。然而在实际系统中，客户端操作是连绵不断的，但日志却不能无限增长，首先它会占用很高的存储空间，其次每次系统重启时都需要完整回放一遍所有日志才能得到最新的状态机。</p>
+<p>因此 Raft 提供了一种机制去清除日志里积累的陈旧信息，叫做<strong>日志压缩</strong>。</p>
+<p><strong>快照</strong>（<strong>Snapshot</strong>）是一种常用的、简单的日志压缩方式，ZooKeeper、Chubby 等系统都在用。简单来说，就是将某一时刻系统的状态 dump 下来并落地存储，这样该时刻之前的所有日志就都可以丢弃了。所以大家对“压缩”一词不要产生错误理解，我们并没有办法将状态机快照“解压缩”回日志序列。</p>
+<p>注意，<strong>在 Raft 中我们只能为 committed 日志做 snapshot</strong>，因为只有 committed 日志才是确保最终会应用到状态机的。</p>
+<p><img src="/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/Raft/%E6%97%A5%E5%BF%97%E5%8E%8B%E7%BC%A9.png" alt="日志压缩"></p>
+<p>上图展示了一个节点用快照替换了 (term1, index1) ~ (term3, index5) 的日志。</p>
+<p>快照一般包含以下内容：</p>
+<ol>
+<li><strong>日志的元数据</strong>：最后一条被该快照 apply 的日志 term 及 index</li>
+<li><strong>状态机</strong>：前边全部日志 apply 后最终得到的状态机</li>
+</ol>
+<p>当 leader 需要给某个 follower 同步一些旧日志，但这些日志已经被 leader 做了快照并删除掉了时，leader 就需要把该快照发送给 follower。</p>
+<p>同样，当集群中有新节点加入，或者某个节点宕机太久落后了太多日志时，leader 也可以直接发送快照，大量节约日志传输和回放时间。</p>
+<p>同步快照使用一个新的 RPC 方法，叫做 <strong>InstallSnapshot RPC</strong>。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F/" rel="tag"># 分布式</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2024/04/22/Kafka%E8%AF%A6%E8%A7%A3/" rel="prev" title="Kafka详解">
+      <i class="fa fa-chevron-left"></i> Kafka详解
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Raft"><span class="nav-number">1.</span> <span class="nav-text">Raft</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Raft是什么"><span class="nav-number">1.1.</span> <span class="nav-text">Raft是什么</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Raft基本概念"><span class="nav-number">1.2.</span> <span class="nav-text">Raft基本概念</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#选主"><span class="nav-number">1.3.</span> <span class="nav-text">选主</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#什么是选主"><span class="nav-number">1.3.1.</span> <span class="nav-text">什么是选主</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#为什么要选主"><span class="nav-number">1.3.2.</span> <span class="nav-text">为什么要选主</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#过程"><span class="nav-number">1.3.3.</span> <span class="nav-text">过程</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#角色"><span class="nav-number">1.3.3.1.</span> <span class="nav-text">角色</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#任期"><span class="nav-number">1.3.3.2.</span> <span class="nav-text">任期</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#节点状态转换"><span class="nav-number">1.3.3.3.</span> <span class="nav-text">节点状态转换</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#Follower-状态转换过程"><span class="nav-number">1.3.3.3.1.</span> <span class="nav-text">Follower 状态转换过程</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Candicate-状态转换过程"><span class="nav-number">1.3.3.3.2.</span> <span class="nav-text">Candicate 状态转换过程</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Leader-状态转换过程"><span class="nav-number">1.3.3.3.3.</span> <span class="nav-text">Leader 状态转换过程</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#日志复制"><span class="nav-number">1.4.</span> <span class="nav-text">日志复制</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#什么是日志复制"><span class="nav-number">1.4.1.</span> <span class="nav-text">什么是日志复制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#日志复制机制"><span class="nav-number">1.4.2.</span> <span class="nav-text">日志复制机制</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#流程解析"><span class="nav-number">1.4.2.1.</span> <span class="nav-text">流程解析</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#流程图解"><span class="nav-number">1.4.2.2.</span> <span class="nav-text">流程图解</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#对日志一致性的保证"><span class="nav-number">1.4.2.3.</span> <span class="nav-text">对日志一致性的保证</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#可能出现的日志不一致场景"><span class="nav-number">1.4.2.4.</span> <span class="nav-text">可能出现的日志不一致场景</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#如何处理日志不一致"><span class="nav-number">1.4.2.5.</span> <span class="nav-text">如何处理日志不一致</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#安全性以及正确性"><span class="nav-number">1.5.</span> <span class="nav-text">安全性以及正确性</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#选举限制"><span class="nav-number">1.5.1.</span> <span class="nav-text">选举限制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#提交限制"><span class="nav-number">1.5.2.</span> <span class="nav-text">提交限制</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#集群成员变更"><span class="nav-number">1.6.</span> <span class="nav-text">集群成员变更</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#直接切换集群成员配置"><span class="nav-number">1.6.1.</span> <span class="nav-text">直接切换集群成员配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#两阶段切换集群成员配置"><span class="nav-number">1.6.2.</span> <span class="nav-text">两阶段切换集群成员配置</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#日志压缩"><span class="nav-number">1.7.</span> <span class="nav-text">日志压缩</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <a href="/">
+      <img class="site-author-image" itemprop="image" alt="Charispsychoma"
+        src="/images/avatar.jpg">
+    </a>
+  <p class="site-author-name" itemprop="name">Charispsychoma</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">50</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">42</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/IRVLIN" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;IRVLIN" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:irvlin0404@gmail.com" title="E-Mail → mailto:irvlin0404@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://www.zhihu.com/people/charispsychoma" title="Zhihu → https:&#x2F;&#x2F;www.zhihu.com&#x2F;people&#x2F;charispsychoma" rel="noopener" target="_blank"><i class="fab fa-zhihu fa-fw"></i>Zhihu</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://www.instagram.com/irv.lin/" title="Instagram → https:&#x2F;&#x2F;www.instagram.com&#x2F;irv.lin&#x2F;" rel="noopener" target="_blank"><i class="fab fa-instagram fa-fw"></i>Instagram</a>
+      </span>
+  </div>
+
+
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<span id="timeDate">载入天数...</span><span id="times">载入时分秒...</span>
+<script>
+    var now = new Date(); 
+    function createtime() { 
+        var grt= new Date("05/11/2020 14:44:44");//在此处修改你的建站时间
+        now.setTime(now.getTime()+250); 
+        days = (now - grt ) / 1000 / 60 / 60 / 24; dnum = Math.floor(days); 
+        hours = (now - grt ) / 1000 / 60 / 60 - (24 * dnum); hnum = Math.floor(hours); 
+        if(String(hnum).length ==1 ){hnum = "0" + hnum;} minutes = (now - grt ) / 1000 /60 - (24 * 60 * dnum) - (60 * hnum); 
+        mnum = Math.floor(minutes); if(String(mnum).length ==1 ){mnum = "0" + mnum;} 
+        seconds = (now - grt ) / 1000 - (24 * 60 * 60 * dnum) - (60 * 60 * hnum) - (60 * mnum); 
+        snum = Math.round(seconds); if(String(snum).length ==1 ){snum = "0" + snum;} 
+        document.getElementById("timeDate").innerHTML = "已存活 "+dnum+" 天 "; 
+        document.getElementById("times").innerHTML = hnum + " 小时 " + mnum + " 分 " + snum + " 秒"; 
+    } 
+setInterval("createtime()",250);
+</script>
+
+<div class="copyright">
+  
+  &copy; 2020 – 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Charispsychoma</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script data-pjax async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+         访客数: <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        访问量: <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '.languages',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[data-pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.dataset.pjax !== undefined) {
+      script.dataset.pjax = '';
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.subMenu)
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div id="pjax">
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('//unpkg.com/valine/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : false,
+      appId      : 'BTYxjkQrcW0LVlgoggIJ2kD4-gzGzoHsz',
+      appKey     : 'JJRnAk74iYw1AJ5GBVnXaT6b',
+      placeholder: "欢迎评论～",
+      avatar     : 'retro',
+      meta       : guest,
+      pageSize   : '10' || 10,
+      visitor    : false,
+      lang       : 'zh-cn' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : false,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+    </div>
+
+  <!-- require APlayer -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script>
+  <!-- require MetingJS -->
+  <script src="https://cdn.jsdelivr.net/npm/meting@2/dist/Meting.min.js"></script>
+
+  <meting-js
+    server="netease" type="playlist" id="574119204" order="random" volume=0.5 fixed=true theme="#333">
+  </meting-js>
+
+  <script type="text/javascript" src="/js/clicklove.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/irvlin/CDN/js/jquery-3.4.1.min.js"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/00years/ribbon@v1.0/ribbon.min.js"></script>
+  <script src="/live2d-widget/autoload.js"></script>
+</body>
+</html>
