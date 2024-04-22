@@ -19,13 +19,13 @@
 
 <script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"irvlin.xyz","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"default"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+    var CONFIG = {"hostname":"irvlin.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"default"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
   <meta name="description" content="记录多线程相关知识(1) –&gt; synchronized">
 <meta property="og:type" content="article">
 <meta property="og:title" content="多线程(1)">
-<meta property="og:url" content="http://irvlin.xyz/2020/12/05/%E5%A4%9A%E7%BA%BF%E7%A8%8B-1/index.html">
+<meta property="og:url" content="https://irvlin.github.io/2020/12/05/%E5%A4%9A%E7%BA%BF%E7%A8%8B-1/index.html">
 <meta property="og:site_name" content="IRvLin的博客">
 <meta property="og:description" content="记录多线程相关知识(1) –&gt; synchronized">
 <meta property="og:locale" content="zh_CN">
@@ -35,7 +35,7 @@
 <meta property="article:tag" content="synchronized">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="http://irvlin.xyz/2020/12/05/%E5%A4%9A%E7%BA%BF%E7%A8%8B-1/">
+<link rel="canonical" href="https://irvlin.github.io/2020/12/05/%E5%A4%9A%E7%BA%BF%E7%A8%8B-1/">
 
 
 <script id="page-configurations">
@@ -195,7 +195,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://irvlin.xyz/2020/12/05/%E5%A4%9A%E7%BA%BF%E7%A8%8B-1/">
+    <link itemprop="mainEntityOfPage" href="https://irvlin.github.io/2020/12/05/%E5%A4%9A%E7%BA%BF%E7%A8%8B-1/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.jpg">
@@ -354,7 +354,7 @@
 
 <p>可以看到，线程在第5和11步获取到了两把<code>moniterenter</code>锁，这是由于<code>synchronized</code>锁的可重入性质。而后在第13或19步、23或30步获取了<code>monitorexit</code>锁，这是由于线程有可能在代码执行完毕或者抛出异常这两种情况释放锁，只有当当前线程释放了所有获得到的锁，才算真正释放了锁。</p>
 <h4 id="可重入原理"><a href="#可重入原理" class="headerlink" title="可重入原理"></a>可重入原理</h4><p>可重入性质利用了<strong>加锁次数计数器</strong>。JVM负责跟踪对象被加锁的次数，每当相同的线程获取了锁，计数器就加一，释放了锁就减一。当计数器为0时，就可以认定锁已经被完全释放了。</p>
-<h4 id="可见性原理"><a href="#可见性原理" class="headerlink" title="可见性原理"></a>可见性原理</h4><p>可见性原理涉及到了<strong>Java内存模型</strong>。详情可见<a href="http://irvlin.xyz/2020/06/24/Java%E5%86%85%E5%AD%98%E5%8C%BA%E5%9F%9F%E4%B8%8E%E6%A8%A1%E5%9E%8B/#more">Java内存模型</a>。</p>
+<h4 id="可见性原理"><a href="#可见性原理" class="headerlink" title="可见性原理"></a>可见性原理</h4><p>可见性原理涉及到了<strong>Java内存模型</strong>。详情可见<a href="http://irvlin.xyz/2020/06/24/Java%E5%86%85%E5%AD%98%E5%8C%BA%E5%9F%9F%E4%B8%8E%E6%A8%A1%E5%9E%8B/#more" target="_blank" rel="noopener">Java内存模型</a>。</p>
 <p>线程在进入<code>synchronized</code>修饰的代码中，将会从主存中获取最新的值，并且在释放锁之前，会强行将最新的值刷回主存，以保证<strong>可见性</strong>。</p>
 <hr>
 <h3 id="synchronized缺陷"><a href="#synchronized缺陷" class="headerlink" title="synchronized缺陷"></a>synchronized缺陷</h3><ol>
