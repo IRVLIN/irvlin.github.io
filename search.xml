@@ -149,7 +149,7 @@
     <content><![CDATA[<p>Goroutine详解</p>
 <a id="more"></a>
 
-<h1 id="Goroutine"><a href="#Goroutine" class="headerlink" title="Goroutine"></a>Goroutine</h1><h2 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h2><p><strong>进程</strong> 每个进程都有自己的独立内存空间，拥有自己独立的地址空间、独立的堆和栈，既不共享堆，亦不共享栈。一个程序至少有一个进程，一个进程至少有一个线程。进程切换只发生在内核态。</p>
+<h2 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h2><p><strong>进程</strong> 每个进程都有自己的独立内存空间，拥有自己独立的地址空间、独立的堆和栈，既不共享堆，亦不共享栈。一个程序至少有一个进程，一个进程至少有一个线程。进程切换只发生在内核态。</p>
 <p><strong>线程</strong> 线程拥有自己独立的栈和共享的堆，共享堆，不共享栈，是由操作系统调度，是操作系统调度（CPU调度）执行的最小单位。对于进程和线程，都是有内核进行调度，有 CPU 时间片的概念，进行抢占式调度。内核由系统内核进行调度，系统为了实现并发，会不断地切换线程执行，由此会带来线程的上下文切换。</p>
 <p><strong>协程</strong> 协程线程一样共享堆，不共享栈，协程是由程序员在协程的代码中显示调度。协程 (用户态线程) 是对内核透明的，也就是系统完全不知道有协程的存在，完全由用户自己的程序进行调度。在栈大小分配方便，且每个协程占用的默认占用内存很小，只有 2kb ，而线程需要 8mb，相较于线程，因为协程是对内核透明的，所以栈空间大小可以按需增大减小。</p>
 <p><strong>并发</strong> 多线程程序在单核上运行<br><strong>并行</strong> 多线程程序在多核上运行</p>
@@ -1760,7 +1760,7 @@
     <content><![CDATA[<p>Kafka详解</p>
 <a id="more"></a>
 
-<h1 id="Kafka"><a href="#Kafka" class="headerlink" title="Kafka"></a>Kafka</h1><h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>Kafka最初是由Linkedin公司开发的，是一个分布式的、可扩展的、容错的、支持分区的（Partition）、多副本的（replica）、基于Zookeeper框架的发布-订阅消息系统，Kafka适合离线和在线消息消费。它是分布式应用系统中的重要组件之一，也被广泛应用于大数据处理。Kafka是用Scala语言开发，它的Java版本称为Jafka。Linkedin于2010年将该系统贡献给了Apache基金会并成为顶级开源项目之一。</p>
+<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>Kafka最初是由Linkedin公司开发的，是一个分布式的、可扩展的、容错的、支持分区的（Partition）、多副本的（replica）、基于Zookeeper框架的发布-订阅消息系统，Kafka适合离线和在线消息消费。它是分布式应用系统中的重要组件之一，也被广泛应用于大数据处理。Kafka是用Scala语言开发，它的Java版本称为Jafka。Linkedin于2010年将该系统贡献给了Apache基金会并成为顶级开源项目之一。</p>
 <p><img src="%E7%BB%93%E6%9E%84.jpg" alt="结构"></p>
 <h2 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h2><h3 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h3><ul>
 <li><strong>Kafka传统定义</strong>：Kafka是一个<strong>分布式</strong>的<strong>基于发布/订阅模式的消息队列（Message Queue），主要应用于大数据实时处理领域</strong>。使用Scala语言编写，是Apache的顶级项目。</li>
@@ -2355,7 +2355,7 @@
     <content><![CDATA[<p>Raft详解</p>
 <a id="more"></a>
 
-<h1 id="Raft"><a href="#Raft" class="headerlink" title="Raft"></a>Raft</h1><h2 id="Raft是什么"><a href="#Raft是什么" class="headerlink" title="Raft是什么"></a>Raft是什么</h2><p>在分布式系统中，为了消除单点提高系统可用性，通常会使用副本来进行容错，但这会带来另一个问题，即如何保证多个副本之间的一致性？这里我们只讨论强一致性，即线性一致性。弱一致性涵盖的范围较广，涉及根据实际场景进行诸多取舍，不在 Raft 系列的讨论目标范围内。</p>
+<h2 id="Raft是什么"><a href="#Raft是什么" class="headerlink" title="Raft是什么"></a>Raft是什么</h2><p>在分布式系统中，为了消除单点提高系统可用性，通常会使用副本来进行容错，但这会带来另一个问题，即如何保证多个副本之间的一致性？这里我们只讨论强一致性，即线性一致性。弱一致性涵盖的范围较广，涉及根据实际场景进行诸多取舍，不在 Raft 系列的讨论目标范围内。</p>
 <p>所谓的强一致性（线性一致性）并不是指集群中所有节点在任一时刻的状态必须完全一致，而是指一个目标，即让一个分布式系统看起来只有一个数据副本，并且读写操作都是原子的，这样应用层就可以忽略系统底层多个数据副本间的同步问题。也就是说，我们可以将一个强一致性分布式系统当成一个整体，一旦某个客户端成功的执行了写操作，那么所有客户端都一定能读出刚刚写入的值。即使发生网络分区故障，或者少部分节点发生异常，整个集群依然能够像单机一样提供服务。</p>
 <p>共识算法（Consensus Algorithm）就是用来做这个事情的，它保证即使在小部分（≤ (N-1)/2）节点故障的情况下，系统仍然能正常对外提供服务。共识算法通常基于状态复制机（Replicated State Machine）模型，也就是所有节点从同一个 state 出发，经过同样的操作 log，最终达到一致的 state。</p>
 <p>共识算法是构建强一致性分布式系统的基石，Paxos 是共识算法的代表，而 Raft 则是其作者在博士期间研究 Paxos 时提出的一个变种，主要优点是容易理解、易于实现，甚至关键的部分都在论文中给出了伪代码实现。</p>
@@ -6577,7 +6577,7 @@
     <content><![CDATA[<p>MySQL详解</p>
 <a id="more"></a>
 
-<h1 id="MySQL"><a href="#MySQL" class="headerlink" title="MySQL"></a>MySQL</h1><h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>MySQL是一个关系型数据库管理系统，由瑞典MySQL AB 公司开发，属于 Oracle 旗下产品。MySQL 是最流行的关系型数据库管理系统之一，在 WEB 应用方面，MySQL是最好的 RDBMS (Relational Database Management System，关系数据库管理系统) 应用软件之一。</p>
+<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>MySQL是一个关系型数据库管理系统，由瑞典MySQL AB 公司开发，属于 Oracle 旗下产品。MySQL 是最流行的关系型数据库管理系统之一，在 WEB 应用方面，MySQL是最好的 RDBMS (Relational Database Management System，关系数据库管理系统) 应用软件之一。</p>
 <h2 id="非关系型数据库和关系型数据库"><a href="#非关系型数据库和关系型数据库" class="headerlink" title="非关系型数据库和关系型数据库"></a>非关系型数据库和关系型数据库</h2><p>关系型数据库的优点</p>
 <ul>
 <li>容易理解，因为它采用了关系模型来组织数据。</li>
@@ -8234,6 +8234,75 @@
 <h4 id="读取binlog异步删除缓存"><a href="#读取binlog异步删除缓存" class="headerlink" title="读取binlog异步删除缓存"></a>读取binlog异步删除缓存</h4><p>重试删除缓存机制还可以，就是会造成好多业务代码入侵。其实，还可以通过<strong>数据库的binlog来异步淘汰key</strong>。</p>
 <p><img src="binlog.png" alt="binlog"></p>
 <p>以mysql为例 可以使用阿里的canal将binlog日志采集发送到MQ队列里面，然后通过ACK机制确认处理这条更新消息，删除缓存，保证数据缓存一致性。</p>
+<h2 id="窗口函数"><a href="#窗口函数" class="headerlink" title="窗口函数"></a>窗口函数</h2><p>MySQL从8.0版本开始支持窗口函数，其中，窗口可以理解为数据的集合。MySQL的开窗函数和Hive的开窗函数基本一致，窗口函数也就是在符合某种条件或者某些条件的记录集合中执行的函数，窗口函数会在每条记录上执行。一般我们在日常开发业务上面使用到开窗函数的场景都在聚合统计、数据挖掘之中，常用作聚合计算出某个特征数据。了解并掌握窗口函数将提升我们的数据挖掘能力。</p>
+<h3 id="简介-1"><a href="#简介-1" class="headerlink" title="简介"></a>简介</h3><p>窗口函数适用场景：<strong>对分组统计结果中的每一条记录进行计算</strong>的场景下, 使用窗口函数更好。 窗口函数（Window Function）可以像[聚合函数]一样对一组数据进行分析并返回结果，二者的不同之处在于，窗口函数不是将一组数据汇总成单个结果，而是为每一行数据都返回一个结果。聚合函数和窗口函数的区别如下图所示。</p>
+<p><img src="%E7%AA%97%E5%8F%A3%E5%87%BD%E6%95%B0.png" alt="窗口函数"></p>
+<p>窗口函数可以分为静态窗口函数和动态窗口函数，其中，</p>
+<ul>
+<li>静态窗口函数的窗口大小是固定的，不会因为记录的不同而不同；</li>
+<li>动态窗口函数的窗口大小会随着记录的不同而变化。</li>
+</ul>
+<h3 id="分类-1"><a href="#分类-1" class="headerlink" title="分类"></a>分类</h3><p>窗口函数总体上可以分为序号函数、分布函数、前后函数、首尾函数和其他函数。</p>
+<p><img src="%E5%88%86%E7%B1%BB.png" alt="分类"></p>
+<h3 id="语法-1"><a href="#语法-1" class="headerlink" title="语法"></a>语法</h3><p>窗口函数的语法结构形式:</p>
+<ul>
+<li>&lt;窗口函数&gt; OVER ([PARTITION BY 字段名 ORDER BY 字段名 ASC|DESC])</li>
+</ul>
+<p>OVER 关键字指定窗口的范围：</p>
+<ul>
+<li>如果省略后面括号中的内容，则窗口会包含满足WHERE条件的所有记录，窗口函数会基于所有满足WHERE条件的记录进行计算。</li>
+<li>如果OVER关键字后面的括号不为空，则可以使用如下语法设置窗口：<ul>
+<li>PARTITION BY 子句: 指定窗口函数按照哪些字段进行分组, 分组后, 窗口函数可以在每个分组中分别执行;</li>
+<li>ORDER BY 子句: 指定窗口函数按照哪些字段进行排序, 执行排序操作使窗口函数按照排序后的数据记录的顺序进行编号;</li>
+<li>FRAME 子句: 为分区中的某个子集定义规则, 可以用来作为滑动窗口使用;</li>
+</ul>
+</li>
+</ul>
+<h3 id="实践"><a href="#实践" class="headerlink" title="实践"></a>实践</h3><h4 id="row-number"><a href="#row-number" class="headerlink" title="row_number()"></a>row_number()</h4><p>ROW_NUMBER()函数能够对数据中的序号进行顺序显示。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">SELECT ROW_NUMBER() over(PARTITION by t_category_id ORDER BY t_price DESC) AS row_num,</span><br><span class="line"> t_category_id, t_category, t_name, t_price</span><br><span class="line">FROM books_goods;</span><br></pre></td></tr></table></figure>
+
+<p><img src="row_number.png" alt="row_number"></p>
+<p>这里如果我们插入一个相同数值的price：</p>
+<p><img src="row_number2.png" alt="row_number"></p>
+<p>我们会发现价格相同的书籍但是序号确不一样，这时我们可以用RANK()函数处理。</p>
+<h4 id="rank"><a href="#rank" class="headerlink" title="rank()"></a>rank()</h4><p>使用RANK()函数能够对序号进行并列排序，并且会跳过重复的序号。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">SELECT RANK() over(PARTITION by t_category_id ORDER BY t_price DESC) AS row_num,</span><br><span class="line"> t_category_id, t_category, t_name, t_price</span><br><span class="line">FROM books_goods;</span><br></pre></td></tr></table></figure>
+
+<p><img src="rank.png" alt="rank"></p>
+<p>插入一条价格相同排第二的：</p>
+<p><img src="rank2.png" alt="rank"></p>
+<p>可以看到，使用RANK()函数得出的序号为1、2、2、4、4，相同价格的商品序号相同，后面的商品序号是不连续的，跳过了重复的序号。</p>
+<h4 id="dense-rank"><a href="#dense-rank" class="headerlink" title="dense_rank()"></a>dense_rank()</h4><p>DENSE_RANK()函数对序号进行并列排序，并且不会跳过重复的序号，比如序号为1、1、2。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">SELECT DENSE_RANK() over(PARTITION by t_category_id ORDER BY t_price DESC) AS row_num,</span><br><span class="line"> t_category_id, t_category, t_name, t_price</span><br><span class="line">FROM books_goods;</span><br></pre></td></tr></table></figure>
+
+<p><img src="dense_rank.png" alt="dense_rank"></p>
+<p>可以看到，使用DENSE_RANK()函数得出的行号为1、2、2、3、3，相同价格的商品序号相同，后面的商品序号是连续的，并且没有跳过重复的序号。</p>
+<h4 id="lag-expr-n"><a href="#lag-expr-n" class="headerlink" title="lag(expr,n)"></a>lag(expr,n)</h4><p>LAG(expr,n)函数返回当前行的前n行的expr的值。</p>
+<p>例如，查询数据表中前一个商品价格与当前商品价格的差值。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">SELECT t_category_id, t_name, t_price, pre_price, </span><br><span class="line">     t_price - pre_price AS diff_price</span><br><span class="line">     FROM (</span><br><span class="line">     SELECT   t_category_id, t_name, t_price,</span><br><span class="line">     LAG(t_price,1) OVER w AS pre_price</span><br><span class="line">     FROM books_goods</span><br><span class="line">     WINDOW w AS (PARTITION BY t_category_id ORDER BY t_price)) t;</span><br></pre></td></tr></table></figure>
+
+<p><img src="lag.png" alt="lag"></p>
+<h4 id="lead-expr-n"><a href="#lead-expr-n" class="headerlink" title="lead(expr,n)"></a>lead(expr,n)</h4><p>LEAD(expr,n)函数返回当前行的后n行的expr的值。</p>
+<p>例如，查询数据表中后一个商品价格与当前商品价格的差值。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">SELECT t_category_id, t_name, t_price, behind_price, </span><br><span class="line">     t_price - behind_price AS diff_price</span><br><span class="line">     FROM (</span><br><span class="line">     SELECT   t_category_id, t_name, t_price,</span><br><span class="line">     LEAD(t_price,1) OVER w AS behind_price</span><br><span class="line">     FROM books_goods</span><br><span class="line">     WINDOW w AS (PARTITION BY t_category_id ORDER BY t_price)) t;</span><br></pre></td></tr></table></figure>
+
+<p><img src="lead.png" alt="lead"></p>
+<h4 id="first-value-expr"><a href="#first-value-expr" class="headerlink" title="first_value(expr)"></a>first_value(expr)</h4><p>FIRST_VALUE(expr)函数返回第一个expr的值。</p>
+<p>例如，按照价格排序，查询第1个商品的价格信息。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">SELECT t_category_id, t_name, t_price,</span><br><span class="line">	FIRST_VALUE(t_price) OVER w AS first_price</span><br><span class="line">  FROM books_goods</span><br><span class="line">  WINDOW w AS (PARTITION BY t_category_id ORDER BY t_price);</span><br></pre></td></tr></table></figure>
+
+<p><img src="first_value.png" alt="first_value"></p>
+<h4 id="last-value-expr"><a href="#last-value-expr" class="headerlink" title="last_value(expr)"></a>last_value(expr)</h4><p>LAST_VALUE(expr)函数返回最后一个expr的值。</p>
+<p>例如，按照价格排序，查询最后一个商品的价格信息。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">SELECT t_category_id, t_name, t_price,</span><br><span class="line">	LAST_VALUE(t_price) OVER w AS last_price     </span><br><span class="line">  FROM books_goods</span><br><span class="line">  WINDOW w AS (PARTITION BY t_category_id ORDER BY t_price);</span><br></pre></td></tr></table></figure>
+
+<p><img src="last_value.png" alt="last_value"></p>
+<h4 id="nth-value-expr-n"><a href="#nth-value-expr-n" class="headerlink" title="nth_value(expr,n)"></a>nth_value(expr,n)</h4><p>NTH_VALUE(expr,n)函数返回第n个expr的值。</p>
+<p>查询数据表中排名第3和第4的价格信息。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">SELECT t_category_id, t_name, t_price, </span><br><span class="line">    NTH_VALUE(t_price,2) OVER w AS second_price,</span><br><span class="line">    NTH_VALUE(t_price,3) OVER w AS third_price</span><br><span class="line">    FROM books_goods</span><br><span class="line">    WINDOW w AS (PARTITION BY t_category_id ORDER BY t_price);</span><br></pre></td></tr></table></figure>
+
+<p><img src="nth_value.png" alt="nth_value"></p>
+<p>该函数依赖row_number来排序。故存在价格相等但排序不重复的情况。</p>
 ]]></content>
       <categories>
         <category>mysql</category>
@@ -8248,7 +8317,7 @@
     <content><![CDATA[<p>Golang</p>
 <a id="more"></a>
 
-<h1 id="Golang"><a href="#Golang" class="headerlink" title="Golang"></a>Golang</h1><h2 id="垃圾回收"><a href="#垃圾回收" class="headerlink" title="垃圾回收"></a>垃圾回收</h2><p>最常见的垃圾回收算法有标记清除(Mark-Sweep) 和引用计数(Reference Count)，Go 语言采用的是标记清除算法。并在此基础上使用了三色标记法和写屏障技术，提高了效率。</p>
+<h2 id="垃圾回收"><a href="#垃圾回收" class="headerlink" title="垃圾回收"></a>垃圾回收</h2><p>最常见的垃圾回收算法有标记清除(Mark-Sweep) 和引用计数(Reference Count)，Go 语言采用的是标记清除算法。并在此基础上使用了三色标记法和写屏障技术，提高了效率。</p>
 <p>标记清除收集器是跟踪式垃圾收集器，其执行过程可以分成标记（Mark）和清除（Sweep）两个阶段：</p>
 <ul>
 <li>标记阶段 — 从根对象出发查找并标记堆中所有存活的对象；</li>
@@ -8510,7 +8579,7 @@
     <content><![CDATA[<p>Redis详解</p>
 <a id="more"></a>
 
-<h1 id="Redis"><a href="#Redis" class="headerlink" title="Redis"></a>Redis</h1><h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p><img src="redis%E7%AE%80%E4%BB%8B.png" alt="redis简介"></p>
+<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p><img src="redis%E7%AE%80%E4%BB%8B.png" alt="redis简介"></p>
 <p>Redis是一种基于键值对（key-value）的NoSQL数据库。</p>
 <p>比一般键值对数据库强大的地方，Redis中的value支持string（字符串）、hash（哈希）、 list（列表）、set（集合）、zset（有序集合）、Bitmaps（位图）、 HyperLogLog、GEO（地理信息定位）等多种数据结构，因此 Redis可以满足很多的应用场景。并且对数据类型的操作都是<strong>原子性</strong>的，因为执行命令由单线程负责的，不存在并发竞争的问题。</p>
 <p>Redis 是一种基于内存的数据库，对数据的读写操作都是在内存中完成，因此<strong>读写速度非常快</strong>，常用于<strong>缓存，消息队列、分布式锁等场景</strong>。</p>
