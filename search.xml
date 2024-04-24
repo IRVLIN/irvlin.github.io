@@ -2141,7 +2141,7 @@
 <li>leader会负责制定消费方案。</li>
 <li>把消费方案发给coordinator。</li>
 <li>Coordinator就把消费方案下发给各个consumer。</li>
-<li><strong>每个消费者都会和coordinator保持心跳（默认3s）**</strong>，一旦超时（session.timeout.ms=45s），该消费者会被移除，并触发再平衡；<strong>**或者消费者处理消息的时间过长（max.poll.interval.ms5分钟），也会触发再平衡</strong>。</li>
+<li><strong>每个消费者都会和coordinator保持心跳（默认3s）</strong>，一旦超时（session.timeout.ms=45s），该消费者会被移除，并触发再平衡；<strong>或者消费者处理消息的时间过长（max.poll.interval.ms5分钟），也会触发再平衡</strong>。</li>
 </ol>
 <h4 id="消费流程"><a href="#消费流程" class="headerlink" title="消费流程"></a>消费流程</h4><p><img src="%E6%B6%88%E8%B4%B9%E6%B5%81%E7%A8%8B.png" alt="消费流程"></p>
 <p>消费者初始化：</p>
