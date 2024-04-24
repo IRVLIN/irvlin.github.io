@@ -7530,7 +7530,7 @@
 <h3 id="binlog-和-redo-log-有什么区别"><a href="#binlog-和-redo-log-有什么区别" class="headerlink" title="binlog 和 redo log 有什么区别"></a>binlog 和 redo log 有什么区别</h3><ul>
 <li>bin log 会记录所有与数据库有关的日志记录，包括 InnoDB、MyISAM 等存储引擎的日志，而 redo log 只记 InnoDB 存储引擎的日志。</li>
 <li>记录的内容不同，bin log 记录的是关于一个事务的具体操作内容，即该日志是逻辑日志。而 redo log 记录的是关于每个页（Page）的更改的物理情况。</li>
-<li>写入的时间不同，bin log 仅在事务提交前进行提交，也就是只写磁盘一次。而在事务进行的过程中，却不断有 redo ertry 被写入 redo log 中。</li>
+<li>写入的时间不同，bin log 仅在事务提交前进行提交，也就是只写磁盘一次。而在事务进行的过程中，却不断有 redo entry 被写入 redo log 中。</li>
 <li>写入的方式也不相同，redo log 是循环写入和擦除，bin log 是追加写入，不会覆盖已经写的文件。</li>
 </ul>
 <h3 id="更新语句怎么执行"><a href="#更新语句怎么执行" class="headerlink" title="更新语句怎么执行"></a>更新语句怎么执行</h3><p>更新语句的执行是 Server 层和引擎层配合完成，数据除了要写入表中，还要记录相应的日志。</p>
