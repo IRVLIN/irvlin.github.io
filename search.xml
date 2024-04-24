@@ -7277,7 +7277,7 @@
 <li>少用or，用它来连接时会索引失效</li>
 <li>&lt;，&lt;=，=，&gt;，&gt;=，BETWEEN，IN 可用到索引，&lt;&gt;，not in ，!= 则不行，会导致全表扫描</li>
 </ol>
-<h4 id="查询优化"><a href="#查询优化" class="headerlink" title="查询优化"></a>查询优化</h4><p><strong>永远小标驱动大表（小的数据集驱动大的数据集）</strong></p>
+<h4 id="查询优化"><a href="#查询优化" class="headerlink" title="查询优化"></a>查询优化</h4><p><strong>永远小表驱动大表（小的数据集驱动大的数据集）</strong></p>
 <figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">select * from A where id in (select id from B);</span><br><span class="line"># 等价于</span><br><span class="line">select id from B;</span><br><span class="line">select * from A where A.id&#x3D;B.id;</span><br></pre></td></tr></table></figure>
 
 <p>当 B 表的数据集必须小于 A 表的数据集时，用 in 优于 exists</p>
