@@ -9234,7 +9234,7 @@
 <li><code>auto_increment_increment</code>：表示自增长字段每次递增的量，其默认值是1，取值范围是1 .. 65535。</li>
 </ul>
 <p>假设有三台机器，则DB1中order表的起始ID值为1，DB2中order表的起始值为2，DB3中order表的起始值为3，它们自增的步长都为3，则它们的ID生成范围如下图所示：</p>
-<p><img src="/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/%E5%88%86%E5%B8%83%E5%BC%8F/%E6%95%B0%E6%8D%AE%E5%BA%93.png" alt="数据库"></p>
+<p><img src="%E6%95%B0%E6%8D%AE%E5%BA%93.png" alt="数据库"></p>
 <p>通过这种方式明显的优势就是依赖于数据库自身不需要其他资源，并且ID号单调自增，可以实现一些对ID有特殊要求的业务。</p>
 <p>但是缺点也很明显，首先它<strong>强依赖DB</strong>，当DB异常时整个系统不可用。虽然配置主从复制可以尽可能的增加可用性，但是<strong>数据一致性在特殊情况下难以保证</strong>。主从切换时的不一致可能会导致重复发号。还有就是<strong>ID发号性能瓶颈限制在单台MySQL的读写性能</strong>。</p>
 <h3 id="redis"><a href="#redis" class="headerlink" title="redis"></a>redis</h3><p>Redis实现分布式唯一ID主要是通过提供像 <code>INCR</code> 和 <code>INCRBY</code> 这样的自增原子命令，由于Redis自身的单线程的特点所以能保证生成的 ID 肯定是唯一有序的。</p>
@@ -9250,7 +9250,7 @@
 <li><strong>最后12-bit位</strong>是自增序列，可表示2^12 = 4096个数。</li>
 </ul>
 <p>这样的划分之后相当于<strong>在一毫秒一个数据中心的一台机器上可产生4096个有序的不重复的ID</strong>。但是我们 IDC 和机器数肯定不止一个，所以毫秒内能生成的有序ID数是翻倍的。</p>
-<p><img src="/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/%E5%88%86%E5%B8%83%E5%BC%8F/snowflake.png" alt="snowflake"></p>
+<p><img src="snowflake.png" alt="snowflake"></p>
 <p><strong>雪花算法提供了一个很好的设计思想，雪花算法生成的ID是趋势递增，不依赖数据库等第三方系统，以服务的方式部署，稳定性更高，生成ID的性能也是非常高的，而且可以根据自身业务特性分配bit位，非常灵活</strong>。</p>
 <p>但是雪花算法强<strong>依赖机器时钟</strong>，如果机器上时钟回拨，会导致发号重复或者服务会处于不可用状态。如果恰巧回退前生成过一些ID，而时间回退后，生成的ID就有可能重复。官方对于此并没有给出解决方案，而是简单的抛错处理，这样会造成在时间被追回之前的这段时间服务不可用。</p>
 <p>很多其他类雪花算法也是在此思想上的设计然后改进规避它的缺陷，后面介绍的<strong>美团分布式ID生成系统 Leaf</strong>中snowflake模式都是在 snowflake 的基础上演进出来的。</p>
@@ -9265,11 +9265,11 @@
 <figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">CREATE TABLE &#96;leaf_alloc&#96; (</span><br><span class="line">  &#96;biz_tag&#96; varchar(128)  NOT NULL DEFAULT &#39;&#39; COMMENT &#39;业务key&#39;,</span><br><span class="line">  &#96;max_id&#96; bigint(20) NOT NULL DEFAULT &#39;1&#39; COMMENT &#39;当前已经分配了的最大id&#39;,</span><br><span class="line">  &#96;step&#96; int(11) NOT NULL COMMENT &#39;初始步长，也是动态调整的最小步长&#39;,</span><br><span class="line">  &#96;description&#96; varchar(256)  DEFAULT NULL COMMENT &#39;业务key的描述&#39;,</span><br><span class="line">  &#96;update_time&#96; timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT &#39;更新时间&#39;,</span><br><span class="line">  PRIMARY KEY (&#96;biz_tag&#96;)</span><br><span class="line">) ENGINE&#x3D;InnoDB;</span><br></pre></td></tr></table></figure>
 
 <p>原来获取ID每次都需要写数据库，现在只需要把step设置得足够大，比如1000。那么只有当1000个号被消耗完了之后才会去重新读写一次数据库。读写数据库的频率从1减小到了1/step，大致架构如下图所示：</p>
-<p><img src="/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/%E5%88%86%E5%B8%83%E5%BC%8F/leaf.png" alt="leaf"></p>
+<p><img src="leaf.png" alt="leaf"></p>
 <p>同时Leaf-segment 为了解决 TP999（满足千分之九百九十九的网络请求所需要的最低耗时）数据波动大，当号段使用完之后还是会hang在更新数据库的I/O上，TP999 数据会出现偶尔的尖刺的问题，提供了双buffer优化。</p>
 <p>简单的说就是，Leaf 取号段的时机是在号段消耗完的时候进行的，也就意味着号段临界点的ID下发时间取决于下一次从DB取回号段的时间，并且在这期间进来的请求也会因为DB号段没有取回来，导致线程阻塞。如果请求DB的网络和DB的性能稳定，这种情况对系统的影响是不大的，但是假如取DB的时候网络发生抖动，或者DB发生慢查询就会导致整个系统的响应时间变慢。</p>
 <p>为了DB取号段的过程能够做到无阻塞，不需要在DB取号段的时候阻塞请求线程，即当号段消费到某个点时就异步的把下一个号段加载到内存中，而不需要等到号段用尽的时候才去更新号段。这样做就可以很大程度上的降低系统的 TP999 指标。详细实现如下图所示：</p>
-<p><img src="/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/%E5%88%86%E5%B8%83%E5%BC%8F/leaf2.png" alt="leaf"></p>
+<p><img src="leaf2.png" alt="leaf"></p>
 <p>采用双buffer的方式，Leaf服务内部有两个号段缓存区segment。当前号段已下发10%时，如果下一个号段未更新，则另启一个更新线程去更新下一个号段。当前号段全部下发完后，如果下个号段准备好了则切换到下个号段为当前segment接着下发，循环往复。</p>
 <ul>
 <li>每个biz-tag都有消费速度监控，通常推荐segment长度设置为服务高峰期发号QPS的600倍（10分钟），这样即使DB宕机，Leaf仍能持续发号10-20分钟不受影响。</li>
@@ -9283,10 +9283,10 @@
 <li>如果有注册过直接取回自己的workerID（zk顺序节点生成的int类型ID号），启动服务。</li>
 <li>如果没有注册过，就在该父节点下面创建一个持久顺序节点，创建成功后取回顺序号当做自己的workerID号，启动服务。</li>
 </ul>
-<p><img src="/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/%E5%88%86%E5%B8%83%E5%BC%8F/leaf3.png" alt="leaf"></p>
+<p><img src="leaf3.png" alt="leaf"></p>
 <p>为了减少对 Zookeeper的依赖性，会在本机文件系统上缓存一个workerID文件。当ZooKeeper出现问题，恰好机器出现问题需要重启时，能保证服务能够正常启动。</p>
 <p>上文阐述过在类 snowflake算法上都存在时钟回拨的问题，Leaf-snowflake在解决时钟回拨的问题上是通过校验自身系统时间与 <code>leaf_forever/${self}</code>节点记录时间做比较然后启动报警的措施。</p>
-<p><img src="/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/%E5%88%86%E5%B8%83%E5%BC%8F/leaf4.png" alt="leaf"></p>
+<p><img src="leaf4.png" alt="leaf"></p>
 <p>美团官方建议是由于强依赖时钟，对时间的要求比较敏感，<strong>在机器工作时NTP同步也会造成秒级别的回退，建议可以直接关闭NTP同步。要么在时钟回拨的时候直接不提供服务直接返回ERROR_CODE，等时钟追上即可。或者做一层重试，然后上报报警系统，更或者是发现有时钟回拨之后自动摘除本身节点并报警。</strong></p>
 <p>在性能上官方提供的数据目前 Leaf 的性能在4C8G 的机器上QPS能压测到近5w/s，TP999 1ms。</p>
 <h2 id="分布式锁"><a href="#分布式锁" class="headerlink" title="分布式锁"></a>分布式锁</h2><h3 id="简介-1"><a href="#简介-1" class="headerlink" title="简介"></a>简介</h3><ul>
@@ -9390,10 +9390,10 @@
 <h2 id="分布式事务"><a href="#分布式事务" class="headerlink" title="分布式事务"></a>分布式事务</h2><h3 id="简介-2"><a href="#简介-2" class="headerlink" title="简介"></a>简介</h3><p><strong>事务</strong>是一个程序执行单元，里面的所有操作要么全部执行成功，要么全部执行失败。而<strong>分布式事务</strong>是指事务的参与者、支持事务的服务器、资源服务器以及事务管理器分别位于不同的分布式系统的不同节点之上。如何保证这些操作要么全部执行成功要么全部执行失败呢？这便是分布式事务要解决的问题。</p>
 <p><strong>以一个网上的经典下单减库存例子为例</strong>：</p>
 <p>单体应用所有的业务都使用一个数据库，整个下单流程或许只用在一个方法里同一个事务下操作数据库即可。此时所有操作都在一个事务里，要么全部提交，要么全部回滚。</p>
-<p><img src="/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/%E5%88%86%E5%B8%83%E5%BC%8F/tran.png" alt="tran"></p>
+<p><img src="tran.png" alt="tran"></p>
 <p>但随着业务量不断增长，业务服务化拆分，就会分离出订单中心、库存中心等。而这样就造成业务间相互隔离，每个业务都维护着自己的数据库，数据的交换只能进行服务调用。</p>
 <p>用户再下单时，创建订单和扣减库存，需要同时对订单DB和库存DB进行操作。两步操作必须同时成功，否则就会造成业务混乱，可此时我们只能保证自己服务的数据一致性，无法保证调用其他服务的操作是否成功，所以为了保证整个下单流程的数据一致性，就需要分布式事务介入。</p>
-<p><img src="/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/%E5%88%86%E5%B8%83%E5%BC%8F/tran2.png" alt="tran"></p>
+<p><img src="tran2.png" alt="tran"></p>
 <h3 id="理解"><a href="#理解" class="headerlink" title="理解"></a>理解</h3><h4 id="理论角度"><a href="#理论角度" class="headerlink" title="理论角度"></a>理论角度</h4><p>分布式的理论基础是CAP，由于P(分区容错）是必选项，所以只能在AP或者CP中选择。</p>
 <ul>
 <li><strong>分布式理论的CP</strong> -&gt; 刚性事务</li>
@@ -9403,7 +9403,7 @@
 <li><strong>分布式理论的AP+BASE</strong> -&gt; 柔性事务</li>
 </ul>
 <p>遵循BASE，允许一定时间内不同节点的数据不一致，但要求最终一致。</p>
-<h4 id="事务体系"><a href="#事务体系" class="headerlink" title="事务体系"></a>事务体系</h4><p><img src="/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/%E5%88%86%E5%B8%83%E5%BC%8F/tran3.png" alt="tran"></p>
+<h4 id="事务体系"><a href="#事务体系" class="headerlink" title="事务体系"></a>事务体系</h4><p><img src="tran3.png" alt="tran"></p>
 <ul>
 <li><p><strong>刚性事务</strong>：分布式理论的CP，遵循ACID，对数据要求强一致性。</p>
 <ul>
@@ -9483,7 +9483,7 @@
 <li><strong>Confirm阶段</strong>：确认执行业务操作，在只预留的资源基础上，发起购买请求。</li>
 <li><strong>Cancel阶段</strong>：只要涉及到的相关业务中，有一个业务方预留资源未成功，则取消所有业务资源的预留请求。</li>
 </ul>
-<p><img src="/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/%E5%88%86%E5%B8%83%E5%BC%8F/tcc.png" alt="tcc"></p>
+<p><img src="tcc.png" alt="tcc"></p>
 <p><strong>TCC的缺点</strong>：</p>
 <ol>
 <li>空回滚</li>
@@ -9514,10 +9514,10 @@
 <li>Stock Service：库存服务</li>
 <li>Delivery Service：物流服务</li>
 </ol>
-<p><img src="/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/%E5%88%86%E5%B8%83%E5%BC%8F/saga.webp" alt="saga"></p>
+<p><img src="saga.webp" alt="saga"></p>
 <h5 id="基于事件的方式"><a href="#基于事件的方式" class="headerlink" title="基于事件的方式"></a>基于事件的方式</h5><p>在基于事件的方式中，第一个服务执行完本地事务之后，会产生一个事件。其它服务会监听这个事件，触发该服务本地事务的执行，并产生新的事件。</p>
 <p>采用基于事件的saga模式的订单处理流程如下：</p>
-<p><img src="/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/%E5%88%86%E5%B8%83%E5%BC%8F/saga2.webp" alt="saga"></p>
+<p><img src="saga2.webp" alt="saga"></p>
 <ol>
 <li>订单服务创建一笔新订单，将订单状态设置为”待处理”，产生事件ORDER_CREATED_EVENT。</li>
 <li>支付服务监听ORDER_CREATED_EVENT，完成扣款并产生事件BILLED_ORDER_EVENT。</li>
@@ -9529,7 +9529,7 @@
 <p><strong>该模式下分布式事务的回滚</strong></p>
 <p>为了在异常情况下回滚整个分布式事务，我们需要为相关服务提供补偿操作接口。</p>
 <p>假设库存服务由于库存不足没能正确完成备货，我们可以按照下面的流程来回滚整个Saga事务：</p>
-<p><img src="/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/%E5%88%86%E5%B8%83%E5%BC%8F/saga3.webp" alt="saga"></p>
+<p><img src="saga3.webp" alt="saga"></p>
 <ol>
 <li>库存服务产生事件PRODUCT_OUT_OF_STOCK_EVENT。</li>
 <li>订单服务和支付服务都会监听该事件并做出响应：<ol>
@@ -9544,7 +9544,7 @@
 <p>接下来，我们将介绍如何使用命令的方式来克服上面提到的缺点。</p>
 <h5 id="基于命令的方式"><a href="#基于命令的方式" class="headerlink" title="基于命令的方式"></a>基于命令的方式</h5><p>在基于命令的方式中，我们会定义一个新的服务，这个服务扮演的角色就和一支交响乐乐队的指挥一样，告诉各个业务参与方，在什么时候做什么事情。我们管这个新服务叫做协调中心。协调中心通过命令/回复的方式来和Saga中其它服务进行交互。</p>
 <p>我们继续以之前的订单流程来举例。下图中的Order Saga Orchestrator就是新引入的协调中心。</p>
-<p><img src="/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/%E5%88%86%E5%B8%83%E5%BC%8F/saga5.webp" alt="saga"></p>
+<p><img src="saga5.webp" alt="saga"></p>
 <ol>
 <li>订单服务创建一笔新订单，将订单状态设置为”待处理”，然后让Order Saga Orchestrator（OSO）开启创建订单事务。</li>
 <li>OSO发送一个”支付命令”给支付服务，支付服务完成扣款并回复”支付完成”消息。</li>
@@ -9556,7 +9556,7 @@
 <p>实现协调中心的一个比较好的方式是使用<strong>状态机(Sate Machine)</strong>。</p>
 <p><strong>该模式下分布式事务的回滚</strong></p>
 <p>该模式下的回滚流程如下：</p>
-<p><img src="/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/%E5%88%86%E5%B8%83%E5%BC%8F/saga6.webp" alt="saga"></p>
+<p><img src="saga6.webp" alt="saga"></p>
 <ol>
 <li>库存服务回复OSO一个”库存不足”消息。</li>
 <li>OSO意识到该分布式事务失败了，触发回滚流程：</li>
@@ -9599,7 +9599,7 @@
 <li>业务处理失败、事务消息发送成功</li>
 </ul>
 <p>整体的流程如下图：</p>
-<p><img src="/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/%E5%88%86%E5%B8%83%E5%BC%8F/%E6%9C%AC%E5%9C%B0%E6%B6%88%E6%81%AF%E8%A1%A8.png" alt="本地消息表"></p>
+<p><img src="%E6%9C%AC%E5%9C%B0%E6%B6%88%E6%81%AF%E8%A1%A8.png" alt="本地消息表"></p>
 <p>上图中整体的处理步骤如下：</p>
 <ol>
 <li>事务主动方在同一个本地事务中处理业务和写消息表操作</li>
@@ -9627,12 +9627,12 @@
 </ul>
 <h4 id="MQ事务方案"><a href="#MQ事务方案" class="headerlink" title="MQ事务方案"></a>MQ事务方案</h4><p>基于 MQ 的分布式事务方案其实是对本地消息表的封装，将本地消息表基于 MQ 内部，其他方面的协议基本与本地消息表一致。</p>
 <p>MQ事务方案整体流程和本地消息表的流程很相似，如下图：</p>
-<p><img src="/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/%E5%88%86%E5%B8%83%E5%BC%8F/mq.png" alt="mq"></p>
+<p><img src="mq.png" alt="mq"></p>
 <p>从上图可以看出和本地消息表方案唯一不同就是将本地消息表存在了MQ内部，而不是业务数据库中。</p>
 <p>那么MQ内部的处理尤为重要，下面主要基于 RocketMQ 4.3 之后的版本介绍 MQ 的分布式事务方案。</p>
 <p>在本地消息表方案中，保证事务主动方发写业务表数据和写消息表数据的一致性是基于数据库事务，RocketMQ 的事务消息相对于普通 MQ提供了 2PC 的提交接口，方案如下：</p>
 <p><strong>正常情况：事务主动方发消息</strong></p>
-<p><img src="/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/%E5%88%86%E5%B8%83%E5%BC%8F/mq2.png" alt="mq"></p>
+<p><img src="mq2.png" alt="mq"></p>
 <p>这种情况下，事务主动方服务正常，没有发生故障，发消息流程如下：</p>
 <ul>
 <li>发送方向 MQ 服务端(MQ Server)发送 half 消息。</li>
@@ -9642,7 +9642,7 @@
 <li>MQ Server 收到 commit 状态则将半消息标记为可投递，订阅方最终将收到该消息；MQ Server 收到 rollback 状态则删除半消息，订阅方将不会接受该消息。</li>
 </ul>
 <p><strong>异常情况：事务主动方消息恢复</strong></p>
-<p><img src="/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/%E5%88%86%E5%B8%83%E5%BC%8F/mq3.png" alt="mq"></p>
+<p><img src="mq3.png" alt="mq"></p>
 <p>在断网或者应用重启等异常情况下，图中 4 提交的二次确认超时未到达 MQ Server，此时处理逻辑如下：</p>
 <ul>
 <li>MQ Server 对该消息发起消息回查。</li>
@@ -9663,7 +9663,7 @@
 </ul>
 <h4 id="最大努力通知"><a href="#最大努力通知" class="headerlink" title="最大努力通知"></a>最大努力通知</h4><p>最大努力通知也称为定期校对，是对MQ事务方案的进一步优化。它在事务主动方增加了消息校对的接口，如果事务被动方没有接收到消息，此时可以调用事务主动方提供的消息校对的接口主动获取。</p>
 <p>最大努力通知的整体流程如下图：</p>
-<p><img src="/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/%E5%88%86%E5%B8%83%E5%BC%8F/%E6%9C%80%E5%A4%A7%E5%8A%AA%E5%8A%9B.png" alt="最大努力"></p>
+<p><img src="%E6%9C%80%E5%A4%A7%E5%8A%AA%E5%8A%9B.png" alt="最大努力"></p>
 <p>在可靠消息事务中，事务主动方需要将消息发送出去，并且消息接收方成功接收，这种可靠性发送是由事务主动方保证的；</p>
 <p>但是最大努力通知，事务主动方尽最大努力（重试，轮询….）将事务发送给事务接收方，但是仍然存在消息接收不到，此时需要事务被动方主动调用事务主动方的消息校对接口查询业务消息并消费，这种通知的可靠性是由事务被动方保证的。</p>
 <p>最大努力通知适用于业务通知类型，例如微信交易的结果，就是通过最大努力通知方式通知各个商户，既有回调通知，也有交易查询接口。</p>
@@ -9677,7 +9677,7 @@
 <li>作业持久化，调度环境持久化机制，可以保存并恢复调度现场。系统关闭数据不会丢失；灵活的应用方式，可以任意定义触发器的调度时间表，支持任务和调度各种组合，组件式监听器、各种插件、线程池等功能，多种存储方式等；</li>
 <li>分布式和集群能力，可以被实例化，一个Quartz集群中的每个节点作为一个独立的Quartz使用，通过相同的数据库表来感知到另一个Quartz应用</li>
 </ul>
-<p><img src="/Users/qihong.lin/Documents/tech_blog/myBlog/source/_posts/%E5%88%86%E5%B8%83%E5%BC%8F/quartz.png" alt="quartz"></p>
+<p><img src="quartz.png" alt="quartz"></p>
 <ul>
 <li><p><strong>Job</strong> 表示一个工作，要执行的具体内容。</p>
 </li>
