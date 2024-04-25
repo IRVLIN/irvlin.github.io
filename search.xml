@@ -8584,7 +8584,7 @@
 <p>比一般键值对数据库强大的地方，Redis中的value支持string（字符串）、hash（哈希）、 list（列表）、set（集合）、zset（有序集合）、Bitmaps（位图）、 HyperLogLog、GEO（地理信息定位）等多种数据结构，因此 Redis可以满足很多的应用场景。并且对数据类型的操作都是<strong>原子性</strong>的，因为执行命令由单线程负责的，不存在并发竞争的问题。</p>
 <p>Redis 是一种基于内存的数据库，对数据的读写操作都是在内存中完成，因此<strong>读写速度非常快</strong>，常用于<strong>缓存，消息队列、分布式锁等场景</strong>。</p>
 <p>不仅如此，Redis还可以将内存的数据利用快照和日志的形式保存到硬盘上，这样在发生类似断电或者机器故障的时候，内存中的数据不会“丢失”。</p>
-<p>除此之外，Redis 还支持<strong>事务 、持久化、Lua 脚本、多种集群方案（主从复制模式、哨兵模式、切片机群模式）、发布/订阅模式，内存淘汰机制、过期删除机制</strong>等等。</p>
+<p>除此之外，Redis 还支持<strong>事务 、持久化、Lua 脚本、多种集群方案（主从复制模式、哨兵模式、切片集群模式）、发布/订阅模式，内存淘汰机制、过期删除机制</strong>等等。</p>
 <p>总之，Redis是一款强大的性能利器。</p>
 <h2 id="Redis-和-Memcached-的区别"><a href="#Redis-和-Memcached-的区别" class="headerlink" title="Redis 和 Memcached 的区别"></a>Redis 和 Memcached 的区别</h2><p>很多人都说用 Redis 作为缓存，但是 Memcached 也是基于内存的数据库，为什么不选择它作为缓存呢？要解答这个问题，我们就要弄清楚 Redis 和 Memcached 的区别。 Redis 与 Memcached <strong>共同点</strong>：</p>
 <ol>
