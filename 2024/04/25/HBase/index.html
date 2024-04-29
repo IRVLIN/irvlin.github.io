@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-128x128.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-64x64.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-center-simple.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"irvlin.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"default"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="HBase介绍">
+<meta property="og:type" content="article">
+<meta property="og:title" content="HBase">
+<meta property="og:url" content="https://irvlin.github.io/2024/04/25/HBase/index.html">
+<meta property="og:site_name" content="IRvLin的博客">
+<meta property="og:description" content="HBase介绍">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://irvlin.github.io/2024/04/25/HBase/%E5%AD%98%E5%82%A8.png">
+<meta property="og:image" content="https://irvlin.github.io/2024/04/25/HBase/%E5%AD%98%E5%82%A82.png">
+<meta property="og:image" content="https://irvlin.github.io/2024/04/25/HBase/%E5%AD%98%E5%82%A83.png">
+<meta property="og:image" content="https://irvlin.github.io/2024/04/25/HBase/%E5%AD%98%E5%82%A84.png">
+<meta property="og:image" content="https://irvlin.github.io/2024/04/25/HBase/%E5%AD%98%E5%82%A85.png">
+<meta property="og:image" content="https://irvlin.github.io/2024/04/25/HBase/record.png">
+<meta property="og:image" content="https://irvlin.github.io/2024/04/25/HBase/record2.png">
+<meta property="og:image" content="https://irvlin.github.io/2024/04/25/HBase/key-value.png">
+<meta property="og:image" content="https://irvlin.github.io/2024/04/25/HBase/%E6%9E%B6%E6%9E%84.png">
+<meta property="og:image" content="https://irvlin.github.io/2024/04/25/HBase/%E6%9E%B6%E6%9E%842.png">
+<meta property="og:image" content="https://irvlin.github.io/2024/04/25/HBase/HRegionServer.png">
+<meta property="og:image" content="https://irvlin.github.io/2024/04/25/HBase/%E5%88%87%E5%89%B2.png">
+<meta property="og:image" content="https://irvlin.github.io/2024/04/25/HBase/HRegion.png">
+<meta property="og:image" content="https://irvlin.github.io/2024/04/25/HBase/store.png">
+<meta property="article:published_time" content="2024-04-25T01:12:30.000Z">
+<meta property="article:modified_time" content="2024-04-29T13:43:44.388Z">
+<meta property="article:author" content="Charispsychoma">
+<meta property="article:tag" content="HBase">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://irvlin.github.io/2024/04/25/HBase/%E5%AD%98%E5%82%A8.png">
+
+<link rel="canonical" href="https://irvlin.github.io/2024/04/25/HBase/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>HBase | IRvLin的博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">IRvLin的博客</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger">
+            <i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+  <a href="https://github.com/irvlin" class="github-corner" title="Fork me on GitHub" aria-label="Fork me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://irvlin.github.io/2024/04/25/HBase/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Charispsychoma">
+      <meta itemprop="description" content="Stay hungry. Stay foolish.">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="IRvLin的博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          HBase
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2024-04-25 09:12:30" itemprop="dateCreated datePublished" datetime="2024-04-25T09:12:30+08:00">2024-04-25</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2024-04-29 21:43:44" itemprop="dateModified" datetime="2024-04-29T21:43:44+08:00">2024-04-29</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/HBase/" itemprop="url" rel="index"><span itemprop="name">HBase</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2024/04/25/HBase/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2024/04/25/HBase/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>HBase介绍</p>
+<a id="more"></a>
+
+<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>Apache HBase  是 Hadoop 数据库，一个分布式、可伸缩的<strong>大数据存储</strong>。</p>
+<p>HBase是依赖Hadoop的。为什么HBase能存储海量的数据？<strong>因为HBase是在HDFS的基础之上构建的，HDFS是分布式文件系统</strong>。</p>
+<p><strong>你可以把HBase当做是MySQL，把HDFS当做是硬盘。HBase只是一个NoSQL数据库，把数据存在HDFS上。</strong></p>
+<p>那我们为啥要用HBase呢？HBase在HDFS之上提供了<strong>高并发的随机写和支持实时查询</strong>，这是HDFS不具备的。HBase可以以<strong>低成本</strong>来<strong>存储海量</strong>的数据并且支持高并发随机写和实时查询。</p>
+<p>HBase还有一个特点就是：<strong>存储数据的”结构“可以地非常灵活</strong>（这个下面会讲到，这里如果没接触过HBase的同学可能不知道什么意思）。</p>
+<p>听过HBase的同学可能都听过「列式存储」这个词。我最开始的时候觉得HBase很难理解，就因为它这个「列式存储」我一直理解不了它为什么是「列式」的。</p>
+<p>在网上也有很多的博客去讲解什么是「列式」存储，它们会举我们现有的数据库，比如MySQL。存储的结构我们很容易看懂，就是一行一行数据。</p>
+<p>转换成所谓的列式存储是什么样的呢？无非就是把<strong>每列抽出来，然后关联上Id</strong>。这个叫列式存储吗？<strong>我在这打个问号</strong>。</p>
+<p>转换后的数据从我的角度来看，数据还是一行一行的。</p>
+<p>这样做有什么好处吗？很明显以前我们一行记录多个属性(列)，有部分的列是空缺的，但是我们还是需要空间去存储。现在把这些列全部拆开，有什么我们就存什么，这样<strong>空间就能被我们充分利用</strong>。</p>
+<p>这种形式的数据更像什么？明显是<code>Key-Value</code>嘛。那我们该怎么理解HBase所谓的列式存储和<code>Key-Value</code>结构呢？</p>
+<h2 id="数据模型"><a href="#数据模型" class="headerlink" title="数据模型"></a>数据模型</h2><p>在看HBase数据模型的时候，最好还是不要用「关系型数据库」的知识去理解它。</p>
+<blockquote>
+<p>In HBase, data is stored in tables, which have rows and columns. This is a terminology overlap withrelational databases (RDBMSs), <strong>but this is not a helpful analogy</strong>.</p>
+</blockquote>
+<h3 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h3><p>HBase里边也有表、行和列的概念。</p>
+<ul>
+<li>表没什么好说的，就是一张表</li>
+<li>一行数据由<strong>一个行键</strong>和<strong>一个或多个相关的列以及它的值</strong>所组成</li>
+</ul>
+<p>好了，现在比较抽象了。在HBase里边，定位一行数据会有一个唯一的值，这个叫做行键(<strong>RowKey</strong>)。而在HBase的列不是我们在关系型数据库所想象中的列。</p>
+<p>HBase的列（<strong>Column</strong>）都得归属到列族（<strong>Column Family</strong>）中。在HBase中用列修饰符（<strong>Column Qualifier</strong>）来标识每个列。</p>
+<p><strong>在HBase里边，先有列族，后有列</strong>。</p>
+<p>什么是列族？可以简单理解为：列的属性<strong>类别</strong></p>
+<p>什么是列修饰符？<strong>先有列族后有列，在列族下用列修饰符来标识一列</strong>。</p>
+<p><img src="%E5%AD%98%E5%82%A8.png" alt="存储"></p>
+<p>再放点具体的值：</p>
+<p><img src="%E5%AD%98%E5%82%A82.png" alt="存储"></p>
+<p>这张表我们有两个列族，分别是<code>UserInfo</code>和<code>OrderInfo</code>。在UserInfo下有两个列，分别是<code>UserInfo:name</code>和<code>UserInfo:age</code>，在<code>OrderInfo</code>下有两个列，分别是<code>OrderInfo:orderId</code>和<code>OrderInfo:money</code>。</p>
+<p><code>UserInfo:name</code>的值为：三歪。<code>UserInfo:age</code>的值为24。<code>OrderInfo:orderId</code>的值为23333。<code>OrderInfo:money</code>的值为30。这些数据的主键(RowKey)为1。</p>
+<p>上面的那个图看起来可能不太好懂：</p>
+<p><img src="%E5%AD%98%E5%82%A83.png" alt="存储"></p>
+<p>HBase表的每一行中，列的组成都是<strong>灵活</strong>的，<strong>行与行之间的列不需要相同</strong>。如图下：</p>
+<p><img src="%E5%AD%98%E5%82%A84.png" alt="存储"></p>
+<p><img src="%E5%AD%98%E5%82%A85.png" alt="存储"></p>
+<p>换句话说：<strong>一个列族下可以任意添加列，不受任何限制</strong></p>
+<p>数据写到HBase的时候都会被记录一个<strong>时间戳</strong>，这个时间戳被我们当做一个<strong>版本</strong>。比如说，我们<strong>修改或者删除</strong>某一条的时候，本质上是往里边<strong>新增</strong>一条数据，记录的版本加一了而已。</p>
+<p>比如现在我们有一条记录：</p>
+<p><img src="record.png" alt="record"></p>
+<p>现在要把这条记录的值改为40，实际上就是多添加一条记录，在读的时候按照时间戳<strong>读最新</strong>的记录。在外界「看起来」就是把这条记录改了。</p>
+<p><img src="record2.png" alt="record"></p>
+<h3 id="Key-Value"><a href="#Key-Value" class="headerlink" title="Key-Value"></a>Key-Value</h3><p>HBase本质上其实就是<code>Key-Value</code>的数据库，上一次我们学<code>Key-Value</code>数据库还是Redis呢。那在HBase里边，Key是什么？Value是什么？</p>
+<p>我们看一下下面的HBase<code>Key-Value</code>结构图：</p>
+<p><img src="key-value.png" alt="key-value"></p>
+<p>Key由RowKey(行键)+ColumnFamily（列族）+Column Qualifier（列修饰符）+TimeStamp（时间戳–版本）+KeyType（类型）组成，而Value就是实际上的值。</p>
+<p>对比上面的例子，其实很好理解，因为我们修改一条数据其实上是在原来的基础上增加一个版本的，那我们要<strong>准确定位</strong>一条数据，那就得（RowKey+Column+时间戳）。</p>
+<p>KeyType是什么？我们上面只说了「修改」的情况，你们有没有想过，如果要删除一条数据怎么做？<strong>实际上也是增加一条记录</strong>，只不过我们在KeyType里边设置为 <strong>Delete</strong> 就可以了。</p>
+<h2 id="架构"><a href="#架构" class="headerlink" title="架构"></a>架构</h2><p>扯了这么一大堆，已经说了HBase的数据模型和Key-Value了，我们还有一个问题：「为什么经常会有人说HBase是列式存储呢？」</p>
+<p>其实HBase更多的是「<strong>列族存储</strong>」，要谈列族存储，就得先了解了解HBase的架构是怎么样的。</p>
+<p>我们先来看看HBase的架构图：</p>
+<p><img src="%E6%9E%B6%E6%9E%84.png" alt="架构"></p>
+<ol>
+<li><p><strong>Client</strong>客户端，它提供了访问HBase的接口，并且维护了对应的cache来加速HBase的访问。</p>
+</li>
+<li><p><strong>Zookeeper</strong>存储HBase的元数据（meta表），无论是读还是写数据，都是去Zookeeper里边拿到meta元数据<strong>告诉给客户端去哪台机器读写数据</strong></p>
+</li>
+<li><p><strong>HRegionServer</strong>它是处理客户端的读写请求，负责与HDFS底层交互，是真正干活的节点。</p>
+</li>
+</ol>
+<p>总结大致的流程就是：client请求到Zookeeper，然后Zookeeper返回HRegionServer地址给client，client得到Zookeeper返回的地址去请求HRegionServer，HRegionServer读写数据后返回给client。</p>
+<p><img src="%E6%9E%B6%E6%9E%842.png" alt="架构"></p>
+<h3 id="HRegionServer"><a href="#HRegionServer" class="headerlink" title="HRegionServer"></a>HRegionServer</h3><p>我们来看下面的图：</p>
+<p><img src="HRegionServer.png" alt="HRegionServer"></p>
+<p>前面也提到了，HBase可以存储海量的数据，HBase是分布式的。所以我们可以断定：<strong>HBase一张表的数据会分到多台机器上的</strong>。那HBase是怎么切割一张表的数据的呢？用的就是<strong>RowKey</strong>来切分，其实就是表的<strong>横向</strong>切割。</p>
+<p><img src="%E5%88%87%E5%89%B2.png" alt="切割"></p>
+<p>说白了就是一个<strong>HRegion</strong>上，存储HBase表的一部分数据。</p>
+<p><img src="HRegion.png" alt="HRegion"></p>
+<p>HRegion下面有<strong>Store</strong>，那Store是什么呢？我们前面也说过，一个HBase表首先要定义<strong>列族</strong>，然后列是在列族之下的，列可以随意添加。</p>
+<p><strong>一个列族的数据是存储</strong>在一起的，所以一个列族的数据是存储在一个Store里边的。</p>
+<p>看到这里，其实我们可以认为HBase是基于列族存储的（毕竟物理存储，一个列族是存储到同一个Store里的）</p>
+<p>Store里边有啥？有<code>Mem Store、Store File、HFile</code>，我们再来看看里边都代表啥含义。</p>
+<p><img src="store.png" alt="store"></p>
+<p>HBase在写数据的时候，会先写到<code>Mem Store</code>，当<code>MemStore</code>超过一定阈值，就会将内存中的数据刷写到硬盘上，形成<strong>StoreFile</strong>，而<code>StoreFile</code>底层是以<code>HFile</code>的格式保存，<code>HFile</code>是HBase中<code>KeyValue</code>数据的存储格式。</p>
+<p>所以说：<code>Mem Store</code>我们可以理解为内存 buffer，<code>HFile</code>是HBase实际存储的数据格式，而<code>StoreFile</code>只是HBase里的一个名字。</p>
+<p>回到HRegionServer上，我们还漏了一块，就是<code>HLog</code>。</p>
+<p>这里其实特别好理解了，我们写数据的时候是先写到内存的，为了防止机器宕机，内存的数据没刷到磁盘中就挂了。我们在写<code>Mem store</code>的时候还会写一份<code>HLog</code>。</p>
+<p>这个<code>HLog</code>是顺序写到磁盘的，所以速度还是挺快的（是不是有似曾相似的感觉）…</p>
+<p>稍微总结一把：</p>
+<ul>
+<li>HRegionServer是真正干活的机器（用于与hdfs交互），我们HBase表用RowKey来横向切分表</li>
+<li>HRegion里边会有多个Store，每个Store其实就是一个列族的数据（所以我们可以说HBase是基于列族存储的）</li>
+<li>Store里边有Men Store和StoreFile(HFile)，其实就是先走一层内存，然后再刷到磁盘的结构</li>
+</ul>
+<h3 id="HMaster"><a href="#HMaster" class="headerlink" title="HMaster"></a>HMaster</h3><p>我们在上面的图会看到有个<strong>Hmaster</strong>，它在HBase的架构中承担一种什么样的角色呢？<strong>读写请求都没经过Hmaster呀</strong>。</p>
+<blockquote>
+<p><code>HMaster</code> is the implementation of the Master Server. The Master server is responsible for monitoring all RegionServer instances in the cluster, and is the interface for all metadata changes.</p>
+</blockquote>
+<p>HMaster会处理 HRegion 的分配或转移。如果我们HRegion的数据量太大的话，HMaster会对拆分后的Region<strong>重新分配RegionServer</strong>。（如果发现失效的HRegion，也会将失效的HRegion分配到正常的HRegionServer中）</p>
+<p>HMaster会处理元数据的变更和监控RegionServer的状态。</p>
+<h2 id="RowKey设计"><a href="#RowKey设计" class="headerlink" title="RowKey设计"></a>RowKey设计</h2><p>我们已经知道RowKey是什么了。不难理解的是，我们肯定是要保证RowKey是<strong>唯一</strong>的，毕竟它是行键，有了它我们才可以唯一标识一条数据的。</p>
+<p>在HBase里边提供了三种的查询方式：</p>
+<ol>
+<li>全局扫描</li>
+<li>根据一个RowKey进行查询</li>
+<li>根据RowKey过滤的<strong>范围</strong>查询</li>
+</ol>
+<h3 id="根据一个RowKey查询"><a href="#根据一个RowKey查询" class="headerlink" title="根据一个RowKey查询"></a>根据一个RowKey查询</h3><p>首先我们要知道的是RowKey是会按<strong>字典序</strong>排序的，我们HBase表会用RowKey来横向切分表。</p>
+<p>无论是读和写我们都是用RowKey去定位到HRegion，然后找到HRegionServer。这里有一个很关键的问题：<strong>那我怎么知道这个RowKey是在这个HRegion上的</strong>？</p>
+<p>HRegion上有两个很重要的属性：<code>start-key</code>和<code>end-key</code>。</p>
+<p>我们在定位HRegionServer的时候，实际上就是定位我们这个RowKey在不在这个HRegion的<code>start-key</code>和<code>end-key</code>范围之内，如果在，说明我们就找到了。</p>
+<p>这个时候会带来一个问题：由于我们的RowKey是以字典序排序的，如果我们对RowKey没有做任何处理，那就有可能存在<strong>热点数据</strong>的问题。</p>
+<p>举个例子，现在我们的RowKey如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">java3y111</span><br><span class="line">java3y222</span><br><span class="line">java3y333</span><br><span class="line">java3y444</span><br><span class="line">java3y555</span><br><span class="line">aaa</span><br><span class="line">bbb</span><br><span class="line">java3y777</span><br><span class="line">java3y666</span><br><span class="line">java3y...</span><br></pre></td></tr></table></figure>
+
+<p><code>Java3yxxx</code>开头的RowKey很多，而其他的RowKey很少。如果我们有多个<code>HRegion</code>的话，那么存储<code>Java3yxxx</code>的HRegion的数据量是最大的，而分配给其他的HRegion数量是很少的。</p>
+<p>关键是我们的查询也几乎都是以<code>java3yxxx</code>的数据去查，这会导致某部分数据会集中在某台HRegionServer上存储以及查询，而其他的HRegionServer却很空闲。</p>
+<p>如果是这种情况，我们要做的是什么？对<strong>RowKey散列</strong>就好了，那分配到HRegion的时候就比较均匀，少了热点的问题。</p>
+<blockquote>
+<p>HBase优化手册：</p>
+<p>建表申请时的预分区设置，对于经常使用HBase的小伙伴来说,HBase管理平台里申请HBase表流程必然不陌生了。</p>
+<p>‘<strong>给定split的RowKey组例如:aaaaa,bbbbb,ccccc;或给定例如:startKey=00000000,endKey=xxxxxxxx,regionsNum=x</strong>‘</p>
+<p><strong>第一种方式</strong>:</p>
+<blockquote>
+<p>是自己指定RowKey的分割点来划分region个数.比如有一组数据RowKey为[1,2,3,4,5,6,7],此时给定split RowKey是3,6,那么就会划分为[1,3),[3,6),[6,7)的三个初始region了.如果对于RowKey的组成及数据分布非常清楚的话,可以使用这种方式精确预分区.</p>
+</blockquote>
+<p><strong>第二种方式</strong> :</p>
+<blockquote>
+<p>如果只是知道RowKey的组成大致的范围,可以选用这种方式让集群来均衡预分区,设定始末的RowKey,以及根据数据量给定大致的region数,一般建议region数最多不要超过集群的rs节点数,过多region数不但不能增加表访问性能,反而会增加master节点压力.如果给定始末RowKey范围与实际偏差较大的话,还是比较容易产生数据热点问题.</p>
+</blockquote>
+<p><strong>最后:生成RowKey时,尽量进行加盐或者哈希的处理,这样很大程度上可以缓解数据热点问题.</strong></p>
+</blockquote>
+<h3 id="根据RowKey范围查询"><a href="#根据RowKey范围查询" class="headerlink" title="根据RowKey范围查询"></a>根据RowKey范围查询</h3><p>上面的情况是针对通过RowKey单个查询的业务的，如果我们是根据RowKey范围查询的，那没必要上面那样做。</p>
+<p>HBase将RowKey设计为字典序排序，如果不做限制，那很可能类似的RowKey存储在同一个HRegion中。那我正好有这个场景上的业务，那我查询的时候不是快多了吗？<strong>在同一个HRegion就可以拿到我想要的数据了</strong>。</p>
+<p>举个例子：我们会间隔几秒就采集直播间热度，将这份数据写到HBase中，然后业务方经常要把主播的一段时间内的热度给查询出来。</p>
+<p>我设计好的RowKey，将该主播的一段时间内的热度都写到同一个HRegion上，拉取的时候只要访问一个HRegionServer就可以得到全部我想要的数据了，那查询的速度就快很多。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><ol>
+<li>HBase是一个NoSQL数据库，一般我们用它来存储海量的数据（因为它基于HDFS分布式文件系统上构建的）</li>
+<li>HBase的一行记录由一个RowKey和一个或多个的列以及它的值所组成。先有列族后有列，列可以随意添加。</li>
+<li>HBase的增删改记录都有「版本」，默认以时间戳的方式实现。</li>
+<li>RowKey的设计如果没有特殊的业务性，最好设计为散列的，这样避免热点数据分布在同一个HRegionServer中。</li>
+<li>HBase的读写都经过Zookeeper去拉取meta数据，定位到对应的HRegion，然后找到HRegionServer</li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/HBase/" rel="tag"># HBase</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2024/04/23/%E7%BD%91%E7%BB%9C/" rel="prev" title="网络">
+      <i class="fa fa-chevron-left"></i> 网络
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#简介"><span class="nav-number">1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#数据模型"><span class="nav-number">2.</span> <span class="nav-text">数据模型</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#概念"><span class="nav-number">2.1.</span> <span class="nav-text">概念</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Key-Value"><span class="nav-number">2.2.</span> <span class="nav-text">Key-Value</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#架构"><span class="nav-number">3.</span> <span class="nav-text">架构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#HRegionServer"><span class="nav-number">3.1.</span> <span class="nav-text">HRegionServer</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#HMaster"><span class="nav-number">3.2.</span> <span class="nav-text">HMaster</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#RowKey设计"><span class="nav-number">4.</span> <span class="nav-text">RowKey设计</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#根据一个RowKey查询"><span class="nav-number">4.1.</span> <span class="nav-text">根据一个RowKey查询</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#根据RowKey范围查询"><span class="nav-number">4.2.</span> <span class="nav-text">根据RowKey范围查询</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">5.</span> <span class="nav-text">总结</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <a href="/">
+      <img class="site-author-image" itemprop="image" alt="Charispsychoma"
+        src="/images/avatar.jpg">
+    </a>
+  <p class="site-author-name" itemprop="name">Charispsychoma</p>
+  <div class="site-description" itemprop="description">Stay hungry. Stay foolish.</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">43</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">37</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">41</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/IRVLIN" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;IRVLIN" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:irvlin0404@gmail.com" title="E-Mail → mailto:irvlin0404@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://www.zhihu.com/people/charispsychoma" title="Zhihu → https:&#x2F;&#x2F;www.zhihu.com&#x2F;people&#x2F;charispsychoma" rel="noopener" target="_blank"><i class="fab fa-zhihu fa-fw"></i>Zhihu</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://www.instagram.com/irv.lin/" title="Instagram → https:&#x2F;&#x2F;www.instagram.com&#x2F;irv.lin&#x2F;" rel="noopener" target="_blank"><i class="fab fa-instagram fa-fw"></i>Instagram</a>
+      </span>
+  </div>
+
+
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<span id="timeDate">载入天数...</span><span id="times">载入时分秒...</span>
+<script>
+    var now = new Date(); 
+    function createtime() { 
+        var grt= new Date("05/11/2020 14:44:44");//在此处修改你的建站时间
+        now.setTime(now.getTime()+250); 
+        days = (now - grt ) / 1000 / 60 / 60 / 24; dnum = Math.floor(days); 
+        hours = (now - grt ) / 1000 / 60 / 60 - (24 * dnum); hnum = Math.floor(hours); 
+        if(String(hnum).length ==1 ){hnum = "0" + hnum;} minutes = (now - grt ) / 1000 /60 - (24 * 60 * dnum) - (60 * hnum); 
+        mnum = Math.floor(minutes); if(String(mnum).length ==1 ){mnum = "0" + mnum;} 
+        seconds = (now - grt ) / 1000 - (24 * 60 * 60 * dnum) - (60 * 60 * hnum) - (60 * mnum); 
+        snum = Math.round(seconds); if(String(snum).length ==1 ){snum = "0" + snum;} 
+        document.getElementById("timeDate").innerHTML = "已存活 "+dnum+" 天 "; 
+        document.getElementById("times").innerHTML = hnum + " 小时 " + mnum + " 分 " + snum + " 秒"; 
+    } 
+setInterval("createtime()",250);
+</script>
+
+<div class="copyright">
+  
+  &copy; 2020 – 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Charispsychoma</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script data-pjax async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+         访客数: <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        访问量: <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '.languages',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[data-pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.dataset.pjax !== undefined) {
+      script.dataset.pjax = '';
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.subMenu)
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div id="pjax">
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('//unpkg.com/valine/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : false,
+      appId      : 'BTYxjkQrcW0LVlgoggIJ2kD4-gzGzoHsz',
+      appKey     : 'JJRnAk74iYw1AJ5GBVnXaT6b',
+      placeholder: "欢迎评论～",
+      avatar     : 'retro',
+      meta       : guest,
+      pageSize   : '10' || 10,
+      visitor    : false,
+      lang       : 'zh-cn' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : false,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+    </div>
+
+  <!-- require APlayer -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-screen-webfont@1.6.0/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/aplayer/dist/APlayer.min.js"></script>
+  <!-- require MetingJS -->
+  <script src="https://cdn.jsdelivr.net/npm/meting@2/dist/Meting.min.js"></script>
+
+  <meting-js
+    server="netease" type="playlist" id="574119204" order="random" volume=0.5 fixed=true theme="#333">
+  </meting-js>
+
+  <script type="text/javascript" src="/js/clicklove.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/irvlin/CDN/js/jquery-3.4.1.min.js"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/gh/00years/ribbon@v1.0/ribbon.min.js"></script>
+  <script src="/live2d-widget/autoload.js"></script>
+</body>
+</html>
