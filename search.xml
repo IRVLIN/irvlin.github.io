@@ -8790,7 +8790,7 @@
 <p>会，Redis 在以下 2 个场景下，都会导致数据丢失：</p>
 <ul>
 <li>AOF 持久化配置为每秒写盘，但这个写盘过程是异步的，Redis 宕机时会存在数据丢失的可能</li>
-<li>主从复制也是异步的，<a href="https://xiaolincoding.com/redis/cluster/master_slave_replication.html#redis-主从切换如何减少数据丢失" target="_blank" rel="noopener">主从切换时，也存在丢失数据的可能 (opens new window)</a>。</li>
+<li>主从复制也是异步的，<a href="https://xiaolincoding.com/redis/cluster/master_slave_replication.html#redis-主从切换如何减少数据丢失" target="_blank" rel="noopener">主从切换时，也存在丢失数据的可能</a>。</li>
 </ul>
 </li>
 </ul>
@@ -8982,7 +8982,7 @@
 <h4 id="切片集群模式"><a href="#切片集群模式" class="headerlink" title="切片集群模式"></a>切片集群模式</h4><p>当 Redis 缓存数据量大到一台服务器无法缓存时，就需要使用 <strong>Redis 切片集群</strong>（Redis Cluster ）方案，它将数据分布在不同的服务器上，以此来降低系统对单主节点的依赖，从而提高 Redis 服务的读写性能。</p>
 <p>Redis Cluster 方案采用哈希槽（Hash Slot），来处理数据和节点之间的映射关系。在 Redis Cluster 方案中，<strong>一个切片集群共有 16384 个哈希槽</strong>，这些哈希槽类似于数据分区，每个键值对都会根据它的 key，被映射到一个哈希槽中，具体执行过程分为两大步：</p>
 <ul>
-<li>根据键值对的 key，按照 <a href="https://en.wikipedia.org/wiki/Cyclic_redundancy_check" target="_blank" rel="noopener">CRC16 算法 (opens new window)</a>计算一个 16 bit 的值。</li>
+<li>根据键值对的 key，按照 <a href="https://en.wikipedia.org/wiki/Cyclic_redundancy_check" target="_blank" rel="noopener">CRC16 算法</a>计算一个 16 bit 的值。</li>
 <li>再用 16bit 值对 16384 取模，得到 0~16383 范围内的模数，每个模数代表一个相应编号的哈希槽。</li>
 </ul>
 <p>接下来的问题就是，这些哈希槽怎么被映射到具体的 Redis 节点上的呢？有两种方案：</p>
