@@ -279,7 +279,7 @@
 <p>抢占：在 coroutine 中要等待一个协程主动让出 CPU 才执行下一个协程，在 Go 中，一个 goroutine 最多占用 CPU 10ms，防止其他 goroutine 被饿死，这就是 goroutine 不同于 coroutine 的一个地方。</p>
 <p>全局 G 队列：在新的调度器中依然有全局 G 队列，但功能已经被弱化了，当 M 执行 work stealing 从其他 P 偷不到 G 时，它可以从全局 G 队列获取 G。</p>
 <p><strong>go func() 调度流程</strong></p>
-<p>![go func()流程](go func()流程.png)</p>
+<p><img src="%E5%8D%8F%E7%A8%8B%E6%B5%81%E7%A8%8B.png" alt="go func()流程"></p>
 <p>从上图我们可以分析出几个结论：</p>
 <ol>
 <li>我们通过 go func () 来创建一个 goroutine；</li>
